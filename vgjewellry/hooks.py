@@ -1,8 +1,8 @@
 app_name = "vgjewellry"
-app_title = "VG Jewellery"
-app_publisher = "SamarthIT"
-app_description = "VG Jewellery erpnext app"
-app_email = "it@samarthjewellery.com"
+app_title = "vgjewellry"
+app_publisher = "vg"
+app_description = "vg"
+app_email = "vg@ga"
 app_license = "mit"
 
 # Apps
@@ -15,7 +15,7 @@ app_license = "mit"
 # 	{
 # 		"name": "vgjewellry",
 # 		"logo": "/assets/vgjewellry/logo.png",
-# 		"title": "VG Jewellery",
+# 		"title": "vgjewellry",
 # 		"route": "/vgjewellry",
 # 		"has_permission": "vgjewellry.api.permission.has_app_permission"
 # 	}
@@ -148,14 +148,6 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-scheduler_events = {
-	"cron": {
-		"0 11,13,14,15,18,23 * * *": [
-			"vgjewellry.VG_api.custoutstandingdata",
-		],
- 	}
-}
-
 # scheduler_events = {
 # 	"all": [
 # 		"vgjewellry.tasks.all"
@@ -215,26 +207,26 @@ scheduler_events = {
 # User Data Protection
 # --------------------
 
-user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
-]
+# user_data_fields = [
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
+# ]
 
 # Authentication and authorization
 # --------------------------------

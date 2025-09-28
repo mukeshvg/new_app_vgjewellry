@@ -3,13 +3,5 @@
 *.egg-info
 *.swp
 tags
-jvapp/docs/current
-node_modules/
-.png
+node_modules
 __pycache__
-*.log
-eggs/
-.eggs/
-env/
-.vscode/
-.git_old/

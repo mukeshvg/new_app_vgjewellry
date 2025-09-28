@@ -1,9 +1,9 @@
 [project]
 name = "vgjewellry"
 authors = [
-    { name = "SamarthIT", email = "it@samarthjewellery.com"}
+    { name = "vg", email = "vg@ga"}
 ]
-description = "VG Jewellery erpnext app"
+description = "vg"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
