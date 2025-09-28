@@ -1,0 +1,650 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-09 17:34:36.064734",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "order_no",
+  "column_break_nyqw",
+  "order_type",
+  "section_break_ijwl",
+  "order_date",
+  "column_break_rqod",
+  "delivery_date",
+  "column_break_hxhj",
+  "branch_name",
+  "section_break_mnfg",
+  "cust_name",
+  "column_break_atox",
+  "jew_type",
+  "column_break_wgng",
+  "counter",
+  "section_break_vrdx",
+  "prod_name",
+  "column_break_rpvv",
+  "design_code",
+  "column_break_sbcj",
+  "app_net_wgt",
+  "section_break_soiv",
+  "gold_colr",
+  "column_break_pqzn",
+  "gold_karat",
+  "column_break_vkcq",
+  "size_leg",
+  "section_break_eqji",
+  "broadness",
+  "column_break_frbz",
+  "pcs",
+  "column_break_udxg",
+  "description",
+  "section_break_ozeq",
+  "admin_notes",
+  "diamond_details_section",
+  "dia_details",
+  "section_break_jnly",
+  "label_no",
+  "column_break_zpsr",
+  "approve",
+  "section_break_ubug",
+  "rate_apply_of",
+  "section_break_wbcl",
+  "gold_rate_pgrm",
+  "column_break_xtat",
+  "labour_pgrm",
+  "column_break_lenr",
+  "estimate_gst",
+  "section_break_twdu",
+  "amount",
+  "column_break_ixdi",
+  "ref_by",
+  "column_break_ango",
+  "sales_person",
+  "section_break_btqj",
+  "ass_vendor",
+  "column_break_hstt",
+  "ven_del_date",
+  "column_break_fdda",
+  "vend_remarks",
+  "section_break_bhae",
+  "order_updates",
+  "section_break_yzol",
+  "main_image",
+  "section_break_zihy",
+  "sam_send",
+  "column_break_ibxd",
+  "no_sam_send",
+  "section_break_bhzu",
+  "sam_wgt",
+  "column_break_hlwt",
+  "vou_no",
+  "section_break_rhgv",
+  "sample_img",
+  "section_break_byys",
+  "send_with_certi",
+  "send_wapp_cus",
+  "column_break_bdnd",
+  "send_witho_cert",
+  "send_wapp_vend",
+  "parcel_details_section",
+  "par_rec",
+  "qc_details_section",
+  "qc_status",
+  "column_break_orit",
+  "remarks",
+  "section_break_nixq",
+  "labeling_no",
+  "column_break_hcgo",
+  "prod_reci"
+ ],
+ "fields": [
+  {
+   "fieldname": "order_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Order No",
+   "options": "VG_Customer_Order"
+  },
+  {
+   "fieldname": "section_break_ijwl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.order_date",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date"
+  },
+  {
+   "fieldname": "column_break_rqod",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "column_break_hxhj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.branch_name",
+   "fieldname": "branch_name",
+   "fieldtype": "Link",
+   "label": "Branch Name",
+   "options": "Branch_Master"
+  },
+  {
+   "fieldname": "section_break_mnfg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.cust_name",
+   "fieldname": "cust_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "column_break_atox",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "jew_type",
+   "fieldtype": "Select",
+   "label": "Jewellery Type",
+   "options": "\nGold\nDiamond\nSilver"
+  },
+  {
+   "fieldname": "column_break_wgng",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.counter",
+   "fieldname": "counter",
+   "fieldtype": "Select",
+   "label": "Counter",
+   "options": "\nSilver\nS.MS\nM.S\nChain\nTops\nRing\nDiamond\nBangles\nLoose\nF.set\nSet\n18CT\nSilver/Gold Lagdi\nP.set\nPSET/M.S\nExset\nRING/TOPS\nSSET\nRing\nANTIQUE\nTest printer\nSilver-1\nSilver-2\nTvam\nExclusive-1\nExclusive-2\nPlatinum\nLabel Dept"
+  },
+  {
+   "fieldname": "section_break_vrdx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.prod_name",
+   "fieldname": "prod_name",
+   "fieldtype": "Link",
+   "label": "Product Name",
+   "options": "Item_Master"
+  },
+  {
+   "fieldname": "column_break_rpvv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "design_code",
+   "fieldtype": "Data",
+   "label": "Design Code"
+  },
+  {
+   "fieldname": "column_break_sbcj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.app_net_wgt",
+   "fieldname": "app_net_wgt",
+   "fieldtype": "Float",
+   "label": "Approximate Net Weight",
+   "precision": "2"
+  },
+  {
+   "fieldname": "section_break_soiv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.gold_colr",
+   "fieldname": "gold_colr",
+   "fieldtype": "Data",
+   "label": "Gold Colour"
+  },
+  {
+   "fieldname": "column_break_pqzn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.gold_karat",
+   "fieldname": "gold_karat",
+   "fieldtype": "Link",
+   "label": "Gold Karat",
+   "options": "Item_Trad_Mst"
+  },
+  {
+   "fieldname": "column_break_vkcq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.size_leg",
+   "fieldname": "size_leg",
+   "fieldtype": "Data",
+   "label": "Size/Length"
+  },
+  {
+   "fieldname": "section_break_eqji",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.broadness",
+   "fieldname": "broadness",
+   "fieldtype": "Data",
+   "label": "Broadness"
+  },
+  {
+   "fieldname": "column_break_udxg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.description",
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_frbz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.pcs",
+   "fieldname": "pcs",
+   "fieldtype": "Int",
+   "label": "Pcs"
+  },
+  {
+   "fieldname": "section_break_ozeq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "admin_notes",
+   "fieldtype": "Small Text",
+   "label": "Admin Notes(Visible to Admin Only)"
+  },
+  {
+   "fieldname": "diamond_details_section",
+   "fieldtype": "Section Break",
+   "label": "Diamond Details"
+  },
+  {
+   "fieldname": "dia_details",
+   "fieldtype": "Table",
+   "label": "Diamond Details",
+   "options": "VG_Diamond_Details_CT"
+  },
+  {
+   "fieldname": "section_break_jnly",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.label_no",
+   "fieldname": "label_no",
+   "fieldtype": "Data",
+   "label": "Label No"
+  },
+  {
+   "fieldname": "section_break_ubug",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rate_apply_of",
+   "fieldtype": "Data",
+   "label": "Rate Apply Of"
+  },
+  {
+   "fieldname": "section_break_wbcl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "gold_rate_pgrm",
+   "fieldtype": "Int",
+   "label": "Gold Rate  P/grm"
+  },
+  {
+   "fieldname": "column_break_xtat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.labour_per",
+   "fieldname": "labour_pgrm",
+   "fieldtype": "Data",
+   "label": "Labour P/Grm"
+  },
+  {
+   "fieldname": "column_break_lenr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.estimate_gst",
+   "fieldname": "estimate_gst",
+   "fieldtype": "Int",
+   "label": "Estimate (Incl. GST)"
+  },
+  {
+   "fieldname": "section_break_twdu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Data",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "column_break_ixdi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ref_by",
+   "fieldtype": "Data",
+   "label": "Reference By"
+  },
+  {
+   "fieldname": "column_break_ango",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.sales_person",
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "section_break_btqj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "ass_vendor",
+   "fieldtype": "Link",
+   "label": "Assign Vendor",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "column_break_hstt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ven_del_date",
+   "fieldtype": "Date",
+   "label": "Vendor Delivery Date"
+  },
+  {
+   "fieldname": "section_break_yzol",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.main_image",
+   "fieldname": "main_image",
+   "fieldtype": "Attach Image",
+   "label": "Main Image"
+  },
+  {
+   "fieldname": "section_break_zihy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fetch_from": "order_no.sample_send",
+   "fieldname": "sam_send",
+   "fieldtype": "Check",
+   "label": "Sample Send"
+  },
+  {
+   "fieldname": "column_break_ibxd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fetch_from": "order_no.no_sam_send",
+   "fieldname": "no_sam_send",
+   "fieldtype": "Check",
+   "label": "No Sampale Send"
+  },
+  {
+   "fieldname": "section_break_bhzu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.sam_wgt",
+   "fieldname": "sam_wgt",
+   "fieldtype": "Float",
+   "label": "Sample Weight",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_hlwt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.voucher_no",
+   "fieldname": "vou_no",
+   "fieldtype": "Data",
+   "label": "Vouchar No"
+  },
+  {
+   "fieldname": "section_break_rhgv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.sample_img",
+   "fieldname": "sample_img",
+   "fieldtype": "Attach Image",
+   "label": "Sample Image"
+  },
+  {
+   "fieldname": "section_break_byys",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fetch_from": "order_no.send_with_certi",
+   "fieldname": "send_with_certi",
+   "fieldtype": "Check",
+   "label": "Send With Certificate"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_wapp_cus",
+   "fieldtype": "Check",
+   "label": "Send Whatsapp To Customer"
+  },
+  {
+   "fieldname": "column_break_bdnd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fetch_from": "order_no.send_witho_cert",
+   "fieldname": "send_witho_cert",
+   "fieldtype": "Check",
+   "label": "Send Without Certificate"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_wapp_vend",
+   "fieldtype": "Check",
+   "label": "Send Whatsapp To Vendor"
+  },
+  {
+   "fieldname": "parcel_details_section",
+   "fieldtype": "Section Break",
+   "label": "Parcel Details"
+  },
+  {
+   "fieldname": "par_rec",
+   "fieldtype": "Select",
+   "label": "Parcel Receive",
+   "options": "\nReceived"
+  },
+  {
+   "fieldname": "qc_details_section",
+   "fieldtype": "Section Break",
+   "label": "QC Details"
+  },
+  {
+   "fieldname": "qc_status",
+   "fieldtype": "Select",
+   "label": "QC Status",
+   "options": "\nDone"
+  },
+  {
+   "fieldname": "column_break_orit",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "section_break_nixq",
+   "fieldtype": "Section Break",
+   "label": "Labeling Details"
+  },
+  {
+   "fieldname": "labeling_no",
+   "fieldtype": "Data",
+   "label": "Labeling No"
+  },
+  {
+   "fieldname": "column_break_nyqw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.order_type",
+   "fieldname": "order_type",
+   "fieldtype": "Data",
+   "label": "Order Type"
+  },
+  {
+   "fieldname": "column_break_zpsr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approve",
+   "fieldtype": "Select",
+   "label": "Order Approve ",
+   "options": "\nApprove\nCheck\nSample Pending\nCancel"
+  },
+  {
+   "fieldname": "section_break_bhae",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "order_updates",
+   "fieldtype": "Table",
+   "label": "Order Updates",
+   "options": "VG_Order_Remarks"
+  },
+  {
+   "fieldname": "column_break_fdda",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vend_remarks",
+   "fieldtype": "Select",
+   "label": "Vendor Remarks",
+   "options": "\nVendor Follow up Done"
+  },
+  {
+   "fieldname": "column_break_hcgo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prod_reci",
+   "fieldtype": "Link",
+   "label": "Product Receiver",
+   "options": "Emp_Mst"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-18 15:35:22.879080",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Approve_Order",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Parcel",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "QC",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Labeling",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HO",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

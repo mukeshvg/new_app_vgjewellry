@@ -1,0 +1,187 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"1myC24bQrL\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Virchand Govanji Jewellers</span>\",\"col\":12}},{\"id\":\"fWPzWMIYOG\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Legal_Doc\",\"col\":3}},{\"id\":\"lalk_CwbeQ\",\"type\":\"card\",\"data\":{\"card_name\":\"Performance Voucher\",\"col\":3}},{\"id\":\"jYyYhwLBJN\",\"type\":\"card\",\"data\":{\"card_name\":\"Employee KRA\",\"col\":3}},{\"id\":\"3Lgn4Vaf8K\",\"type\":\"card\",\"data\":{\"card_name\":\"VG Policy\",\"col\":3}},{\"id\":\"uKTUbuw4Or\",\"type\":\"card\",\"data\":{\"card_name\":\"VG Mobile No Details\",\"col\":3}},{\"id\":\"X6ppiWsD6o\",\"type\":\"card\",\"data\":{\"card_name\":\"Google_Review\",\"col\":3}}]",
+ "creation": "2025-05-05 12:39:21.298267",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "HR",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG_Legal_Doc",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Legal Doc",
+   "link_count": 0,
+   "link_to": "VG_Legal_Doc",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Legal Docs Report",
+   "link_count": 0,
+   "link_to": "VG_Legal_Docs_Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Performance Voucher",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Performance Vch Entry",
+   "link_count": 0,
+   "link_to": "Performance_Voucher",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee KRA",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ADD Employee KRA",
+   "link_count": 0,
+   "link_to": "Employee_KRA_System",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "KRA Report",
+   "link_count": 0,
+   "link_to": "report_vg_002",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG Mobile No Details",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sim Info",
+   "link_count": 0,
+   "link_to": "Company_Sim_Info",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG Policy",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Policy",
+   "link_count": 0,
+   "link_to": "VG_Policy",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Policy Doc",
+   "link_count": 0,
+   "link_to": "Policy_Doc_Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Google_Review",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Google Review",
+   "link_count": 0,
+   "link_to": "Google_Review_Data",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Google Review Report",
+   "link_count": 0,
+   "link_to": "VG_Google_Review_Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-07-15 10:53:32.986971",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "HR",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "VG"
+  }
+ ],
+ "sequence_id": 1.1,
+ "shortcuts": [],
+ "title": "HR"
+}

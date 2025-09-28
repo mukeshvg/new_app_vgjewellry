@@ -1,0 +1,386 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "autoincrement",
+ "creation": "2025-06-07 14:31:04.717806",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "order_no",
+  "column_break_clho",
+  "ord_status",
+  "section_break_titk",
+  "order_date",
+  "column_break_ayws",
+  "delivery_date",
+  "column_break_ejnh",
+  "branch_name",
+  "section_break_vuhj",
+  "cust_name",
+  "cust_num",
+  "address",
+  "column_break_wrtd",
+  "item_name",
+  "column_break_ipzs",
+  "design_code",
+  "section_break_oczn",
+  "app_net_wgt",
+  "column_break_jdez",
+  "gold_colr",
+  "column_break_fxdf",
+  "gold_karat",
+  "section_break_yszm",
+  "size_leg",
+  "column_break_ijfu",
+  "broadness",
+  "column_break_hckx",
+  "description",
+  "section_break_isbc",
+  "pcs",
+  "column_break_muio",
+  "counter",
+  "section_break_cnme",
+  "dia_details",
+  "section_break_xpkt",
+  "label_no",
+  "section_break_qsip",
+  "rate_apply_of",
+  "section_break_dmvj",
+  "gold_rate_pgrm",
+  "column_break_jwxx",
+  "labour_pgrm",
+  "column_break_iqqq",
+  "estimate_gst",
+  "section_break_eyjh",
+  "adv_payment",
+  "section_break_yhcv",
+  "amount",
+  "column_break_eczp",
+  "ref_by",
+  "column_break_ykkm",
+  "sales_person"
+ ],
+ "fields": [
+  {
+   "fieldname": "order_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Order No",
+   "options": "VG_Customer_Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_titk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.order_date",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ayws",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.delivery_date",
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "column_break_ejnh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.branch_name",
+   "fieldname": "branch_name",
+   "fieldtype": "Link",
+   "label": "Branch Name",
+   "options": "Branch_Master"
+  },
+  {
+   "fieldname": "section_break_vuhj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.cust_name",
+   "fieldname": "cust_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "column_break_wrtd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.prod_name",
+   "fieldname": "item_name",
+   "fieldtype": "Link",
+   "label": "Product Name",
+   "options": "Item_Master"
+  },
+  {
+   "fieldname": "column_break_ipzs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "design_code",
+   "fieldtype": "Data",
+   "label": "Design Code"
+  },
+  {
+   "fieldname": "section_break_oczn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.app_net_wgt",
+   "fieldname": "app_net_wgt",
+   "fieldtype": "Data",
+   "label": "Approximate Net Weight"
+  },
+  {
+   "fieldname": "column_break_jdez",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.gold_colr",
+   "fieldname": "gold_colr",
+   "fieldtype": "Data",
+   "label": "Gold Colour"
+  },
+  {
+   "fieldname": "column_break_fxdf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.gold_karat",
+   "fieldname": "gold_karat",
+   "fieldtype": "Link",
+   "label": "Gold Karat",
+   "options": "Item_Trad_Mst"
+  },
+  {
+   "fieldname": "section_break_yszm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.size_leg",
+   "fieldname": "size_leg",
+   "fieldtype": "Data",
+   "label": "Size/Length"
+  },
+  {
+   "fieldname": "column_break_ijfu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "broadness",
+   "fieldtype": "Data",
+   "label": "Broadness"
+  },
+  {
+   "fieldname": "column_break_hckx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.description",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_break_cnme",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "dia_details",
+   "fieldtype": "Table",
+   "label": "Diamond Details",
+   "options": "VG_Diamond_Details_CT"
+  },
+  {
+   "fieldname": "section_break_xpkt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.label_no",
+   "fieldname": "label_no",
+   "fieldtype": "Data",
+   "label": "Label No"
+  },
+  {
+   "fieldname": "section_break_qsip",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rate_apply_of",
+   "fieldtype": "Select",
+   "label": "Rate Apply Of",
+   "options": "\nFix Rate\nRate On Delivery"
+  },
+  {
+   "fieldname": "section_break_dmvj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "gold_rate_pgrm",
+   "fieldtype": "Int",
+   "label": "Gold Rate  P/grm"
+  },
+  {
+   "fieldname": "column_break_jwxx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.labour_per",
+   "fieldname": "labour_pgrm",
+   "fieldtype": "Data",
+   "label": "Labour P/Grm"
+  },
+  {
+   "fieldname": "column_break_iqqq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.estimate_gst",
+   "fieldname": "estimate_gst",
+   "fieldtype": "Int",
+   "label": "Estimate (Incl. GST)"
+  },
+  {
+   "fieldname": "section_break_eyjh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "adv_payment",
+   "fieldtype": "Table",
+   "label": "Advance Payment",
+   "options": "VD_Advance_Amount_CT"
+  },
+  {
+   "fieldname": "section_break_yhcv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Data",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "column_break_eczp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ref_by",
+   "fieldtype": "Select",
+   "label": "Reference By",
+   "options": "\nShaswat"
+  },
+  {
+   "fieldname": "column_break_ykkm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.sales_person",
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "section_break_isbc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "order_no.pcs",
+   "fieldname": "pcs",
+   "fieldtype": "Int",
+   "label": "Pcs"
+  },
+  {
+   "fieldname": "column_break_muio",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "order_no.counter",
+   "fieldname": "counter",
+   "fieldtype": "Data",
+   "label": "Counter"
+  },
+  {
+   "fetch_from": "order_no.contact_number",
+   "fieldname": "cust_num",
+   "fieldtype": "Data",
+   "label": "Customer Number"
+  },
+  {
+   "fetch_from": "order_no.address",
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_clho",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ord_status",
+   "fieldtype": "Select",
+   "label": "Order Status",
+   "options": "\nHold\nResume"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-27 16:36:43.070866",
+ "modified_by": "akshay@gmail.com",
+ "module": "VG Jewellery",
+ "name": "VG_Billing_Order",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Billing",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

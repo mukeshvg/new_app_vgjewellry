@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-05-05 16:33:25.059425",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "kra_mon",
+  "kra",
+  "weightage",
+  "target",
+  "achieve_target",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "kra_mon",
+   "fieldtype": "Select",
+   "label": "KRA Mon",
+   "options": "\nMay-2025\nJune-2025\nJuly-2025\nAug-2025\nSep-2025\nOct-2025\nNov-2025\nDec-2025"
+  },
+  {
+   "fieldname": "kra",
+   "fieldtype": "Data",
+   "label": "KRA"
+  },
+  {
+   "fieldname": "weightage",
+   "fieldtype": "Float",
+   "label": "Weightage(%)"
+  },
+  {
+   "fieldname": "target",
+   "fieldtype": "Float",
+   "label": "Target"
+  },
+  {
+   "fieldname": "achieve_target",
+   "fieldtype": "Float",
+   "label": "Achieved Target"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-20 15:15:53.966878",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Emp_KRA_CT",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

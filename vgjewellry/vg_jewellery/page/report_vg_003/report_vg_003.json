@@ -1,0 +1,29 @@
+{
+ "content": null,
+ "creation": "2025-05-31 12:13:34.040146",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 26,
+ "modified": "2025-06-25 11:52:45.973630",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "report_vg_003",
+ "owner": "Administrator",
+ "page_name": "report_vg_003",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Salesmen Wise Sales Report 002"
+}

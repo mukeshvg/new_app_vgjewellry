@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-06 11:38:58.064255",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "mobile_no",
+  "cus_name",
+  "address",
+  "pincode",
+  "city",
+  "state",
+  "country_reside",
+  "alt_no",
+  "dob",
+  "doa",
+  "spouse_name",
+  "spouse_dob",
+  "spu_cont_no",
+  "occupation",
+  "references"
+ ],
+ "fields": [
+  {
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Mobile No",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "cus_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Cus Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "pincode",
+   "fieldtype": "Int",
+   "label": "Pin Code"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "City",
+   "options": "City Master",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "State",
+   "options": "State Master",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "country_reside",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dob",
+   "fieldtype": "Date",
+   "label": "Date Of Birth"
+  },
+  {
+   "fieldname": "doa",
+   "fieldtype": "Date",
+   "label": "Date Of Anv"
+  },
+  {
+   "fieldname": "spouse_name",
+   "fieldtype": "Data",
+   "label": "Spouse Name"
+  },
+  {
+   "fieldname": "spouse_dob",
+   "fieldtype": "Date",
+   "label": "Spouse Dob"
+  },
+  {
+   "fieldname": "occupation",
+   "fieldtype": "Data",
+   "label": "Occupation"
+  },
+  {
+   "fieldname": "references",
+   "fieldtype": "Data",
+   "label": "References"
+  },
+  {
+   "fieldname": "alt_no",
+   "fieldtype": "Int",
+   "label": "Alternate No"
+  },
+  {
+   "fieldname": "spu_cont_no",
+   "fieldtype": "Int",
+   "label": "Spouse Contact No"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-06 17:53:33.388890",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Customer_Details",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "mobile_no",
+ "track_changes": 1
+}

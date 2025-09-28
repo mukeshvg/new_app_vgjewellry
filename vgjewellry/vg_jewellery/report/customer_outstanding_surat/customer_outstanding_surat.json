@@ -1,0 +1,35 @@
+{
+ "add_total_row": 1,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-05-24 14:55:22.740662",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 33,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-06-25 11:51:53.769501",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Customer_Outstanding_Surat",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "select\r\n (cod.acc_mst_id) as Acc_mst_id\r\n ,(cor.name) \"Id:Link/Customer_Outstanding_Reporting:100\"\r\n ,cod.family_head as FamilyHead\r\n ,cod.acc_name as Cus_Name\r\n ,cod.mobileno1 as Mobi_1\r\n ,cod.mobileno2 as Mobi_2\r\n ,tbm.branch_short_name as Branch_Name\r\n ,(cod.cl_bal*-1) as Outstanding_Amt\r\n ,Date(cod.vouchar_dt) as VoucharDt\r\n ,cod.due_day as DueDays\r\n ,cod.sales_man_name as Salesman\r\n ,cod.reference as Reference\r\n ,cod.naration as Narration\r\n ,sum(case when osr.date < cod.vouchar_dt then 0 else 1 end)Total_followup \r\n ,max(osr.date) as last_Followup\r\n ,datediff(max(osr.nxt_followup),CurDate())Rema_Followup_Days\r\nFROM\r\n    `tabCustomer_Outstanding_Data` cod\r\n    left join `tabCustomer_Outstanding_Reporting` cor on cor.acc_mst_id = cod.acc_mst_id\r\n    left join `tabOutstanding_Remarks` osr on osr.parent = cor.name\r\n    left join `tabBranch_Master` tbm on tbm.branch_name =cod.branch_name \r\n    where cod.branch_name = 'SURAT BR.- SHAH VIRCHAND' \r\ngroup by cod.acc_mst_id\r\nOrder by Mobi_1\r\n",
+ "ref_doctype": "Customer_Outstanding_Reporting",
+ "report_name": "Customer_Outstanding_Surat",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "SURAT"
+  }
+ ],
+ "timeout": 0
+}

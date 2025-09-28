@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-30 10:47:39.090480",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_cate"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_cate",
+   "fieldtype": "Data",
+   "label": "Item Category"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-01 18:21:52.561107",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Non_Jewellery_Item_Category_Master",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Cash",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "item_cate",
+ "track_changes": 1
+}

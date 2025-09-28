@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "autoincrement",
+ "creation": "2025-06-03 16:36:30.617988",
+ "default_view": "Report",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "mobile_no",
+  "column_break_ctpq",
+  "sim_card_com",
+  "section_break_omcj",
+  "emp_code",
+  "emp_desig",
+  "branch_name",
+  "device_details",
+  "device_no",
+  "device_name",
+  "imei_no"
+ ],
+ "fields": [
+  {
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Mobile No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ctpq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sim_card_com",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Sim Card Com",
+   "options": "\nJio\nAirtel\nVI\nBSNL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_omcj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "emp_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee Code",
+   "options": "Emp_Mst",
+   "reqd": 1
+  },
+  {
+   "fieldname": "emp_desig",
+   "fieldtype": "Select",
+   "label": "Emp Designation",
+   "options": "\nSales\nMarketing\nBack Office\nCashier\nAccount\nOrder\nHR\nManager\nFloor Manager\nCRE\nApplication Executive\nHR Executive"
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Link",
+   "label": "Branch Name",
+   "options": "Branch_Master",
+   "reqd": 1
+  },
+  {
+   "fieldname": "device_details",
+   "fieldtype": "Select",
+   "label": "Device Details",
+   "options": "Company\nOwner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "device_no",
+   "fieldtype": "Data",
+   "label": "Device No"
+  },
+  {
+   "fieldname": "device_name",
+   "fieldtype": "Data",
+   "label": "Device Name"
+  },
+  {
+   "fieldname": "imei_no",
+   "fieldtype": "Data",
+   "label": "IMEI No"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-03 17:12:09.437887",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Company_Sim_Info",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

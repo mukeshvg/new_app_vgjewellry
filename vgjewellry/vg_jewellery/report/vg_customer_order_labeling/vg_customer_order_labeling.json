@@ -1,0 +1,35 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-06-17 12:33:21.090728",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-06-18 15:37:46.778839",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Customer_Order_Labeling",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "   SELECT\r\n    so.name,\r\n    aso.name AS \"VG_Approve_Order:Link/VG_Approve_Order:50\",\r\n    DATE(so.creation) AS Create_Date,\r\n    so.order_type AS Order_Type,\r\n    im.item_name AS Item_Name,\r\n    bm.branch_short_name AS Branch_Name,\r\n    sm.supplier_name AS Supplier,\r\n    'Pending' AS Labeling \r\nFROM\r\n    `tabVG_Customer_Order` so\r\n    LEFT JOIN `tabItem_Master` im ON im.name = so.prod_name \r\n    LEFT JOIN `tabBranch_Master` bm ON bm.name = so.branch_name\r\n    LEFT JOIN `tabVG_Approve_Order` aso ON so.name = aso.order_no\r\n    LEFT JOIN `tabSupplier_Master` sm ON sm.name = aso.ass_vendor \r\n    LEFT JOIN `tabVG_Order_Remarks` ore ON ore.parent = aso.name\r\n    LEFT JOIN `tabItem_Trad_Mst` titm ON titm.name = so.gold_karat \r\nWHERE\r\n    aso.vend_remarks = 'Vendor Follow up Done'\r\n    AND aso.qc_status = 'Done'\r\n    AND aso.prod_reci IS NULL;",
+ "ref_doctype": "VG_Approve_Order",
+ "report_name": "VG_Customer_Order_Labeling",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "Labeling"
+  }
+ ],
+ "timeout": 0
+}

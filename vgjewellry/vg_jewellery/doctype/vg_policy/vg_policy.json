@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-03 16:11:22.396041",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "po_no",
+  "po_name",
+  "att_file",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "po_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Policy No.",
+   "reqd": 1
+  },
+  {
+   "fieldname": "po_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Policy Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "att_file",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "Attach File",
+   "reqd": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-03 16:17:29.639368",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Policy",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

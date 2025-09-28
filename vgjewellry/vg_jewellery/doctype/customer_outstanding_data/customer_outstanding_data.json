@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:acc_mst_id",
+ "creation": "2025-05-17 17:24:20.025364",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "acc_mst_id",
+  "family_head",
+  "acc_name",
+  "mobileno1",
+  "mobileno2",
+  "branch_name",
+  "op_bal",
+  "cl_bal",
+  "dr_bal",
+  "vouchar_dt",
+  "due_day",
+  "sales_man_name",
+  "naration",
+  "reference"
+ ],
+ "fields": [
+  {
+   "fieldname": "acc_mst_id",
+   "fieldtype": "Data",
+   "label": "Account Master Id",
+   "unique": 1
+  },
+  {
+   "fieldname": "family_head",
+   "fieldtype": "Data",
+   "label": "Family Head"
+  },
+  {
+   "fieldname": "acc_name",
+   "fieldtype": "Data",
+   "label": "Account Name"
+  },
+  {
+   "fieldname": "mobileno1",
+   "fieldtype": "Data",
+   "label": "MobileNo_1"
+  },
+  {
+   "fieldname": "mobileno2",
+   "fieldtype": "Data",
+   "label": "MobileNo_2"
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Data",
+   "label": "Branch Name"
+  },
+  {
+   "fieldname": "op_bal",
+   "fieldtype": "Float",
+   "label": "Opening Balance"
+  },
+  {
+   "fieldname": "cl_bal",
+   "fieldtype": "Float",
+   "label": "Closing Balance"
+  },
+  {
+   "fieldname": "dr_bal",
+   "fieldtype": "Data",
+   "label": "Debit Balance"
+  },
+  {
+   "fieldname": "vouchar_dt",
+   "fieldtype": "Datetime",
+   "label": "Last Debit Date"
+  },
+  {
+   "fieldname": "due_day",
+   "fieldtype": "Int",
+   "label": "Due Day"
+  },
+  {
+   "fieldname": "sales_man_name",
+   "fieldtype": "Data",
+   "label": "SalesManName"
+  },
+  {
+   "fieldname": "naration",
+   "fieldtype": "Small Text",
+   "label": "Naration"
+  },
+  {
+   "fieldname": "reference",
+   "fieldtype": "Data",
+   "label": "Reference"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-25 11:50:58.646339",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Customer_Outstanding_Data",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VAPI",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "SURAT",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VALSAD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

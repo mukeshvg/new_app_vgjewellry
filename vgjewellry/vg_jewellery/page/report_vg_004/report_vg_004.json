@@ -1,0 +1,26 @@
+{
+ "content": null,
+ "creation": "2025-06-18 16:02:22.401837",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-06-18 16:02:22.401837",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "report_vg_004",
+ "owner": "Administrator",
+ "page_name": "report_vg_004",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "VG_Catalogue"
+}

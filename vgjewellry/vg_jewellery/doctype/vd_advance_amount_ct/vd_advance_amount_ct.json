@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-07 14:58:04.904218",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "adv_pay_type",
+  "adv_rec_num",
+  "amt_paid"
+ ],
+ "fields": [
+  {
+   "fieldname": "adv_pay_type",
+   "fieldtype": "Select",
+   "label": "Advance Payment Type",
+   "options": "\nCash\nOnline"
+  },
+  {
+   "fieldname": "adv_rec_num",
+   "fieldtype": "Data",
+   "label": "Advance Reciept Number"
+  },
+  {
+   "fieldname": "amt_paid",
+   "fieldtype": "Int",
+   "label": "Amount Paid"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-06-07 15:02:25.010157",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VD_Advance_Amount_CT",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

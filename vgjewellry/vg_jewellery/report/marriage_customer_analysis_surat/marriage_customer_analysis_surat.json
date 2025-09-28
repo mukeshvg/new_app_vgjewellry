@@ -1,0 +1,35 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-06-13 13:03:42.024705",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-06-13 13:04:51.375611",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Marriage_Customer_Analysis_Surat",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": " with A as(\r\nSELECT \r\nmax(tmdr.`date`) as Remarks_date\r\n,tmdr.parent as parent\r\n,tmdr.remarks as remarks\r\nFROM `tabMarriage_Data_Remarks_CT` tmdr \r\ngroup by tmdr.name, tmdr.parent \r\n)\r\nselect\r\n(mc.name)\"Cus_code:Link/VG_Marriage_Customer:75\"\r\n,(mc.customer_name)Cus_Name\r\n,(tscd.mobile_no)Mob_No\r\n,(mc.converted)Converted\r\n,(cm.city)City\r\n,(bm.branch_short_name)Branch_Name\r\n,(em.emp_code)Salesman_code\r\n,(mc.marriage_date)Mrg_Date\r\n,datediff(mc.marriage_date,curDate())Rema_Mrg_Days\r\n,(mc.purchase_date)Pur_Date\r\n,datediff(mc.purchase_date,CurDate())Rema_Pur_Days\r\n,(mc.approx_weight)Approx_Wt\r\n-- ,max(mr.date)last_followup_date\r\n,A.Remarks_date as last_followup_date\r\n,count(A.parent) as Tot_Followup\r\n,A.remarks\r\nfrom `tabVG_Marriage_Customer` mc\r\nleft join `tabVG_Customer_Details` tscd on tscd.name =mc.mobile_no \r\nleft join `tabCity Master` cm on cm.name = mc.city \r\nleft join `tabBranch_Master`bm on bm.name = mc.branch_name\r\nleft join `tabEmp_Mst`em on em.emp_code = mc.emp_mst\r\n-- left join `tabMarriage Data Remarks`mr on mc.name = mr.parent\r\nleft join A on A.parent = mc.name \r\nwhere mc.converted = \"NO\" And bm.branch_short_name  ='SURAT'\r\ngroup by mc.name\r\norder by Rema_Mrg_Days asc",
+ "ref_doctype": "VG_Marriage_Customer",
+ "report_name": "Marriage_Customer_Analysis_Surat",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "SURAT"
+  }
+ ],
+ "timeout": 0
+}

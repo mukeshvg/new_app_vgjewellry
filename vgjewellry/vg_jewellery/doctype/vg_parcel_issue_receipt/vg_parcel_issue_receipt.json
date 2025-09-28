@@ -1,0 +1,294 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{DD}{MM}{######}",
+ "creation": "2025-06-12 12:41:31.315196",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "parcel_type",
+  "sender_emp_name",
+  "sender_branch",
+  "receiver_branch",
+  "parcel_recieve_mo_number",
+  "parcel_receive_by_name",
+  "column_break_fzrl",
+  "send_recive",
+  "sourcemode",
+  "sender_supplier",
+  "receiver_supplier",
+  "parcel_delivered_by_name",
+  "parcel_delivered_mo_number",
+  "section_break_pivt",
+  "receiver_emp_name",
+  "remarks",
+  "receiver_dept_section",
+  "diamond",
+  "column_break_coyz",
+  "gold",
+  "column_break_rlgi",
+  "silver",
+  "dept_det",
+  "received_by",
+  "vg_voucher_no",
+  "app_diamond",
+  "column_break_oqth",
+  "rec_gold",
+  "vou_gold",
+  "app_gold",
+  "column_break_zwvd",
+  "rec_silver",
+  "vou_silver",
+  "app_silver"
+ ],
+ "fields": [
+  {
+   "fieldname": "parcel_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Parcel Type",
+   "options": "\nInside\nOutside",
+   "reqd": 1
+  },
+  {
+   "fieldname": "send_recive",
+   "fieldtype": "Select",
+   "label": "Send/Recive",
+   "options": "\nSend\nReceive"
+  },
+  {
+   "fieldname": "sender_emp_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sender Emp Name",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "sender_supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sender Supplier",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "sender_branch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sender Branch",
+   "options": "Branch_Master"
+  },
+  {
+   "fieldname": "receiver_branch",
+   "fieldtype": "Link",
+   "label": "Receiver Branch",
+   "options": "Branch_Master"
+  },
+  {
+   "fieldname": "receiver_supplier",
+   "fieldtype": "Link",
+   "label": "Receiver Supplier",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "sourcemode",
+   "fieldtype": "Select",
+   "label": "Source/Mode",
+   "options": "\nAngadia\nLogistic\nCourier"
+  },
+  {
+   "fieldname": "parcel_recieve_mo_number",
+   "fieldtype": "Data",
+   "label": "Parcel Receive Mo. Number"
+  },
+  {
+   "fieldname": "parcel_delivered_mo_number",
+   "fieldtype": "Data",
+   "label": "Parcel Delivered Mo Number"
+  },
+  {
+   "fieldname": "parcel_delivered_by_name",
+   "fieldtype": "Data",
+   "label": "Parcel Delivered By Name"
+  },
+  {
+   "fieldname": "receiver_emp_name",
+   "fieldtype": "Data",
+   "label": "Receiver Employee Name"
+  },
+  {
+   "fieldname": "parcel_receive_by_name",
+   "fieldtype": "Data",
+   "label": "Parcel Received By Name"
+  },
+  {
+   "fieldname": "received_by",
+   "fieldtype": "Link",
+   "label": "Received By",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "vg_voucher_no",
+   "fieldtype": "Data",
+   "label": "VG Voucher Number"
+  },
+  {
+   "fieldname": "receiver_dept_section",
+   "fieldtype": "Section Break",
+   "label": "Receiver Dept."
+  },
+  {
+   "default": "0",
+   "fieldname": "diamond",
+   "fieldtype": "Check",
+   "label": "Diamond"
+  },
+  {
+   "fieldname": "column_break_coyz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "gold",
+   "fieldtype": "Check",
+   "label": "Gold"
+  },
+  {
+   "fieldname": "column_break_rlgi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "silver",
+   "fieldtype": "Check",
+   "label": "Silver"
+  },
+  {
+   "fieldname": "dept_det",
+   "fieldtype": "Section Break",
+   "label": "Department_Details"
+  },
+  {
+   "fieldname": "column_break_fzrl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_pivt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_oqth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rec_gold",
+   "fieldtype": "Link",
+   "label": "Received By Gold",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "vou_gold",
+   "fieldtype": "Data",
+   "label": "VG Voucher Number Gold"
+  },
+  {
+   "fieldname": "column_break_zwvd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rec_silver",
+   "fieldtype": "Link",
+   "label": "Received By Silver",
+   "options": "Emp_Mst"
+  },
+  {
+   "fieldname": "vou_silver",
+   "fieldtype": "Data",
+   "label": "VG Voucher Number silver"
+  },
+  {
+   "default": "0",
+   "fieldname": "app_diamond",
+   "fieldtype": "Check",
+   "label": "Approve Diamond"
+  },
+  {
+   "default": "0",
+   "fieldname": "app_silver",
+   "fieldtype": "Check",
+   "label": "Approve Silver"
+  },
+  {
+   "default": "0",
+   "fieldname": "app_gold",
+   "fieldtype": "Check",
+   "label": "Approve Gold"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-11 16:02:19.657921",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Parcel_Issue_Receipt",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Parcel",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

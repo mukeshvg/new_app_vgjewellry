@@ -1,0 +1,32 @@
+{
+ "content": null,
+ "creation": "2025-05-26 17:19:50.887743",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 18,
+ "modified": "2025-07-21 14:17:24.828818",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "report_vg_002",
+ "owner": "Administrator",
+ "page_name": "report_vg_002",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "KRA"
+  },
+  {
+   "role": "HR"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Emp KRA Performance Report 002"
+}

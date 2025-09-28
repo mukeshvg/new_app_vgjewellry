@@ -1,0 +1,384 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"1trZd-rK4v\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Catalogue\",\"col\":3}},{\"id\":\"xVo-HYqvL7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Virchand Govanji Jewellers</span>\",\"col\":12}},{\"id\":\"BHLnapMxvU\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":3}},{\"id\":\"OtzCyoirSv\",\"type\":\"card\",\"data\":{\"card_name\":\"Management Report\",\"col\":3}},{\"id\":\"5R3pE5gzsG\",\"type\":\"card\",\"data\":{\"card_name\":\"Outstanding Report\",\"col\":3}},{\"id\":\"4IzmOob9fF\",\"type\":\"card\",\"data\":{\"card_name\":\"VG Exhibition\",\"col\":3}},{\"id\":\"XVff3-3VWu\",\"type\":\"card\",\"data\":{\"card_name\":\"Parcel_Issue_Receipt\",\"col\":3}},{\"id\":\"LFdazOsfDG\",\"type\":\"card\",\"data\":{\"card_name\":\"Marrage_Cus_Tracking\",\"col\":3}},{\"id\":\"EmcUGPcBKJ\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Order\",\"col\":3}},{\"id\":\"qko7S9DU5N\",\"type\":\"card\",\"data\":{\"card_name\":\"Non Jewellery Inventory\",\"col\":3}}]",
+ "creation": "2025-04-29 16:56:48.302437",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Virchand Govanji Jewellers",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Outstanding Report",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Outstanding Reporting",
+   "link_count": 0,
+   "link_to": "Customer_Outstanding_Reporting",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Surat Branch Outstanding",
+   "link_count": 0,
+   "link_to": "Customer_Outstanding_Surat",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Valsad Branch Outstanding",
+   "link_count": 0,
+   "link_to": "Customer_Outstanding_Valsad",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Vapi Branch Outstanding",
+   "link_count": 0,
+   "link_to": "Customer_Outstanding_Vapi",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Management Report",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Report",
+   "link_count": 0,
+   "link_to": "report_001",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Salesmen Wise Sales 002",
+   "link_count": 0,
+   "link_to": "report_vg_003",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG Exhibition",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Exhibition Data",
+   "link_count": 0,
+   "link_to": "VG Exhibition",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Parcel_Issue_Receipt",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Parcel_Issue_Receipt",
+   "link_count": 0,
+   "link_to": "VG_Parcel_Issue_Receipt",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Parcel Tracking Report",
+   "link_count": 0,
+   "link_to": "Parcel Issue Receipt Tracking Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Marrage_Cus_Tracking",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Marriage Customer",
+   "link_count": 0,
+   "link_to": "VG_Marriage_Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Valsad Marriage cus Tracking Report",
+   "link_count": 0,
+   "link_to": "Marriage_Customer_Analysis_Valsad",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Vapi Marriage cus Tracking Report",
+   "link_count": 0,
+   "link_to": "Marriage_Customer_Analysis_Vapi",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Surat Marriage cus Tracking Report",
+   "link_count": 0,
+   "link_to": "Marriage_Customer_Analysis_Surat",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Master",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Customer",
+   "link_count": 0,
+   "link_to": "VG_Customer_Details",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Non Jewellery Inventory",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "In/Out Inventory",
+   "link_count": 0,
+   "link_to": "VG_In_Out_Non_Jewellery_Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inventory Report",
+   "link_count": 0,
+   "link_to": "report_vg_005",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG_Order",
+   "link_count": 10,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Order",
+   "link_count": 0,
+   "link_to": "VG_Customer_Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add  Order Billing",
+   "link_count": 0,
+   "link_to": "VG_Billing_Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Approval - HO",
+   "link_count": 0,
+   "link_to": "VG_Approve_Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG Branch Order Report",
+   "link_count": 0,
+   "link_to": "VG_Customer_Order",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG Billing Report",
+   "link_count": 0,
+   "link_to": "VG_Billing_Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG HO Report",
+   "link_count": 0,
+   "link_to": "VG_Customer_Order_HO",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG Order Parcel Report",
+   "link_count": 0,
+   "link_to": "VG_Customer_Parcel",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG Order QC Report",
+   "link_count": 0,
+   "link_to": "VG_Customer_Order_QC",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "VG Labeling Report",
+   "link_count": 0,
+   "link_to": "VG_Customer_Order_Labeling",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Order Tracking",
+   "link_count": 0,
+   "link_to": "VG_Order_Tracking_Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG_Catalogue",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG_Catalogue",
+   "link_count": 0,
+   "link_to": "report_vg_004",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-07-15 10:55:01.507241",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Virchand Govanji Jewellers",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "VG"
+  }
+ ],
+ "sequence_id": 1.0,
+ "shortcuts": [],
+ "title": "Virchand Govanji Jewellers"
+}

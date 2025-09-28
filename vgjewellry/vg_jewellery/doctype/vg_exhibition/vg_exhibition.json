@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-06-12 12:00:33.234590",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "exh_name",
+  "exh_city",
+  "branch_name",
+  "column_break_gclf",
+  "to_visitors",
+  "to_expense",
+  "sales",
+  "to_mar_cus",
+  "section_break_mspz",
+  "description",
+  "section_break_ndzt",
+  "cus_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "exh_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Exhibition Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "exh_city",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Exhibition City",
+   "options": "City Master",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Branch Name",
+   "options": "Branch_Master",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_gclf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_visitors",
+   "fieldtype": "Data",
+   "is_virtual": 1,
+   "label": "Total Visitors"
+  },
+  {
+   "fieldname": "to_expense",
+   "fieldtype": "Data",
+   "label": "Total Expense"
+  },
+  {
+   "fieldname": "sales",
+   "fieldtype": "Data",
+   "label": "Total Sales"
+  },
+  {
+   "fieldname": "to_mar_cus",
+   "fieldtype": "Data",
+   "label": "Total Marriage Customers"
+  },
+  {
+   "fieldname": "section_break_mspz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_break_ndzt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "cus_details",
+   "fieldtype": "Table",
+   "label": "Customer Details",
+   "options": "VG_Exhibition_Walkins_CT",
+   "reqd": 1,
+   "search_index": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-12 12:31:11.514431",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG Exhibition",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

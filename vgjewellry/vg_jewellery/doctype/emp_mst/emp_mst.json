@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:emp_code",
+ "creation": "2025-05-05 12:02:51.403342",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "emp_id",
+  "emp_code",
+  "emp_name",
+  "emp_first_name",
+  "emp_second_name",
+  "emp_last_name",
+  "designation",
+  "emp_bdate",
+  "emp_jdate",
+  "emp_blood_group",
+  "emp_add",
+  "emp_city",
+  "emp_taluka",
+  "emp_pincode",
+  "emp_cphone",
+  "emp_cmobile",
+  "mgr_code",
+  "mgr_name",
+  "curent",
+  "gender",
+  "companymailid",
+  "branch_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "emp_id",
+   "fieldtype": "Int",
+   "label": "Emp_ID"
+  },
+  {
+   "fieldname": "emp_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Emp_Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "emp_name",
+   "fieldtype": "Data",
+   "label": "Emp_Name"
+  },
+  {
+   "fieldname": "emp_first_name",
+   "fieldtype": "Data",
+   "label": "Emp_First_Name"
+  },
+  {
+   "fieldname": "emp_second_name",
+   "fieldtype": "Data",
+   "label": "Emp_Second_Name"
+  },
+  {
+   "fieldname": "emp_last_name",
+   "fieldtype": "Data",
+   "label": "Emp_Last_Name"
+  },
+  {
+   "fieldname": "emp_bdate",
+   "fieldtype": "Date",
+   "label": "Emp_BDate"
+  },
+  {
+   "fieldname": "emp_jdate",
+   "fieldtype": "Date",
+   "label": "Emp_JDate"
+  },
+  {
+   "fieldname": "emp_blood_group",
+   "fieldtype": "Data",
+   "label": "Emp_Blood_Group"
+  },
+  {
+   "fieldname": "emp_add",
+   "fieldtype": "Small Text",
+   "label": "Emp_Add"
+  },
+  {
+   "fieldname": "emp_city",
+   "fieldtype": "Data",
+   "label": "Emp_City"
+  },
+  {
+   "fieldname": "emp_taluka",
+   "fieldtype": "Data",
+   "label": "Emp_Taluka"
+  },
+  {
+   "fieldname": "emp_pincode",
+   "fieldtype": "Data",
+   "label": "Emp_PinCode"
+  },
+  {
+   "fieldname": "emp_cphone",
+   "fieldtype": "Data",
+   "label": "Emp_CPhone"
+  },
+  {
+   "fieldname": "emp_cmobile",
+   "fieldtype": "Data",
+   "label": "Emp_CMobile"
+  },
+  {
+   "fieldname": "mgr_code",
+   "fieldtype": "Data",
+   "label": "Mgr_Code"
+  },
+  {
+   "fieldname": "mgr_name",
+   "fieldtype": "Data",
+   "label": "Mgr_Name"
+  },
+  {
+   "fieldname": "curent",
+   "fieldtype": "Data",
+   "label": "Curent"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation"
+  },
+  {
+   "fieldname": "companymailid",
+   "fieldtype": "Data",
+   "label": "CompanyMailId"
+  },
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Int",
+   "label": "Branch_Id"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-13 10:50:14.110384",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Emp_Mst",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "emp_name",
+ "track_changes": 1
+}

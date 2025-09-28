@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": ".#",
+ "creation": "2025-05-20 12:53:25.035809",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "report_name",
+  "username",
+  "report_format",
+  "is_global",
+  "sub_reportname",
+  "notes",
+  "is_default"
+ ],
+ "fields": [
+  {
+   "fieldname": "report_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Report_Name"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "report_format",
+   "fieldtype": "Long Text",
+   "label": "Report_Format"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_global",
+   "fieldtype": "Check",
+   "label": "Is_Global"
+  },
+  {
+   "fieldname": "sub_reportname",
+   "fieldtype": "Data",
+   "label": "is_global"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Long Text",
+   "label": "Notes"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is_Default"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-23 12:25:56.816501",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "User_Custom_Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

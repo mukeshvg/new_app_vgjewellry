@@ -1,0 +1,35 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-05-01 18:19:15.981387",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 18,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-06-28 11:38:21.857089",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "VG_Legal_Docs_Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "SELECT \r\n    (tsld.name)\"Sr_No:Link/VG_Legal_Doc:100\",\r\n    tbm.branch_short_name AS Branch_Name,\r\n    tsld.licence_number AS Licence_Number,\r\n    tsld.licence_name AS Licence_Name,\r\n    tsld.renewal_date AS Renewal_date,\r\n    CASE \r\n        WHEN DATEDIFF(tsld.renewal_date, CURDATE()) < 10 THEN CONCAT('<span style=\"color:red;\">', DATEDIFF(tsld.renewal_date, CURDATE()), '</span>')\r\n        ELSE DATEDIFF(tsld.renewal_date, CURDATE())\r\n    END AS Remain_Days,\r\n    tsld.c_per_name AS Contact_Name,\r\n    tsld.c_per_num AS Contact_Number,\r\n    tsld.contact_address AS Contact_Address,\r\n        tsld.remarks\r\nFROM `tabVG_Legal_Doc` tsld \r\nLEFT JOIN `tabBranch_Master` tbm ON tbm.name = tsld.branch_name\r\n-- ORDER BY CAST (DATEDIFF(tsld.renewal_date, CURDATE()) as INT) Asc;\r\nORDER BY DATEDIFF(tsld.renewal_date, CURDATE()) Asc;",
+ "ref_doctype": "VG_Legal_Doc",
+ "report_name": "VG_Legal_Docs_Report",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "Manager"
+  }
+ ],
+ "timeout": 0
+}

@@ -1,0 +1,148 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-05-17 17:59:18.848789",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "acc_mst_id",
+  "family_head",
+  "acc_name",
+  "branch_name",
+  "closing_balance",
+  "narration",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "acc_mst_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Acc Mst ID",
+   "options": "Customer_Outstanding_Data",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fetch_from": "acc_mst_id.family_head",
+   "fieldname": "family_head",
+   "fieldtype": "Data",
+   "label": "FamilyHead"
+  },
+  {
+   "fetch_from": "acc_mst_id.acc_name",
+   "fieldname": "acc_name",
+   "fieldtype": "Data",
+   "label": "Acc Name"
+  },
+  {
+   "fetch_from": "acc_mst_id.branch_name",
+   "fieldname": "branch_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Branch Name"
+  },
+  {
+   "fetch_from": "acc_mst_id.cl_bal",
+   "fieldname": "closing_balance",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Closing Balance"
+  },
+  {
+   "fetch_from": "acc_mst_id.naration",
+   "fieldname": "narration",
+   "fieldtype": "Small Text",
+   "label": "Narration"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Table",
+   "label": "Remarks",
+   "options": "Outstanding_Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-25 11:51:34.455332",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Customer_Outstanding_Reporting",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VG Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "SURAT",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VAPI",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "VALSAD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

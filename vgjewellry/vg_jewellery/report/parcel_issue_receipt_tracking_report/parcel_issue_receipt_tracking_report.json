@@ -1,0 +1,38 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-06-12 12:53:39.353486",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 25,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-08-11 16:07:48.467781",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Parcel Issue Receipt Tracking Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "SELECT \r\n    DATE(tpir.creation) AS Date,\r\n    tpir.name AS \"Parcel_No:Link/VG_Parcel_Issue_Receipt:100\", \r\n    tpir.parcel_type AS Parcel_Type,\r\n    tpir.send_recive AS Send_Receive,\r\n    tem.emp_name AS Sender_Name,\r\n    tbm.branch_short_name AS Sender_Branch,\r\n    tsm.supplier_name AS Sender_Supplier,\r\n    tbm1.branch_short_name AS Receiver_Branch,\r\n    tsm1.supplier_name AS Receiver_Supplier,\r\n    tpir.receiver_emp_name AS Receiver_Name,\r\n    tpir.parcel_receive_by_name ,\r\n    tpir.remarks AS Remarks\r\nFROM \r\n    `tabVG_Parcel_Issue_Receipt` tpir \r\nLEFT JOIN `tabEmp_Mst` tem ON tem.name = tpir.sender_emp_name \r\nLEFT JOIN `tabSupplier_Master` tsm ON tsm.name = tpir.sender_supplier \r\nLEFT JOIN `tabBranch_Master` tbm ON tbm.name = tpir.sender_branch\r\nLEFT JOIN `tabBranch_Master` tbm1 ON tbm1.name = tpir.receiver_branch\r\nLEFT JOIN `tabSupplier_Master` tsm1 ON tsm1.name = tpir.receiver_supplier \r\nWHERE \r\n    tpir.parcel_type = 'Outside'\r\n    AND tpir.send_recive = 'Receive'\r\n    AND (\r\n        (tpir.vg_voucher_no IS NOT NULL AND TRIM(tpir.vg_voucher_no) <> '' \r\n         AND (tpir.app_diamond IS NULL OR TRIM(tpir.app_diamond) = '' OR tpir.app_diamond <> 1))\r\n        OR\r\n        (tpir.vou_gold IS NOT NULL AND TRIM(tpir.vou_gold) <> '' \r\n         AND (tpir.app_gold IS NULL OR TRIM(tpir.app_gold) = '' OR tpir.app_gold <> 1))\r\n        OR\r\n        (tpir.vou_silver IS NOT NULL AND TRIM(tpir.vou_silver) <> '' \r\n         AND (tpir.app_silver IS NULL OR TRIM(tpir.app_silver) = '' OR tpir.app_silver <> 1))\r\n    )\r\n  or  (tpir.receiver_emp_name IS NULL OR tpir.receiver_emp_name = '')",
+ "ref_doctype": "VG_Parcel_Issue_Receipt",
+ "report_name": "Parcel Issue Receipt Tracking Report",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "VG Management"
+  },
+  {
+   "role": "VG"
+  },
+  {
+   "role": "Parcel"
+  }
+ ],
+ "timeout": 0
+}
