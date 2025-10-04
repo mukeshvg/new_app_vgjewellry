@@ -310,8 +310,14 @@ def Emp_KRA_Performance_Report_R002():
     ek.weightage as Weightage,
     ek.target as Target,
     ek.achieve_target as Achiev_Target,
-    (case when ek.achieve_target <= ek.target then round(((((ek.achieve_target/ek.target)*100)*10/100)*ek.weightage/100)*10) 
-         when ek.achieve_target > ek.target then round(((((ek.achieve_target/ek.achieve_target)*100)*10/100)*ek.weightage/100)*10) else 0 end)
+    (case 
+        WHEN ek.kra = 'PUNCTUALITY - ABSENTEEISM IN DAYS' THEN
+         IF(ek.target >= ek.achieve_target, ek.weightage, 0)
+       else
+       case
+    when ek.achieve_target <= ek.target then round(((((ek.achieve_target/ek.target)*100)*10/100)*ek.weightage/100)*10) 
+         when ek.achieve_target > ek.target then round(((((ek.achieve_target/ek.achieve_target)*100)*10/100)*ek.weightage/100)*10) else 0 end end)
+      
     as Achieve_Score
 --     SUM((((ek.achieve_target/ek.target)*100)*10/100)*ek.weightage/100) OVER (PARTITION BY eks.emp_code, ek.kra_mon) as Total_Achieve_Score
     FROM tabEmployee_KRA_System eks
