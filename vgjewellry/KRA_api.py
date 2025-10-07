@@ -22,6 +22,7 @@ def process_import(docname):
         # Now read CSV
         df = pd.read_csv(filepath)
 
+        names=""
         for _, row in df.iterrows():
             data = row.to_dict()
             name=get_or_create_kra(data)
@@ -33,19 +34,19 @@ def process_import(docname):
 
 import frappe
     
-def get_or_create_kra(data):
+def get_or_create_kra(data1):
     # Check if emp_code exists
-    emp_code=data["EMP ID"]
-    department=data["DEPARTMENT"];
-    emp_name=data["NAME"]
-    counter=data["COUNTER"]
+    emp_code=data1["EMP ID"]
+    department=data1["DEPARTMENT"];
+    emp_name=data1["NAME"]
+    counter=data1["COUNTER"]
     existing = frappe.db.get_value("Employee_KRA_System", {"emp_code": emp_code}, "name")
     if existing:
         frappe.db.sql(""" update tabEmployee_KRA_System set department=%s , emp_name=%s , counter=%s where emp_code=%s
         """,(department,emp_name, counter,emp_code))
         return existing 
 
-    doc = frappe.get_doc("Branch_Master", {"Branch_Short_Name": data["BRANCH"]})
+    doc = frappe.get_doc("Branch_Master", {"Branch_Short_Name": data1["BRANCH"]})
     branch = doc.name
     # Else insert new record
     frappe.db.sql("""
@@ -62,12 +63,12 @@ def get_or_create_kra(data):
 
 
 import decimal
-def insert_kra(name,data):
-    kra_mon = data["KRA MON"]
-    kra = data["KRA"]
-    weightage=decimal.Decimal(data["WEIGHTAGE"].replace("%",""))
-    target=decimal.Decimal(data["TARGET"])
-    achieve_target=decimal.Decimal(data["ACHIEVED TARGET"])
+def insert_kra(name,data1):
+    kra_mon = data1["KRA MON"]
+    kra = data1["KRA"]
+    weightage=decimal.Decimal(data1["WEIGHTAGE"].replace("%",""))
+    target=decimal.Decimal(data1["TARGET"])
+    achieve_target=decimal.Decimal(data1["ACHIEVED TARGET"])
     try:
         frappe.db.sql(""" 
         INSERT INTO `tabEmp_KRA_CT` (`kra_mon`, `kra`, `weightage`, `target`, `achieve_target`, `parent`, `parentfield`, `parenttype`) 
