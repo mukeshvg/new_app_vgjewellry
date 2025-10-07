@@ -44,6 +44,8 @@ def get_or_create_kra(data1):
     if existing:
         frappe.db.sql(""" update tabEmployee_KRA_System set department=%s , emp_name=%s , counter=%s where emp_code=%s
         """,(department,emp_name, counter,emp_code))
+        frappe.db.sql(""" update tabEmp_Mst set curent=1 where emp_code=%s
+        """,(emp_code))
         return existing 
 
     doc = frappe.get_doc("Branch_Master", {"Branch_Short_Name": data1["BRANCH"]})
