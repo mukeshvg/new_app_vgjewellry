@@ -18,9 +18,8 @@ def connect_ho():
     conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
     return conn
 def insert_voucher():
-    frappe.logger().info("✅ Cron job 'insert_voucher' triggered")
     today = date.today()
-    two_days_ago = today - timedelta(days=2)
+    two_days_ago = today - timedelta(days=10)
     con_ornysis=connect_ornsys();
     cursor_ornysis=con_ornysis.cursor()
     user_qry ='''
@@ -38,7 +37,7 @@ def insert_voucher():
     con = connect_ho()
     cursor=con.cursor()
     qry =f'''
-    SELECT am.AccName as AccName, im.VouNo as issue_vou_no,im.UserID as systemUserName,im.RefNo as ref,vait.VouNo as rec_vou_no , vait.VouDate as rec_date   ,i.GrossWt  as GrossWt , i.NetWt  as NetWt,i.Purity as Purity,i.Pcs as Pcs,i.VouDate  as VouDate ,i.OPVouTranId  as OPVouTranId from IRTran AS i left join IRMst AS im on im.IRMstID =i.IRMstId left join VoucherActionItemTran AS vait on vait.VouTranId =i.OPVouTranId left join AccMaster am on am.AccMstID =im.AccMstId  WHERE {date_query}  and i.VchType in ('HMI','DHMI') order by i.VouDate;
+    SELECT am.AccName as AccName, im.VouNo as issue_vou_no,im.UserID as systemUserName,im.RefNo as ref,vait.VouNo as rec_vou_no , vait.VouDate as rec_date   ,i.GrossWt  as GrossWt , i.NetWt  as NetWt,i.Purity as Purity,i.Pcs as Pcs,i.VouDate  as VouDate ,i.OPVouTranId  as OPVouTranId from IRTran AS i left join IRMst AS im on im.IRMstID =i.IRMstId left join VoucherActionItemTran AS vait on vait.VouTranId =i.OPVouTranId left join AccMaster am on am.AccMstID =im.AccMstId  WHERE {date_query}  and i.VchType in ('HMI','DHMI') and vait.VouNo is null order by i.VouDate;
     '''
     cursor.execute(qry)
     rows = cursor.fetchall()
