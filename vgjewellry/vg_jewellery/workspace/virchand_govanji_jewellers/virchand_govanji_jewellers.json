@@ -190,25 +190,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Master",
-   "link_count": 1,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Add Customer",
-   "link_count": 0,
-   "link_to": "VG_Customer_Details",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "Non Jewellery Inventory",
    "link_count": 2,
    "link_type": "DocType",
@@ -362,9 +343,38 @@
    "link_type": "Page",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Master",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Customer",
+   "link_count": 0,
+   "link_to": "VG_Customer_Details",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Received From NCH",
+   "link_count": 0,
+   "link_to": "Received From NCH",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-07-15 10:55:01.507241",
+ "modified": "2025-10-08 17:47:38.288673",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Virchand Govanji Jewellers",
