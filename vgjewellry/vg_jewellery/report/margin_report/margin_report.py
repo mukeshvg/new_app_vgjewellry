@@ -68,8 +68,8 @@ def execute(filters=None):
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
-    with open(frappe.get_site_path("logs", "error.log"), "a") as f:
-        f.write(f"Manual log: {from_date}\n")
+    #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
+    #    f.write(f"Manual log: {from_date}\n")
     Location_decode = {"A": 2, "B": 15, "C": "3", "D": 16, "E": 4, "G": 5, "I": 6, "K": 7, "M": 8, "O": 9, "Q": 10, "S": 11, "U": 12, "W": 13, "Y": 14}
     
     Other_Charge = {"A": 8, "B": 9, "C": 0, "D": 1, "E": 2, "F": 3, "G": 4, "H": 5, "I": 6, "J": 7}
@@ -84,7 +84,7 @@ def execute(filters=None):
    
     valsad_rate_master={}
     return_array ={}
-    branch_array=["valsad","vapi"]
+    branch_array=["valsad","vapi","surat"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -367,8 +367,6 @@ def execute(filters=None):
             return_array[uld]['purchase_amount']=round(Purchase_Amt)
             return_array[uld]['margin']=round(margin)
             
-        with open(frappe.get_site_path("logs", "error.log"), "a") as f:
-            f.write(f"Manual log: {return_array}\n")
 
     columns = [{"label":key,"fieldname":key,"fieldtype":"Data"} for key in return_array[one_unique_id].keys()]
     data = list(return_array.values())
