@@ -348,7 +348,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Master",
-   "link_count": 2,
+   "link_count": 3,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -372,9 +372,19 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Margin Report",
+   "link_count": 0,
+   "link_to": "Margin Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-10-08 17:47:38.288673",
+ "modified": "2025-10-10 17:17:18.071452",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Virchand Govanji Jewellers",

@@ -26,7 +26,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-10-10 15:04:50.343699",
+ "modified": "2025-10-10 17:16:43.700404",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Margin Report",
@@ -35,6 +35,13 @@
  "ref_doctype": "IssueReceipt",
  "report_name": "Margin Report",
  "report_type": "Script Report",
- "roles": [],
+ "roles": [
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Administrator"
+  }
+ ],
  "timeout": 0
 }
