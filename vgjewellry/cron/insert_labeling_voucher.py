@@ -19,7 +19,7 @@ def connect_ho():
     return conn
 def insert_voucher():
     today = date.today()
-    two_days_ago = today - timedelta(days=10)
+    two_days_ago = today - timedelta(days=30)
     con_ornysis=connect_ornsys();
     cursor_ornysis=con_ornysis.cursor()
     user_qry ='''
@@ -37,21 +37,29 @@ def insert_voucher():
     con = connect_ho()
     cursor=con.cursor()
     qry =f'''
-    SELECT am.AccName as AccName, im.VouNo as issue_vou_no,im.UserID as systemUserName,im.RefNo as ref,vait.VouNo as rec_vou_no , vait.VouDate as rec_date   ,i.GrossWt  as GrossWt , i.NetWt  as NetWt,i.Purity as Purity,i.Pcs as Pcs,i.VouDate  as VouDate ,i.OPVouTranId  as OPVouTranId from IRTran AS i left join IRMst AS im on im.IRMstID =i.IRMstId left join VoucherActionItemTran AS vait on vait.VouTranId =i.OPVouTranId left join AccMaster am on am.AccMstID =im.AccMstId  WHERE {date_query}  and i.VchType in ('HMI','DHMI') and vait.VouNo is null order by i.VouDate;
+    SELECT am.AccName as AccName, im.VouNo as issue_vou_no,im.UserID as systemUserName,im.RefNo as ref,vait.VouNo as rec_vou_no , vait.VouDate as rec_date   ,i.GrossWt  as GrossWt , i.NetWt  as NetWt,i.Purity as Purity,i.Pcs as Pcs,i.VouDate  as VouDate ,i.OPVouTranId  as OPVouTranId from IRTran AS i left join IRMst AS im on im.IRMstID =i.IRMstId left join VoucherActionItemTran AS vait on vait.VouTranId =i.OPVouTranId left join AccMaster am on am.AccMstID =im.AccMstId  WHERE {date_query}  and i.VchType in ('HMI','DHMI')  order by i.VouDate;
     '''
     cursor.execute(qry)
     rows = cursor.fetchall()
     return_array ={}
     counter=0
     for row in rows:
-        voucher_no = row.issue_vou_no
+        input_voucher_no = row.issue_vou_no
+        voucher_no = '/'.join(part.strip() for part in input_voucher_no.split('/'))
         pcs=row.Pcs
-        if not frappe.db.exists('Issued For NCH', {'voucher_no': voucher_no}):
+        rec_vou_no = row.rec_vou_no
+        existing_doc = frappe.db.exists('Issued For NCH', {'voucher_no': voucher_no})
+
+        if not existing_doc:
             new_doc = frappe.get_doc({
                 'doctype': 'Issued For NCH',
                 'voucher_no': voucher_no,
+                'receive_voucher_no':rec_vou_no,
                 'pcs': pcs
             })
             new_doc.insert(ignore_permissions=True)
-            frappe.db.commit()
+        else:
+            doc = frappe.get_doc('Issued For NCH', existing_doc)
+            doc.receive_voucher_no=rec_vou_no
+            doc.save(ignore_permissions=True)
 

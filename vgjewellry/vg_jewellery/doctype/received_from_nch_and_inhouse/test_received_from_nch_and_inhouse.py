@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestReceivedFromNCH(FrappeTestCase):
+class TestReceivedFromNCHAndInhouse(FrappeTestCase):
 	pass

@@ -1,4 +1,15 @@
-frappe.ui.form.on("Received From NCH", {
+frappe.ui.form.on("Received From NCH And Inhouse", {
+	 onload(frm) {
+
+		 frm.set_query('voucher_no', () => {
+            return {
+                filters: [
+                    ['receive_voucher_no', 'not like', 'D%'],
+                    ['receive_voucher_no', 'not like', 'H%']
+                ]
+            };
+        });
+    },
 	refresh(frm) {
 		if (!frm.doc.receive_date) {
 			frm.set_value('receive_date', frappe.datetime.get_today());

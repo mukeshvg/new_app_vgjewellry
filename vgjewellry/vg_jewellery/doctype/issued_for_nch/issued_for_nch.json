@@ -6,7 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "voucher_no",
-  "pcs"
+  "pcs",
+  "receive_voucher_no"
  ],
  "fields": [
   {
@@ -22,12 +23,19 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Pcs"
+  },
+  {
+   "fieldname": "receive_voucher_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Receive Voucher No"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-08 17:28:04.437645",
+ "modified": "2025-10-15 14:59:42.142177",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Issued For NCH",

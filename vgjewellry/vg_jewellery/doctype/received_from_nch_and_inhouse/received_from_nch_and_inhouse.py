@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ReceivedFromNCH(Document):
+class ReceivedFromNCHAndInhouse(Document):
 	pass
