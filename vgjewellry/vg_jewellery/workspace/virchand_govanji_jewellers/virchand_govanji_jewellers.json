@@ -366,9 +366,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Received From NCH",
+   "label": "Received From NCH And Inhouse",
    "link_count": 0,
-   "link_to": "Received From NCH",
+   "link_to": "Received From NCH And Inhouse",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -384,7 +384,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-10-10 17:17:18.071452",
+ "modified": "2025-10-15 18:35:03.998648",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Virchand Govanji Jewellers",
