@@ -11,6 +11,7 @@ frappe.ui.form.on("Received From NCH And Inhouse", {
         });
     },
 	refresh(frm) {
+		frm.set_df_property('voucher_no', 'only_select', true);
 		if (!frm.doc.receive_date) {
 			frm.set_value('receive_date', frappe.datetime.get_today());
 		}
