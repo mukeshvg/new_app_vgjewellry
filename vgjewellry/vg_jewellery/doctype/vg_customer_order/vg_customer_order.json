@@ -1,71 +1,100 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "format:{DD}{MM}{#####}",
+ "allow_rename": 1,
  "creation": "2025-06-06 12:04:07.302902",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "order_type_section",
   "order_type",
-  "section_break_xntv",
+  "order_status",
+  "column_break_ktqg",
+  "label_number",
+  "order_date_section",
   "order_date",
   "column_break_mdiu",
   "delivery_date",
   "column_break_ewyb",
   "sales_person",
-  "section_break_aydi",
+  "customer_details_section",
   "contact_number",
   "cust_name",
   "column_break_uosi",
   "alt_number",
   "column_break_ejrx",
   "address",
-  "section_break_ryel",
+  "branch_name_section",
   "column_break_zugr",
   "branch_name",
   "prod_name",
+  "required_features",
   "column_break_mgwf",
   "counter",
   "app_net_wgt",
-  "section_break_zhdv",
+  "gold_colour_section",
   "column_break_xwzm",
   "gold_colr",
   "column_break_nyle",
   "gold_karat",
   "column_break_fgum",
   "size_leg",
-  "section_break_wxsc",
+  "broadness_section",
+  "broadness_section_column",
   "broadness",
   "column_break_bgbd",
   "description",
   "column_break_zdwr",
   "pcs",
   "jew_type",
-  "section_break_qcfo",
+  "section_break_gylj",
+  "label_table",
+  "admin_notes_section",
+  "admin_notesvisible_to_admin_only",
+  "diamond_details_section",
   "dia_details",
-  "section_break_rxpx",
-  "label_no",
-  "labour_per",
-  "column_break_gdtl",
-  "estimate_gst",
-  "section_break_wnje",
-  "main_image",
-  "section_break_hroj",
+  "rate_apply_of_section",
+  "rate_apply_of",
+  "gold_rate_section",
+  "gold_rate_pergram",
+  "column_break_jhdl",
+  "labour_pergram",
+  "column_break_ugke",
+  "estimate_incl_gst",
+  "advance_section1",
+  "adv_payment",
+  "advance_section2",
+  "advance_amount",
+  "column_break_pvnp",
+  "refference_by",
+  "column_break_fkeb",
+  "assign_vendor_section",
+  "column_break_xbks",
+  "assign_vendor",
+  "column_break_uicb",
+  "vendor_delivery_date",
+  "order_updates_section",
+  "order_updates",
+  "main_image_section",
+  "main_image_table",
+  "sample_send_section",
   "sample_send",
   "column_break_ryxm",
-  "no_sam_send",
-  "section_break_pvxk",
+  "sample_weight_section",
   "sam_wgt",
   "column_break_fhxm",
   "voucher_no",
-  "section_break_ullm",
-  "sample_img",
-  "section_break_pkfg",
+  "sample_image_section",
+  "sample_image_table",
+  "send_certificate_section",
   "send_with_certi",
+  "message_counter",
   "column_break_lkwl",
-  "send_witho_cert",
-  "section_break_kpni",
-  "reprint"
+  "print_on_counter",
+  "send_whatsapp_cust_vendor_section",
+  "send_whatsapp_to_customer",
+  "column_break_bcwd",
+  "send_whatsapp_to_vendor"
  ],
  "fields": [
   {
@@ -96,11 +125,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "section_break_aydi",
-   "fieldtype": "Section Break",
-   "label": "Customer Details"
-  },
-  {
    "fieldname": "contact_number",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -129,18 +153,6 @@
    "label": "Address"
   },
   {
-   "fieldname": "section_break_ryel",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fetch_from": "contact_number.alt_no",
-   "fieldname": "alt_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Alternate Number",
-   "options": "VG_Customer_Details"
-  },
-  {
    "fieldname": "column_break_zugr",
    "fieldtype": "Column Break"
   },
@@ -158,11 +170,8 @@
   {
    "fieldname": "app_net_wgt",
    "fieldtype": "Float",
-   "label": "Approximate Net Weight"
-  },
-  {
-   "fieldname": "section_break_zhdv",
-   "fieldtype": "Section Break"
+   "label": "Approximate Net Weight",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_xwzm",
@@ -180,12 +189,9 @@
   },
   {
    "fieldname": "size_leg",
-   "fieldtype": "Data",
-   "label": "Size/Length"
-  },
-  {
-   "fieldname": "section_break_wxsc",
-   "fieldtype": "Section Break"
+   "fieldtype": "Link",
+   "label": "Size/Length",
+   "options": "Size Master"
   },
   {
    "fieldname": "broadness",
@@ -211,50 +217,10 @@
    "label": "Pcs"
   },
   {
-   "fieldname": "section_break_qcfo",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "dia_details",
    "fieldtype": "Table",
    "label": "Diamond Details",
    "options": "VG_Diamond_Details_CT"
-  },
-  {
-   "fieldname": "section_break_rxpx",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "label_no",
-   "fieldtype": "Data",
-   "label": "Label No"
-  },
-  {
-   "fieldname": "labour_per",
-   "fieldtype": "Percent",
-   "label": "Labour Percentage"
-  },
-  {
-   "fieldname": "column_break_gdtl",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "estimate_gst",
-   "fieldtype": "Int",
-   "label": "Estimate(Incl GST)"
-  },
-  {
-   "fieldname": "section_break_wnje",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "main_image",
-   "fieldtype": "Attach Image",
-   "label": "Main Image"
-  },
-  {
-   "fieldname": "section_break_hroj",
-   "fieldtype": "Section Break"
   },
   {
    "default": "0",
@@ -265,16 +231,6 @@
   {
    "fieldname": "column_break_ryxm",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "no_sam_send",
-   "fieldtype": "Check",
-   "label": "No Sample Send"
-  },
-  {
-   "fieldname": "section_break_pvxk",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "sam_wgt",
@@ -291,19 +247,6 @@
    "label": "Voucher No"
   },
   {
-   "fieldname": "section_break_ullm",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "sample_img",
-   "fieldtype": "Attach Image",
-   "label": "Sample Image"
-  },
-  {
-   "fieldname": "section_break_pkfg",
-   "fieldtype": "Section Break"
-  },
-  {
    "default": "0",
    "fieldname": "send_with_certi",
    "fieldtype": "Check",
@@ -312,12 +255,6 @@
   {
    "fieldname": "column_break_lkwl",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "send_witho_cert",
-   "fieldtype": "Check",
-   "label": "Send Without Certificate"
   },
   {
    "fieldname": "column_break_nyle",
@@ -338,21 +275,18 @@
   },
   {
    "fieldname": "counter",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Counter",
-   "options": "\nSilver\nS.MS\nM.S\nChain\nTops\nRing\nDiamond\nBangles\nLoose\nF.set\nSet\n18CT\nSilver/Gold Lagdi\nP.set\nPSET/M.S\nExset\nRING/TOPS\nSSET\nRing\nANTIQUE\nTest printer\nSilver-1\nSilver-2\nTvam\nExclusive-1\nExclusive-2\nPlatinum\nLabel Dept",
+   "options": "Branch Counter",
    "reqd": 1
   },
   {
+   "default": "Normal",
    "fieldname": "order_type",
    "fieldtype": "Select",
    "label": "Order Type",
    "options": "\nNormal\nUrgent",
    "reqd": 1
-  },
-  {
-   "fieldname": "section_break_xntv",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "jew_type",
@@ -361,24 +295,278 @@
    "options": "\nDiamond\nGold\nSilver"
   },
   {
-   "fieldname": "section_break_kpni",
-   "fieldtype": "Section Break"
+   "default": "New",
+   "fieldname": "order_status",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Order Status",
+   "options": "Order Status"
+  },
+  {
+   "fieldname": "adv_payment",
+   "fieldtype": "Table",
+   "label": "Advance Payment",
+   "options": "VD_Advance_Amount_CT"
   },
   {
    "default": "0",
-   "fieldname": "reprint",
+   "fieldname": "advance_amount",
+   "fieldtype": "Data",
+   "label": "Advance Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_pvnp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "refference_by",
+   "fieldtype": "Select",
+   "label": "Refference By",
+   "options": "\nShashwat Sir\nJainish Sir\nKetan Sir"
+  },
+  {
+   "fieldname": "column_break_fkeb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "advance_section1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "advance_section2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "order_type_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "order_date_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "gold_colour_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "broadness_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "diamond_details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sample_weight_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sample_image_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "send_certificate_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "branch_name_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "main_image_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sample_send_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rate_apply_of_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "rate_apply_of",
+   "fieldtype": "Select",
+   "label": "Rate Apply Of",
+   "options": "\nFix Rate\nRate On Delivery"
+  },
+  {
+   "fieldname": "gold_rate_pergram",
+   "fieldtype": "Data",
+   "label": "Gold Rate Per/Gram",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_jhdl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "labour_pergram",
+   "fieldtype": "Data",
+   "label": "Labour Per/Gram"
+  },
+  {
+   "fieldname": "column_break_ugke",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "estimate_incl_gst",
+   "fieldtype": "Data",
+   "label": "Estimate (Incl. GST)"
+  },
+  {
+   "fieldname": "gold_rate_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "admin_notes_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "admin_notesvisible_to_admin_only",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Admin Notes(Visible to Admin Only)"
+  },
+  {
+   "fieldname": "assign_vendor_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "assign_vendor",
+   "fieldtype": "Link",
+   "label": "Assign Vendor",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "column_break_uicb",
+   "fieldtype": "Column Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "vendor_delivery_date",
+   "fieldtype": "Date",
+   "label": "Vendor Delivery Date"
+  },
+  {
+   "fieldname": "order_updates_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "order_updates",
+   "fieldtype": "Table",
+   "label": "Order Updates",
+   "options": "VG_Order_Remarks"
+  },
+  {
+   "fieldname": "column_break_xbks",
+   "fieldtype": "Column Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "column_break_ktqg",
+   "fieldtype": "Column Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "label_number",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Label Number"
+  },
+  {
+   "fieldname": "section_break_gylj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "label_table",
+   "fieldtype": "Table",
+   "options": "Order Label Number"
+  },
+  {
+   "fieldname": "main_image_table",
+   "fieldtype": "Table",
+   "label": "Main Image",
+   "options": "Order Main Images"
+  },
+  {
+   "fieldname": "sample_image_table",
+   "fieldtype": "Table",
+   "label": "Sample Image",
+   "options": "Order Sample Image"
+  },
+  {
+   "fieldname": "broadness_section_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "message_counter",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Message Counter"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_whatsapp_to_customer",
    "fieldtype": "Check",
-   "label": "RePrint"
+   "label": "Send Whatsapp To Customer"
+  },
+  {
+   "fieldname": "column_break_bcwd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "send_whatsapp_to_vendor",
+   "fieldtype": "Check",
+   "label": "Send Whatsapp To Vendor"
+  },
+  {
+   "fieldname": "send_whatsapp_cust_vendor_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "required_features",
+   "fieldtype": "Select",
+   "label": "Required Features",
+   "options": "\nOpenable\nNon Openable"
+  },
+  {
+   "fieldname": "print_on_counter",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Print On Counter",
+   "options": "Branch Counter"
+  },
+  {
+   "fetch_from": "contact_number.alt_no",
+   "fieldname": "alt_number",
+   "fieldtype": "Data",
+   "label": "Alternate No",
+   "options": "VG_Customer_Details"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-14 14:56:45.856045",
+ "modified": "2025-08-26 13:40:44.637707",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "VG_Customer_Order",
- "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

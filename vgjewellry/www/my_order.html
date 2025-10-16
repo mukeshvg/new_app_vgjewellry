@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VG Jewels</title>
+<style>
+body{
+	font-family:sans-serif;
+}
+h2{
+	text-align:center;
+}
+table{
+	width:100%;
+}
+table td{
+	padding:7px;
+}
+.info td{
+	width:50%;
+}
+table.info tr td:first-child{
+	text-align:right;
+}
+table.info tr td:last-child{
+	padding-left:20px;
+}
+.diamond td{
+	text-align:center;
+}
+tr:nth-child(even) {background: #F0F0F0}
+tr:nth-child(odd) {background: #F8F8F8}
+a{
+	background: #5E5DF0;
+	border-radius: 999px;
+	box-shadow: #5e5df0 0 10px 20px -10px;
+	box-sizing: border-box;
+	color: #FFFFFF;
+	cursor: pointer;
+	font-family: Inter, Helvetica, "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", sans-serif;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 24px;
+	opacity: 1;
+	outline: 0 solid transparent;
+	padding: 8px 18px;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	width: 100%;
+	word-break: break-word;
+	border: 0;
+	display:block;
+	text-decoration:none;
+	text-align:center;
+	}
+	.bold-letter{
+		font-weight:bold;
+	}
+</style>
+</head>
+<body>
+<div style="clear:both;width:100%;height:50px">
+<img src="{{ frappe.utils.get_url() }}/assets/vgjewellry/images/name.png" style="position:absolute;left:calc(50% - 100px)" width="200px">
+<img src="{{ frappe.utils.get_url() }}/assets/vgjewellry/images/logo.png" width="50px" style="float:right">
+</div>
+<h2 style="clear:both">Order Details</h2>
+<table class="info">
+	<tr><td>Branch</td><td class="bold-letter">{{branch}}</td></tr>
+	<tr><td>Order Number</td><td class="bold-letter">{{order_no}}</td></tr>
+	<tr><td>Order Date</td><td class="bold-letter">{{order_date}}</td></tr>
+	<tr><td>Delivery Date</td><td class="bold-letter">{{delivery_date}}</td></tr>
+	<tr><td>Product Name</td><td>{{product_name}}</td></tr>
+	<tr><td>Jewellery Type</td><td>{{jewellery_type}}</td></tr>
+	<tr><td>Net Weight</td><td>{{approximate_net_weight}}</td></tr>
+	<tr><td>Gold Color</td><td>{{gold_colour}}</td></tr>
+	<tr><td>Gold Carat</td><td>{{gold_karat}}</td></tr>
+	<tr><td>Size</td><td>{{size_length}}</td></tr>
+	<tr><td>Broadness</td><td>{{broadness}}</td></tr>
+	<tr><td>Pcs</td><td>{{pcs}}</td></tr>
+	<tr><td>Design code</td></td></tr>
+	<tr><td>Sample Sent</td><td>{{sample_sent}}</td></tr>
+	<tr><td>Sample Weight</td><td>{{sample_weight}}</td></tr>
+	<tr><td>Voucher No</td><td>{{voucher_no}}</td></tr>
+	<tr><td>With Or Without Certificate</td><td>{{with_or_without_certi}}</td></tr>
+	<tr><td>Description</td><td class="bold-letter">{{description}}</td></tr>
+</table>
+	{% if dia_details %}
+<h2>Diamond Details</h2>
+<table class="diamond">
+	<tr><th>Shape</th><th>Diamond Weight</th><th>Diamond Pcs</th></tr>
+	{% for dia in dia_details %}
+	
+	<tr><td>{{dia.dia_shape}}</td><td>{{dia.dia_weight}}</td><td>{{dia.dia_pcs}}</td></tr>
+	 {% endfor %}
+</table>
+{% endif %}
+<h2>Product Images</h2>
+<div style="text-align:center">
+	{% if product_images %}
+	{% set site_url  = frappe.get_url() %}
+	{% for img in  product_images %}
+	<div style="width:100%;float:left;padding:2%">
+		<img style="width:40%" src="{{ img.image_url }}" />
+		{% if img.data_uri %}
+        <a href="{{ img.data_uri }}" download="{{ img.filename }}">Download</a>
+      {% endif %}
+	</div>	
+	{% endfor %}
+	{% endif %}	
+</div>
+<div style="clear:both"></div>
+<h2>Sample Images</h2>
+	{% if sample_images %}
+	{% set site_url  = frappe.get_url() %}
+	{% for img in  sample_images %}
+	<div style="width:100%;float:left;padding:2%">
+		<img style="width:40%" src="{{ img.image_url }}" />
+		{% if img.data_uri %}
+        <a href="{{ img.data_uri }}" download="{{ img.filename }}">Download</a>
+      {% endif %}
+	</div>	
+	{% endfor %}
+	{% endif %}	
+<script>
+function download_image(path){
+	var a = document.createElement('a');
+	a.href = path;
+	a.target= '_blank';
+	a.download = "output.jpg";
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+}
+</script>
+</body>
+</html>

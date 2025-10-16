@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-14 17:53:07.748988",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_ogxc",
+  "main_image",
+  "column_break_rckt",
+  "main_attach_image"
+ ],
+ "fields": [
+  {
+   "fieldname": "main_image",
+   "fieldtype": "Attach Image",
+   "label": "Main Image"
+  },
+  {
+   "fieldname": "column_break_rckt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "main_attach_image",
+   "fieldtype": "Read Only",
+   "label": "Main Attach Image",
+   "length": 1000,
+   "options": "main_image"
+  },
+  {
+   "fieldname": "section_break_ogxc",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-08-15 13:26:32.534074",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Order Main Images",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

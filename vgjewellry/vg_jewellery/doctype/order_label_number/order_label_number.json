@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-08 16:21:23.690869",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label_number",
+  "label_labour",
+  "column_break_pkcc",
+  "image_preview",
+  "column_break_iwgp",
+  "image_to_display_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "label_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Label Number"
+  },
+  {
+   "fieldname": "column_break_iwgp",
+   "fieldtype": "Column Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "image_to_display_url",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Image To Display URL"
+  },
+  {
+   "fieldname": "column_break_pkcc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "image_to_display_url",
+   "fieldname": "image_preview",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "label": "Image Preview",
+   "length": 1000,
+   "options": "image_to_display_url"
+  },
+  {
+   "fieldname": "label_labour",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Label Labour"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-08-15 19:34:42.569534",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Order Label Number",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

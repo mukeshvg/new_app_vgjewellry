@@ -929,3 +929,337 @@ def emp_code_from_username():
         frappe.throw("Emp_Code not defined in UserOptions")
 
     return emp_code
+
+import requests
+import json
+@frappe.whitelist()
+def send_whatsapp_from_fb(template_name, to, body_variable, header_variable=None):
+    return
+    if header_variable is None:
+        header_variable = []
+
+    payload = {
+        "template_name": template_name,
+        "to": to,
+        "body_variable": body_variable,
+        "header_variable": header_variable
+    }
+
+    try:
+        response = requests.post(
+            "https://vgjewel.in/webhook/send_whatsapp.php",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+
+        # Optional: return or log response
+        frappe.msgprint(str(response))
+        return response.text
+
+    except requests.exceptions.RequestException as e:
+        # Handle any network exceptions
+        frappe.msgprint(f"WhatsApp API call failed: {str(e)}")
+        frappe.log_error(f"WhatsApp API call failed: {str(e)}")
+        return None
+
+
+@frappe.whitelist()
+def send_textwhatsapp_using_hisocial(account, no, msg):
+    account_map = {
+        "repairing": "66DC400623B21",
+        "diamond": "66DEB38B00AD5",
+        "gold_valsad_vapi": "66DC2982088A9",
+        "gold_surat": "66ED5919BF6AC"
+    }
+
+    url = "https://hisocial.in/api/send"
+    no="919273446652"
+    payload = {
+        "number": no,
+        "type": "test",
+        "message": msg,
+        "instance_id": account_map.get(account),
+        "access_token": "664f17f29ab6d"
+    }
+
+    response = requests.post(url, data=payload)
+
+    # Optional: check response
+    if response.status_code == 200:
+        print("Message sent successfully")
+    else:
+        print(f"Failed to send: {response.status_code}, {response.text}")
+
+import frappe
+import base64
+import os
+import uuid
+
+@frappe.whitelist()
+def attach_file(filename, filedata, doctype, docname, is_private=0):
+    if "," in filedata:
+        header, encoded = filedata.split(",", 1)
+    else:
+        frappe.throw("Invalid file data")
+
+    # Decode base64 content
+    file_content = base64.b64decode(encoded)
+
+    # Ensure filename is safe and unique
+    ext = filename.split('.')[-1].lower()
+    unique_name = f"{uuid.uuid4()}.{ext}"
+    #file_path = os.path.join(frappe.get_site_path("public", "files","edited_label_image"), unique_name)
+    
+    folder_path = os.path.join(frappe.get_site_path("public", "files", "edited_label_image"))
+    os.makedirs(folder_path, exist_ok=True)
+    file_path = os.path.join(folder_path, unique_name)
+
+    # Save to disk
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+    # Create File doc to register in Frappe (optional but good practice)
+    file_doc = frappe.get_doc({
+        "doctype": "File",
+        "file_name": filename,
+        "file_url": f"/files/edited_label_image/{unique_name}",
+        "is_private": 0
+    }).insert(ignore_permissions=True)
+
+    return {
+        "file_url": file_doc.file_url,
+        "file_name": file_doc.file_name
+    }
+
+
+from datetime import date
+@frappe.whitelist()
+def get_gold_rate(gold_karat):
+    gold_karat_value =  frappe.db.get_value("Item_Trad_Mst",gold_karat, "metal_type")
+    today = date.today().strftime("%Y-%m-%d")
+    con = connect()
+    cursor=con.cursor()
+    qry ='''
+        SELECT trm.SalesRate as rate  from TodayRateMst
+AS trm  left join ItemTradMst
+as i on i.ItemTradMstID = trm.ItemTradMstID where i.TradName =? 
+and trm.TDate =?
+    '''
+    values = (gold_karat_value,today)
+    cursor.execute(qry,(values))
+    res = cursor.fetchall()
+    data = []
+    columnNames = [column[0] for column in cursor.description]
+    for record in res:
+        data.append( dict( zip( columnNames , record ) ) )
+    con.close()
+    return data
+
+import urllib.parse
+from datetime import datetime
+@frappe.whitelist()
+def get_image(label_number):
+    new_old_name_map = {
+        "DIAMOND TOPS 18DIA": {"name": "DIAMOND TOPS", "date": "2024-04-15 00:00:00"},
+        "DIAMOND SET 18DIA": {"name": "DIAMOND SET", "date": "2024-04-20 00:00:00"},
+        "DIAMOND RING 18DIA": {"name": "DIAMOND RING", "date": "2024-04-15 00:00:00"},
+        "DIAMOND PENDANT 18DIA": {"name": "DIAMOND PENDANT", "date": "2024-04-19 00:00:00"},
+        "DIAMOND P.SET 18DIA": {"name": "DIAMOND P.SET", "date": "2024-04-18 00:00:00"},
+        "DIAMOND MISCELLANEOUS 18DIA": {"name": "DIAMOND MISCELLANEOUS", "date": "2024-07-10 00:00:00"},
+        "DIAMOND MANGALSUTRA 18DIA": {"name": "DIAMOND MANGALSUTRA", "date": "2024-04-22 00:00:00"},
+        "DIAMOND CHAIN 18DIA": {"name": "DIAMOND CHAIN", "date": "2024-04-22 00:00:00"},
+        "DIAMOND BRACELET 18DIA": {"name": "DIAMOND BRACELET", "date": "2024-04-20 00:00:00"},
+        "DIAMOND BANGLES 18DIA": {"name": "DIAMOND BANGLES", "date": "2024-04-16 00:00:00"},
+        "DIAMOND TANMANIA 18DIA": {"name": "DIAMOND TANMANIA", "date": "2024-04-20 00:00:00"},
+        "DIAMOND BALI 18DIA": {"name": "DIAMOND BALI", "date": "2024-04-20 00:00:00"},
+        "D.M.S-18KT": {"name": "D.M.S-18", "date": "2024-04-25 00:00:00"},
+        "VILANDI BRACELET 18DIA": {"name": "VILLANDI BRACELET-18DIA", "date": "2024-04-25 00:00:00"},
+    }
+    #image_server_url="http://103.249.120.178:51"
+    image_server_url="http://192.168.1.5:51"
+    each_label_number = label_number.split("/");
+    if len(each_label_number)<2:
+        return "No image found"
+    first_part=each_label_number[0].strip();
+    second_part=each_label_number[1].strip();
+    con = connect()
+    cursor=con.cursor()
+    qry = '''SELECT Top(1) ImagePath1,VouDate,LabourPer,ItemMstID  FROM LabelTransaction where LabelNo  like ? and LabelNo like ?
+    '''
+    values = (first_part+'%','%'+second_part)
+    cursor.execute(qry, values)
+    res = cursor.fetchall()
+    col_names = [desc[0] for desc in cursor.description]
+    result = [dict(zip(col_names, row)) for row in res]
+    img_qry='''SELECT Top(1) Itemname from ItemMst where ItemMstID=? '''
+    img_values=(result[0]["ItemMstID"])
+    cursor.execute(img_qry,img_values);
+    img_res=cursor.fetchall()
+    img_col_names=[desc[0] for desc in cursor.description]
+    img_result=[dict(zip(img_col_names, row)) for row in img_res]
+    con.close()
+    img = os.path.basename(result[0]["ImagePath1"]).split("\\")[-1]
+    itemName=img_result[0]["Itemname"];
+    itemName1 = urllib.parse.quote(itemName)
+    imgPath1=result[0]["ImagePath1"]
+    #url = f"{image_server_url}/{itemName1}/{img}"
+    url = f"{image_server_url}/{imgPath1}"
+
+    LabelOrgDate=result[0]["VouDate"]
+    if itemName in new_old_name_map and False:
+        # Convert string dates to datetime objects
+        label_date = datetime.strptime(LabelOrgDate, "%Y-%m-%d %H:%M:%S")
+        map_date = datetime.strptime(new_old_name_map[itemName]["date"], "%Y-%m-%d %H:%M:%S")
+
+        if label_date < map_date:
+            new_path = new_old_name_map[itemName]["name"]
+            new_path_encoded = urllib.parse.quote(new_path)
+            url = f"{image_server_url}/{new_path_encoded}/{img}"
+    result_url = save_image_from_url(url, 'label_image')            
+    return {"url": result_url["full_url"],"labour":result[0]["LabourPer"]}
+
+def save_image_from_url(image_url, folder_name="labels"):
+    import os, requests
+    from urllib.parse import urlparse
+    from frappe.utils import get_url
+
+    # Fetch image
+    response = requests.get(image_url, stream=True, timeout=100)
+    if response.status_code != 200:
+        frappe.throw(f"Failed to fetch image. Status: {response.status_code}")
+
+    # Get filename
+    #parsed = urlparse(image_url)
+    #filename = os.path.basename(parsed.path) or "downloaded.jpg"
+    path = image_url.replace("\\", "/")
+
+    filename = path.split("/")[-1]
+
+    # Save to public/files/folder_name/
+    folder_path = os.path.join(frappe.get_site_path("public", "files", folder_name))
+    os.makedirs(folder_path, exist_ok=True)
+    file_path = os.path.join(folder_path, filename)
+
+    # Save file
+    with open(file_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+
+    relative_url = f"/files/{folder_name}/{filename}"
+    full_url = get_url(relative_url)
+
+    return {
+        "file_path": file_path,
+        "file_url": relative_url,
+        "full_url": full_url
+    }
+
+
+@frappe.whitelist()
+def open_image_modal(image_url):
+    frappe.msgprint(f'''
+        <div style="text-align:center">
+            <img src="{image_url}" style="max-width:100%; max-height:80vh; border:1px solid #ccc" />
+        </div>
+    ''', title="Image Viewer", wide=True)
+
+
+import frappe
+import requests
+
+@frappe.whitelist(allow_guest=True)
+def proxy_image(url):
+    if not url:
+        frappe.throw("No URL provided")
+
+    try:
+        response = requests.get(url, stream=True, timeout=10)
+        response.raise_for_status()
+    except Exception as e:
+        frappe.throw(f"Unable to fetch image: {e}")
+
+    # Set Frappe response for file download
+    frappe.local.response.filename = url.split("/")[-1]
+    frappe.local.response.filecontent = response.content
+    #frappe.local.response.type = "download"
+
+    # Manually set Content-Type header
+    frappe.local.response.headers = {
+        "Content-Type": response.headers.get("Content-Type", "image/jpeg")
+    }
+    
+@frappe.whitelist()
+def send_order_delivery_msg(name):
+    doc = frappe.get_doc("VG_Customer_Order",name)
+    cust_name=doc.cust_name
+    customer_name = cust_name.title()
+    mobile_link=str(doc.contact_number)
+    mobile = frappe.db.get_value("VG_Customer_Details",mobile_link, "mobile_no")
+    jewellery_type=doc.jew_type
+    jew_type = jewellery_type.title()
+    branch=doc.branch_name
+    branch_text= frappe.db.get_value("Branch_Master",branch,"branch_short_name");
+    product_name=frappe.db.get_value("Item_Master", doc.prod_name, "item_name")
+    multiple_template_id='send_order_delivery_vapi_valsad_diamond_surat_new'
+    single_template_id='single_order_delivery_valsad_vapi_diam_surat_new'
+    customer_care = "02632229999"
+    if jew_type.lower() == "gold":
+        admin_no = "9512123883"
+        if branch_text == "SURAT":
+            admin_no = "9512127779"
+            customer_care = "9512100886"
+            multiple_template_id='send_order_delivery_gold_surat_new'
+            single_template_id='single_order_delivery_gold_surat_new'
+    else:
+        admin_no = "6352976423"
+        customer_care = "02632229999"
+    country =  frappe.db.get_value("VG_Customer_Details",mobile_link, "country_reside")
+    country_code=frappe.db.get_value("Country",country, "custom_dial_code")
+    alter_country =  frappe.db.get_value("VG_Customer_Details",mobile_link, "alternate_no_country")
+    alternate_country_code=frappe.db.get_value("Country",alter_country, "custom_dial_code")
+    customer_to_array = [country_code + str(mobile)] if mobile else []
+    if doc.alt_number and doc.alt_number and doc.alt_number is not None and alternate_country_code is not None:
+        customer_to_array.append(alternate_country_code + str(doc.alt_number))
+    all_doc=frappe.get_list("VG_Customer_Order",
+                            filters={"contact_number":['=',mobile_link],"order_status":['not in',['Delivered','Deleted']]},
+                            fields=["prod_name","order_status","name"])
+    if len(all_doc)==1:
+        for cta in customer_to_array:
+            send_whatsapp_from_fb(template_name=single_template_id,to=cta,body_variable=[cust_name,name,product_name.title(),branch_text,customer_care])
+        doc.message_counter=doc.message_counter+1;
+        doc.save()
+        frappe.msgprint("Whatsapp msg send successfully.")
+        return "Whatsapp send successfully.";
+    elif len(all_doc)>1:
+        ready_for_delivered=0
+        ready_order_string1=""
+        pending_order=0
+        pending_order_string_array
+        for ad in all_doc:
+            o_status=ad.order_status
+            o_id=ad.name
+            pid=ad.prod_name
+            o_product_name=frappe.db.get_value("Item_Master", pid, "item_name")
+            if o_status=="At Counter":
+                ready_for_delivered+=1
+                ready_order_string1 += f"Your Order no {o_id}  Product Name : {o_product_name} "
+            else:
+                pending_order_string_array.append(o_id)
+                pending_order += 1
+        pending_ord_msg = "."
+        total_order = len(all_doc)
+        if len(pending_order_string_array) > 0:
+            pending_order_string = ",".join(str(x) for x in pending_order_string_array)
+            pending_ord_msg = f" However your order no {pending_order_string} still under process."
+        for cta in customer_to_array:
+            send_whatsapp_from_fb(template_name=multiple_template_id,to=cta,body_variable=[cust_name,ready_order_string1,pending_ord_msg,total_order,ready_for_delivered,pending_order,branch_text,customer_care])
+        doc.message_counter=doc.message_counter+1;
+        doc.save()
+        frappe.msgprint("Whatsapp msg send successfully.")
+        return "Whatsapp send successfully.";    
+    
+
+ 
+
+        
