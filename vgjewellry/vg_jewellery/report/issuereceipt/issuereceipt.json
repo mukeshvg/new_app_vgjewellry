@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-09-12 17:07:08.420724",
+ "modified": "2025-10-16 10:46:57.652148",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "IssueReceipt",
@@ -22,6 +22,9 @@
  "roles": [
   {
    "role": "System Manager"
+  },
+  {
+   "role": "Labeling"
   }
  ],
  "timeout": 0
