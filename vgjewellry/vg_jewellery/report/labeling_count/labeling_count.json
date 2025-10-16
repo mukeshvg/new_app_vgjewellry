@@ -26,7 +26,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-10-16 10:47:13.129193",
+ "modified": "2025-10-16 11:36:39.474047",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Labeling Count",
@@ -40,7 +40,7 @@
    "role": "System Manager"
   },
   {
-   "role": "Labeling"
+   "role": "HR"
   }
  ],
  "timeout": 0
