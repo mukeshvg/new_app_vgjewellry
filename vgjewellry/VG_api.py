@@ -1235,7 +1235,7 @@ def send_order_delivery_msg(name):
         ready_for_delivered=0
         ready_order_string1=""
         pending_order=0
-        pending_order_string_array
+        pending_order_string_array=[]
         for ad in all_doc:
             o_status=ad.order_status
             o_id=ad.name
