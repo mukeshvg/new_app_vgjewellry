@@ -36,7 +36,7 @@ def execute(filters=None):
             tim.item_name,
             DATE_FORMAT(tvco.delivery_date, '%%d-%%m-%%y') AS delivery_date,
             DATE_FORMAT(tvco.order_date, '%%d-%%m-%%y') AS order_date,
-            tvco.counter,
+            bc.counter,
             tvco.label_number as label_number,
             CASE 
                 WHEN tvbo.order_no IS NULL THEN 'Pending'
@@ -61,6 +61,7 @@ def execute(filters=None):
         FROM tabVG_Customer_Order tvco
         LEFT JOIN tabVG_Customer_Details tvcd ON tvcd.name = tvco.contact_number
         LEFT JOIN tabBranch_Master tbm ON tbm.name = tvco.branch_name
+        LEFT JOIN `tabBranch Counter` bc  ON bc.name = tvco.counter
         LEFT JOIN tabItem_Trad_Mst tmm ON tmm.name = tvco.gold_karat
         LEFT JOIN tabItem_Master tim ON tim.name = tvco.prod_name
         LEFT JOIN tabVG_Billing_Order tvbo ON tvbo.order_no = tvco.name
