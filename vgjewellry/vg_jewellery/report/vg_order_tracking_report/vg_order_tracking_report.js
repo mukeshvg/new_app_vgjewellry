@@ -8,7 +8,7 @@
 // };
 frappe.query_reports["VG_Order_Tracking_Report"] = {
 	"filters": [
-		{
+		/*{
 			"fieldname": "counter",
 			"label": "Counter",
 			"fieldtype": "Select",
@@ -43,17 +43,7 @@ frappe.query_reports["VG_Order_Tracking_Report"] = {
 				"Platinum",
 				"Label Dep"
 			].join('\n'),
-			"reqd": 0
-		},
-		{
-            "fieldname": "sales_person",
-            "label": "Sales Person",
-            "fieldtype": "Link",
-            "options": "Emp_Mst",
-            "reqd": 0,
-			on_change: function(report) {
-				report.refresh();
-			}
-        }
+			"reqd": 1
+		}*/
 	]
 };
