@@ -1,0 +1,35 @@
+{
+ "charts": [],
+ "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Billing\"}}]",
+ "creation": "2025-10-17 17:03:37.042227",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Billing",
+ "links": [],
+ "modified": "2025-10-17 17:14:00.866825",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Billing",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "Billing"
+  },
+  {
+   "role": "Admin"
+  }
+ ],
+ "sequence_id": 39.0,
+ "shortcuts": [],
+ "title": "Billing"
+}
