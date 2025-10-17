@@ -180,7 +180,7 @@ class VG_Customer_Order(Document):
         estimate=str(self.estimate_incl_gst) or ""
         labour_per=str(self.labour_pergram) or ""
         #size_leg=self.size_leg or ""
-        size_leg= frappe.db.get_value("Size Master".self.size_leg,"size")
+        size_leg= frappe.db.get_value("Size Master",self.size_leg,"size")
         order_no=str(self.name) or ""
         branch=frappe.db.get_value("Branch_Master", self.branch_name, "branch_short_name")
         counter=self.counter
