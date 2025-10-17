@@ -167,7 +167,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-07-15 10:53:32.986971",
+ "modified": "2025-10-17 17:27:19.822191",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "HR",
@@ -181,7 +181,7 @@
    "role": "VG"
   }
  ],
- "sequence_id": 1.1,
+ "sequence_id": 7.0,
  "shortcuts": [],
  "title": "HR"
 }

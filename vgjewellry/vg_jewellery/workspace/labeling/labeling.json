@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Labeling\"}}]",
+ "content": "[{\"id\":\"Gx_NssvUs-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Labeling</span>\",\"col\":12}},{\"id\":\"6zmLWRUPvn\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Under Labeling\",\"col\":3}}]",
  "creation": "2025-10-17 17:14:58.770800",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Labeling",
  "links": [],
- "modified": "2025-10-17 17:18:22.351351",
+ "modified": "2025-10-17 17:40:41.379569",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Labeling",
@@ -29,7 +29,16 @@
    "role": "Admin"
   }
  ],
- "sequence_id": 41.0,
- "shortcuts": [],
+ "sequence_id": 6.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Under Labeling",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Labeling\",false]]",
+   "type": "DocType"
+  }
+ ],
  "title": "Labeling"
 }

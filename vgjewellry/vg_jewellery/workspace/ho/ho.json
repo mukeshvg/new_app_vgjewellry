@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"HO\"}}]",
+ "content": "[{\"id\":\"ZDzRVuCXqx\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">HO</span>\",\"col\":12}},{\"id\":\"zBKt65sGCy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Unassign Vendor Orders\",\"col\":3}},{\"id\":\"AQZi116Biv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Orders\",\"col\":3}},{\"id\":\"DX_5Ja62va\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Under QC Orders\",\"col\":3}},{\"id\":\"TJvGHaxa0f\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Under Labeling\",\"col\":3}}]",
  "creation": "2025-10-17 17:08:12.465300",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "HO",
  "links": [],
- "modified": "2025-10-17 17:14:11.877431",
+ "modified": "2025-10-17 17:40:00.789926",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "HO",
@@ -29,7 +29,40 @@
    "role": "Admin"
   }
  ],
- "sequence_id": 40.0,
- "shortcuts": [],
+ "sequence_id": 5.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Unassign Vendor Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"in\",[\"Pending\",\"Resume\"],false],[\"VG_Customer_Order\",\"assign_vendor\",\"is\",\"not set\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Pending Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Pending\",false],[\"VG_Customer_Order\",\"assign_vendor\",\"is\",\"set\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Under QC Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Under QC\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Under Labeling",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Labeling\",false]]",
+   "type": "DocType"
+  }
+ ],
  "title": "HO"
 }

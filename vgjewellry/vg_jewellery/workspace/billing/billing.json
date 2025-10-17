@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Billing\"}}]",
+ "content": "[{\"id\":\"_Qw89g-xf-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Billing</span>\",\"col\":12}},{\"id\":\"zcpYXfV0WF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Orders\",\"col\":3}},{\"id\":\"ijKTdBJYXy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Resume Orders\",\"col\":3}},{\"id\":\"aMNJc5DiVj\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Hold Orders\",\"col\":3}}]",
  "creation": "2025-10-17 17:03:37.042227",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Billing",
  "links": [],
- "modified": "2025-10-17 17:14:00.866825",
+ "modified": "2025-10-17 17:35:41.492948",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Billing",
@@ -29,7 +29,32 @@
    "role": "Admin"
   }
  ],
- "sequence_id": 39.0,
- "shortcuts": [],
+ "sequence_id": 4.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "New Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"New\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Resume Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Resume\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Hold Orders",
+   "link_to": "VG_Customer_Order",
+   "stats_filter": "[[\"VG_Customer_Order\",\"order_status\",\"=\",\"Hold\",false]]",
+   "type": "DocType"
+  }
+ ],
  "title": "Billing"
 }
