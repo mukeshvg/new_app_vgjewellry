@@ -12,6 +12,7 @@
   "city",
   "state",
   "country_reside",
+  "alternate_no_country",
   "alt_no",
   "dob",
   "doa",
@@ -113,12 +114,18 @@
    "fieldname": "spu_cont_no",
    "fieldtype": "Int",
    "label": "Spouse Contact No"
+  },
+  {
+   "fieldname": "alternate_no_country",
+   "fieldtype": "Link",
+   "label": "Alternate No Country",
+   "options": "Country"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-06 17:53:33.388890",
+ "modified": "2025-10-17 15:46:23.672505",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "VG_Customer_Details",
