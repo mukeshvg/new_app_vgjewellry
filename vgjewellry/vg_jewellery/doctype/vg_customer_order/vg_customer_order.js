@@ -179,7 +179,9 @@ frappe.ui.form.on("VG_Customer_Order", {
 		}
 		const allowed_roles = ['Administrator', 'Billing'];
 		const has_access = allowed_roles.some(role => frappe.user.has_role(role))  
-		if (has_access && frm.doc.order_status=="New") {
+		if (has_access){
+			if(frm.doc.order_status=="New"|| frm.doc.order_status=="Hold") {
+
 			frm.add_custom_button(__('Resume & Print'), function() {
 				if (!frm.doc.name) {
 					return;
@@ -192,6 +194,8 @@ frappe.ui.form.on("VG_Customer_Order", {
 				});
 
 			});
+		}
+		if(frm.doc.order_status=="New"|| frm.doc.order_status=="Resume" ) {
 			frm.add_custom_button(__('Hold & Print'), function() {
 				if (!frm.doc.name) {
 					return;
@@ -203,7 +207,9 @@ frappe.ui.form.on("VG_Customer_Order", {
 					with_letterhead: true
 				});
 
+
 			});
+		}
 		}	
 
 		let ho_roles = ['Administrator', 'HO']; 
@@ -227,13 +233,15 @@ frappe.ui.form.on("VG_Customer_Order", {
 				maxDate: new Date(frm.doc.delivery_date),
 			});
 		}
-		if ((ho_access && frm.doc.order_status=="Pending" && frm.doc.assign_vendor) ||(ho_access && frm.doc.order_status=="Pending" && !frm.doc.assign_vendor) ) {
+		if ((ho_access && (frm.doc.order_status=="Pending"|| frm.doc.order_status=="Resume") && frm.doc.assign_vendor) ||(ho_access && (frm.doc.order_status=="Pending"||frm.doc.order_status=="Resume")  && !frm.doc.assign_vendor) ) {
 			/*var disable_field_ho=["order_type","order_date","delivery_date","sales_person","branch_name","counter","prod_name","app_net_wgt","gold_colr","gold_karat","size_leg","broadness1","description","pcs","jew_type","label_table","gold_rate_pergram","labour_pergram","estimate_incl_gst","sample_send","no_sam_send","sam_wgt","voucher_no","send_with_certi","send_witho_cert","assign_vendor","vendor_delivery_date","refference_by","main_image_table","sample_image_table"];
 			disable_field_ho.forEach(fieldname => {
 				frm.set_df_property(fieldname, 'read_only', true);
 			})*/
+
 			frm.toggle_display('send_whatsapp_cust_vendor_section',true);
 			frm.set_value("send_whatsapp_to_vendor", 1);
+			if(frm.doc.order_status=="Pending"){
 			frm.add_custom_button(__('Received Order'), function() {
 				if (!frm.doc.name) {
 					return;
@@ -242,6 +250,7 @@ frappe.ui.form.on("VG_Customer_Order", {
 				frm.save();
 
 			});
+			}
 			frm.add_custom_button(__('Update Order'), function() {
 				frm.save().then(() => {
 					frappe.call({

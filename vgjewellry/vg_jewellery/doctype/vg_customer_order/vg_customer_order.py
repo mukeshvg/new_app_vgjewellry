@@ -108,7 +108,8 @@ class VG_Customer_Order(Document):
         #    frappe.throw("HO users cannot save orders with status 'Labeling'.")
         if "Billing" in roles:
             if self.order_status != "Resume" or self.order_status !="Hold":
-                self.order_status = "Pending"
+                pass
+                #self.order_status = "Pending"
         elif "HO" in roles:
             if self.order_status == "Resume":
                 if not self.vendor_delivery_date or not self.assign_vendor:
