@@ -13,7 +13,8 @@ document.getElementById("search-btn").addEventListener("click", async () => {
   var item=document.getElementById("item").value.trim();
   if (item) body.append("item", item);
 
-  const response = await fetch("http://192.168.1.63:8000/search", {
+  //const response = await fetch("http://192.168.1.63:8000/search", {
+  const response = await fetch("/api/method/vgjewellry.image_search.search", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     //body: `query=${encodeURIComponent(query)}`
@@ -21,7 +22,7 @@ document.getElementById("search-btn").addEventListener("click", async () => {
   });
 
   const results = await response.json();
-  displayResults(results);
+  displayResults(results["message"]);
 });
 
 // Image search
@@ -43,13 +44,14 @@ document.getElementById("image-search-btn").addEventListener("click", async () =
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = "<p>Searching...</p>";
 
-  const response = await fetch("http://localhost:8000/search", {
+  const response = await fetch("/api/method/vgjewellry.image_search.image_search", {	
+  //const response = await fetch("http://localhost:8000/search", {
     method: "POST",
     body: formData
   });
 
   const results = await response.json();
-  displayResults(results);
+  displayResults(results["message"]);
 });
 
 // Display results
