@@ -108,8 +108,13 @@ const input = document.getElementById('image-upload');
 
 
 async function loadInitial() {
-  const res = await fetch("http://192.168.1.63:8000/initial");
-  const { branches = [], items = [] } = await res.json();
+  //const res = await fetch("http://192.168.1.63:8000/initial");
+  const res = await fetch("/api/method/vgjewellry.image_search.proxy_search");
+  var r= await res.json()
+console.log(r);	
+	const branches = r.message["branches"];
+	const items = r.message["items"];
+ // const { branches = [], items = [] } = await res.json();
 
   fillSelect("branch", branches);
   fillSelect("item", items);
