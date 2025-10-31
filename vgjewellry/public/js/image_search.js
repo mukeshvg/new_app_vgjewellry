@@ -112,6 +112,7 @@ async function loadInitial() {
   const res = await fetch("/api/method/vgjewellry.image_search.proxy_search");
   var r= await res.json()
 console.log(r);	
+console.log(r);	
 	const branches = r.message["branches"];
 	const items = r.message["items"];
  // const { branches = [], items = [] } = await res.json();
