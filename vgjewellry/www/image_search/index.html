@@ -1,0 +1,27 @@
+{% extends "templates/web.html" %}
+{% block page_content %}
+<h1>🔍 VG Image Search</h1>
+<div>
+	<select id="branch">
+		<option value="">Any Branch</option>
+	</select>
+
+	<select id="item">
+		<option value="">Any Item</option>
+	</select>
+</div>
+<br><br>
+<div id="search-box">
+	<input type="text" id="query" placeholder="Type something...">
+	<button id="search-btn">Search by Text</button>
+	<br><br>
+	<input type="file" id="image-upload" accept="image/*">
+	<img id="preview" alt="Preview" style="max-width: 300px; display:none; margin-top:8px;">
+	<button id="image-search-btn">Search by Image</button>
+</div>
+
+<div id="results" class="grid"></div>
+<link rel="stylesheet" href="/assets/vgjewellry/css/image_search.css">
+<script src="assets/vgjewellry/js/image_search.js"></script>
+{% endblock %}
+
