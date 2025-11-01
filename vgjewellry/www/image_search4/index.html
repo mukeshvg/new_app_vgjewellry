@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VG Jewellery Image & Text Search</title>
+
+  <!-- Cropper.js CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+  />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    select, input[type="text"], button {
+      margin: 5px;
+      padding: 8px;
+      font-size: 14px;
+    }
+    #results {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      gap: 15px;
+    }
+    .result {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      width: 180px;
+      border-radius: 5px;
+      background: #fafafa;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .result img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+    #crop-section {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+      align-items: flex-start;
+    }
+    #crop-container {
+      flex: 1;
+      display: none;
+      max-width:300px;
+      max-height:300x;
+    }
+    #preview {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #cropped-preview {
+      flex: 0 0 250px;
+      text-align: center;
+      display: none;
+    }
+    #cropped-preview img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+    /*#crop-container {
+    max-width: 300px;
+    max-height: 300px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+    display: none;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  #crop-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Fit inside container */
+    display: block;
+  }
+
+  #cropped-preview img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border: 1px solid #aaa;
+    display: none;
+    margin-top: 10px;
+  }*/
+    #crop-actions {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>VG Jewellery Image & Text Search</h2>
+
+  <!-- Filters -->
+  <div>
+    <label for="branch">Branch:</label>
+    <select id="branch">
+      <option value="">All</option>
+    </select>
+
+    <label for="item">Item:</label>
+    <select id="item">
+      <option value="">All</option>
+    </select>
+  </div>
+
+  <!-- Text Search -->
+  <div>
+    <input type="text" id="query" placeholder="Type something..." />
+    <button id="search-btn">Search by Text</button>
+  </div>
+
+  <!-- Image Search -->
+  <div>
+    <input type="file" id="image-upload" accept="image/*" />
+  </div>
+
+  <!-- Crop + Preview Section -->
+  <div id="crop-section">
+    <div id="crop-container">
+      <img id="preview" alt="Image for cropping" />
+      <div id="crop-actions">
+        <button id="crop-btn">Crop & Search</button>
+        <button id="cancel-crop">Cancel</button>
+      </div>
+    </div>
+
+    <div id="cropped-preview">
+      <h4>Cropped Preview:</h4>
+      <img id="cropped-img" alt="Cropped preview" />
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results"></div>
+
+  <!-- Cropper.js JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <script>
+    let cropper;
+    const img = document.getElementById("preview");
+    const cropContainer = document.getElementById("crop-container");
+    const croppedPreview = document.getElementById("cropped-preview");
+    const croppedImg = document.getElementById("cropped-img");
+
+    // Image upload preview + initialize Cropper
+    document.getElementById("image-upload").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      cropContainer.style.display = "block";
+      //croppedPreview.style.display = "none";
+
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(img, {
+        aspectRatio: NaN, // free ratio
+        viewMode: 1,
+      });
+    });
+
+    // Cancel cropping
+    document.getElementById("cancel-crop").addEventListener("click", () => {
+      cropContainer.style.display = "none";
+      croppedPreview.style.display = "none";
+      document.getElementById("image-upload").value = "";
+      if (cropper) cropper.destroy();
+    });
+
+    // Crop and send to backend
+    document.getElementById("crop-btn").addEventListener("click", async () => {
+      if (!cropper) return alert("No image loaded.");
+
+      const canvas = cropper.getCroppedCanvas({
+        width: 256,
+        height: 256,
+      });
+
+      // Show cropped image preview
+      croppedPreview.style.display = "block";
+      croppedImg.src = canvas.toDataURL("image/jpeg");
+
+      // Convert canvas to blob
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+
+      // Build FormData
+      const formData = new FormData();
+      formData.append("image", blob, "cropped.jpg");
+
+      const branch = document.getElementById("branch").value.trim();
+      if (branch) formData.append("branch", branch);
+
+      const item = document.getElementById("item").value.trim();
+      if (item) formData.append("item", item);
+
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+
+      const response = await fetch("/api/method/vgjewellry.image_search.image_search", {
+        method: "POST",
+        body: formData,
+      });
+
+      const results = await response.json();
+      displayResults(results["message"]);
+
+      // Hide crop UI but keep preview
+      cropContainer.style.display = "none";
+      document.getElementById("image-upload").value = "";
+      cropper.destroy();
+    });
+
+    // Text Search
+    document.getElementById("search-btn").addEventListener("click", async () => {
+      const query = document.getElementById("query").value.trim();
+      if (!query) return alert("Enter a search term");
+
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+
+      const body = new URLSearchParams();
+      body.append("query", query);
+
+      const branch = document.getElementById("branch").value.trim();
+      if (branch) body.append("branch", branch);
+
+      const item = document.getElementById("item").value.trim();
+      if (item) body.append("item", item);
+
+      const response = await fetch("/api/method/vgjewellry.image_search.search", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+
+      const results = await response.json();
+      displayResults(results["message"]);
+    });
+
+    // Display Results
+    function displayResults(results) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+
+      if (!results || results.length === 0) {
+        resultsDiv.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      results.forEach((r) => {
+        const div = document.createElement("div");
+        div.className = "result";
+        div.innerHTML = `
+          <img src="${r.path}" alt="${r.path}">
+          <div class="score">Score: ${r.score.toFixed(3)}</div>
+          <div class="score">Branch: ${r.db_lookup.Branch}</div>
+          <div class="score">Item: ${r.db_lookup.Item}</div>
+          <div class="score">Label No: ${r.db_lookup.LabelNo}</div>
+          <div class="score">Net Wt: ${r.db_lookup.NetWt}</div>
+          <div class="score">Gross Wt: ${r.db_lookup.GrossWt}</div>
+          <div class="score">Status: ${r.db_lookup.Status}</div>
+        `;
+        resultsDiv.appendChild(div);
+      });
+    }
+
+    // Load Dropdowns
+    async function loadInitial() {
+      const res = await fetch("/api/method/vgjewellry.image_search.proxy_search");
+      const r = await res.json();
+      fillSelect("branch", r.message["branches"]);
+      fillSelect("item", r.message["items"]);
+    }
+
+    function fillSelect(id, values) {
+      const sel = document.getElementById(id);
+      while (sel.options.length > 1) sel.remove(1);
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", loadInitial);
+  </script>
+
+</body>
+</html>
+
