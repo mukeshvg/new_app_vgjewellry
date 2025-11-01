@@ -52,6 +52,8 @@
     #crop-container {
       flex: 1;
       display: none;
+      max-width:300px;
+      max-height:300x;
     }
     #preview {
       max-width: 100%;
@@ -68,6 +70,32 @@
       border-radius: 6px;
       border: 1px solid #aaa;
     }
+    /*#crop-container {
+    max-width: 300px;
+    max-height: 300px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+    display: none;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  #crop-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Fit inside container */
+    display: block;
+  }
+
+  #cropped-preview img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border: 1px solid #aaa;
+    display: none;
+    margin-top: 10px;
+  }*/
     #crop-actions {
       margin-top: 10px;
     }
@@ -138,7 +166,7 @@
       const url = URL.createObjectURL(file);
       img.src = url;
       cropContainer.style.display = "block";
-      croppedPreview.style.display = "none";
+      //croppedPreview.style.display = "none";
 
       if (cropper) cropper.destroy();
       cropper = new Cropper(img, {
