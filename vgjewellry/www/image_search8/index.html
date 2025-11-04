@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
+{% extends "templates/web.html" %}
+{% block page_content %}
+
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-  <title>VG Jewellery Image & Text Search</title>
 
   <!-- Cropper.js CSS -->
   <link
@@ -25,6 +23,9 @@
     h2 {
       text-align: center;
       color: #2c3e50;
+    }
+    .page_content{
+	min-height:unset;	
     }
 
     /* Layout containers */
@@ -269,6 +270,7 @@
 
       const response = await fetch("/api/method/vgjewellry.image_search.image_search", {
         method: "POST", body: formData,
+	       credentials: "omit"
       });
       const results = await response.json();
       displayResults(results["message"]);
@@ -287,10 +289,18 @@
       if (branch) body.append("branch", branch);
       const item = document.getElementById("item").value.trim();
       if (item) body.append("item", item);
+      const payload = {
+  		query: document.getElementById("query").value.trim(),
+		branch: document.getElementById("branch").value.trim(),
+  		item: document.getElementById("item").value.trim(),
+	};	    
       const response = await fetch("/api/method/vgjewellry.image_search.search", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
+	headers: { "Content-Type": "application/json" 
+	},
+	      
+  	body: JSON.stringify(payload),     
+	 credentials: "omit"       
       });
       const results = await response.json();
       displayResults(results["message"]);
@@ -469,6 +479,5 @@ document.addEventListener("click", (e) => {
       popupImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
     }
   </script>
-</body>
-</html>
+{% endblock %}
 
