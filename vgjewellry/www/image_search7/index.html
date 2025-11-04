@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <title>VG Jewellery Image & Text Search</title>
+
+  <!-- Cropper.js CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+  />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    /* Layout containers */
+    .filters, .search, .upload {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    select, input[type="text"], button {
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Crop + Preview Section */
+    #crop-section {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    #crop-container {
+      display: none;
+      max-width: 320px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      padding: 10px;
+    }
+
+    #preview {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+
+    #cropped-preview {
+      display: none;
+      text-align: center;
+      max-width: 250px;
+    }
+
+    #cropped-preview img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+
+    #results {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .result {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 180px;
+      text-align: center;
+      padding: 10px;
+      transition: transform 0.2s ease;
+    }
+    .result:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    .result img {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .result img:hover {
+      transform: scale(1.05);
+    }
+
+    .score {
+      font-size: 13px;
+      color: #555;
+      margin-top: 3px;
+    }
+
+    /* Popup for large image */
+    #image-popup {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #popup-img {
+      max-width: 90%;
+      max-height: 90%;
+      cursor: grab;
+      transition: transform 0.2s ease;
+    }
+
+    #close-popup {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      background: black;
+    width: 40px;
+    text-align: center;
+    z-index:100000;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>VG Jewellery Image & Text Search</h2>
+
+  <div class="filters">
+    <label for="branch">Branch:</label>
+    <select id="branch"><option value="">All</option></select>
+
+    <!--<label for="item">Item:</label>
+    <select id="item"><option value="">All</option></select>-->
+    <label for="item">Item:</label>
+<div style="position: relative; display:inline-block;">
+  <input type="text" id="item" placeholder="Search or select item..." autocomplete="off"
+         style="padding:8px; width:200px; border:1px solid #ccc; border-radius:5px;">
+  <div id="item-suggestions"
+       style="position:absolute; top:100%; left:0; right:0; background:white;
+              border:1px solid #ccc; border-radius:5px; z-index:100;
+              display:none; max-height:150px; overflow-y:auto;">
+  </div>
+</div>
+</div>
+
+  </div>
+
+  <div class="search">
+    <input type="text" id="query" placeholder="Type something..." />
+    <button id="search-btn">Search by Text</button>
+  </div>
+
+  <div class="upload">
+    <input type="file" id="image-upload" accept="image/*" />
+  </div>
+
+  <div id="crop-section">
+    <div id="crop-container">
+      <img id="preview" alt="Image for cropping" />
+      <div style="text-align:center;margin-top:8px;">
+        <button id="crop-btn">Crop & Search</button>
+        <button id="cancel-crop" style="background:#e74c3c;">Cancel</button>
+      </div>
+    </div>
+
+    <div id="cropped-preview">
+      <h4>Cropped Preview:</h4>
+      <img id="cropped-img" alt="Cropped preview" />
+    </div>
+  </div>
+
+  <div id="results"></div>
+
+  <!-- Popup for image zoom -->
+  <div id="image-popup">
+    <span id="close-popup">&times;</span>
+    <img id="popup-img" src="" alt="Large view" />
+  </div>
+
+  <!-- Cropper.js JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <script>
+    let cropper;
+    const img = document.getElementById("preview");
+    const cropContainer = document.getElementById("crop-container");
+    const croppedPreview = document.getElementById("cropped-preview");
+    const croppedImg = document.getElementById("cropped-img");
+
+    // ===== IMAGE UPLOAD + CROPPER =====
+    document.getElementById("image-upload").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      cropContainer.style.display = "block";
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(img, { aspectRatio: NaN, viewMode: 1 });
+    });
+
+    document.getElementById("cancel-crop").addEventListener("click", () => {
+      cropContainer.style.display = "none";
+      croppedPreview.style.display = "none";
+      document.getElementById("image-upload").value = "";
+      if (cropper) cropper.destroy();
+    });
+
+    document.getElementById("crop-btn").addEventListener("click", async () => {
+      if (!cropper) return alert("No image loaded.");
+      const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 });
+      croppedPreview.style.display = "block";
+      croppedImg.src = canvas.toDataURL("image/jpeg");
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+      const formData = new FormData();
+      formData.append("image", blob, "cropped.jpg");
+
+      const branch = document.getElementById("branch").value.trim();
+      if (branch) formData.append("branch", branch);
+      const item = document.getElementById("item").value.trim();
+      if (item) formData.append("item", item);
+
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+
+      const response = await fetch("/api/method/vgjewellry.image_search.image_search", {
+        method: "POST", body: formData,
+	       credentials: "omit"
+      });
+      const results = await response.json();
+      displayResults(results["message"]);
+      document.getElementById("image-upload").value = "";
+    });
+
+    // ===== TEXT SEARCH =====
+    document.getElementById("search-btn").addEventListener("click", async () => {
+      const query = document.getElementById("query").value.trim();
+      if (!query) return alert("Enter a search term");
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+      const body = new URLSearchParams();
+      body.append("query", query);
+      const branch = document.getElementById("branch").value.trim();
+      if (branch) body.append("branch", branch);
+      const item = document.getElementById("item").value.trim();
+      if (item) body.append("item", item);
+      const payload = {
+  		query: document.getElementById("query").value.trim(),
+		branch: document.getElementById("branch").value.trim(),
+  		item: document.getElementById("item").value.trim(),
+	};	    
+      const response = await fetch("/api/method/vgjewellry.image_search.search", {
+        method: "POST",
+	headers: { "Content-Type": "application/json" 
+	},
+	      
+  	body: JSON.stringify(payload),     
+	 credentials: "omit"       
+      });
+      const results = await response.json();
+      displayResults(results["message"]);
+    });
+
+    // ===== DISPLAY RESULTS =====
+    function displayResults(results) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+      if (!results || results.length === 0) {
+        resultsDiv.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+      results.forEach((r) => {
+        const div = document.createElement("div");
+        div.className = "result";
+        div.innerHTML = `
+          <img src="${r.path}" alt="${r.path}">
+          <div class="score">Score: ${r.score.toFixed(3)}</div>
+          <div class="score">Branch: ${r.db_lookup.Branch}</div>
+          <div class="score">Item: ${r.db_lookup.Item}</div>
+          <div class="score">Label No: ${r.db_lookup.LabelNo}</div>
+          <div class="score">Net Wt: ${r.db_lookup.NetWt}</div>
+          <div class="score">Gross Wt: ${r.db_lookup.GrossWt}</div>
+          <div class="score">Status: ${r.db_lookup.Status}</div>
+        `;
+        resultsDiv.appendChild(div);
+      });
+    }
+    
+    let allItems = [];
+
+    // ===== LOAD DROPDOWNS =====
+    async function loadInitial() {
+      const res = await fetch("/api/method/vgjewellry.image_search.proxy_search");
+      const r = await res.json();
+      fillSelect("branch", r.message["branches"]);
+      //fillSelect("item", r.message["items"]);
+        allItems = r.message["items"] || [];
+         
+    }
+const itemInput = document.getElementById("item");
+const suggestionsBox = document.getElementById("item-suggestions");
+itemInput.addEventListener("focus", () => {
+   const query = itemInput.value.trim().toLowerCase();
+  const filtered = !query
+    ? allItems
+    : allItems.filter(item => item.toLowerCase().includes(query));
+    showItemSuggestions(filtered.slice(0, 500));
+});
+
+
+itemInput.addEventListener("input", () => {
+  const query = itemInput.value.trim().toLowerCase();
+  const filtered = !query
+    ? allItems
+    : allItems.filter(item => item.toLowerCase().includes(query));
+    showItemSuggestions(filtered.slice(0, 500));
+  
+
+  // Filter locally
+ // const filtered = allItems.filter(item => item.toLowerCase().includes(query)).slice(0, 20);
+//  showItemSuggestions(filtered);
+});
+
+function showItemSuggestions(items) {
+  suggestionsBox.innerHTML = "";
+  if (items.length === 0) {
+    suggestionsBox.style.display = "none";
+    return;
+  }
+
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.textContent = item;
+    div.style.padding = "6px 10px";
+    div.style.cursor = "pointer";
+    div.addEventListener("click", () => {
+      itemInput.value = item;
+      suggestionsBox.style.display = "none";
+    });
+    div.addEventListener("mouseenter", () => (div.style.background = "#f0f0f0"));
+    div.addEventListener("mouseleave", () => (div.style.background = "white"));
+    suggestionsBox.appendChild(div);
+  });
+
+  suggestionsBox.style.display = "block";
+}
+
+// Hide when clicking outside
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#item")) {
+    suggestionsBox.style.display = "none";
+  }
+});
+    function fillSelect(id, values) {
+      const sel = document.getElementById(id);
+      while (sel.options.length > 1) sel.remove(1);
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+    }
+    window.addEventListener("DOMContentLoaded", loadInitial);
+
+    // ===== POPUP + ZOOM + PAN =====
+    const popup = document.getElementById("image-popup");
+    const popupImg = document.getElementById("popup-img");
+    const closePopup = document.getElementById("close-popup");
+    let scale = 1, isDragging = false, startX, startY, translateX = 0, translateY = 0;
+
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".result img")) {
+        popup.style.display = "flex";
+        popupImg.src = e.target.src;
+        scale = 1;
+        translateX = translateY = 0;
+        popupImg.style.transform = "translate(0px, 0px) scale(1)";
+      }
+    });
+
+    closePopup.addEventListener("click", () => popup.style.display = "none");
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) popup.style.display = "none";
+    });
+
+    popup.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const zoomIntensity = 0.1;
+      scale += e.deltaY < 0 ? zoomIntensity : -zoomIntensity;
+      scale = Math.min(Math.max(scale, 0.5), 5);
+      updateTransform();
+    });
+
+    popupImg.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      popupImg.style.cursor = "grabbing";
+    });
+    popup.addEventListener("mouseup", () => {
+      isDragging = false;
+      popupImg.style.cursor = "grab";
+    });
+    popup.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    let initialDistance = 0;
+    popup.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = getTouchDistance(e);
+      }
+    });
+    popup.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+      	e.preventDefault(); 	
+        const newDistance = getTouchDistance(e);
+        const zoomFactor = newDistance / initialDistance;
+        scale = Math.min(Math.max(scale * zoomFactor, 0.5), 5);
+        initialDistance = newDistance;
+        updateTransform();
+      }
+    });
+    function getTouchDistance(e) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function updateTransform() {
+      popupImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+  </script>
+</body>
+</html>
+
