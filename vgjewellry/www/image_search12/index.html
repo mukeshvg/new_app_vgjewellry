@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Camera Capture + Crop (Tablet Fix)</title>
+
+  <!-- Cropper.js CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+  />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #2c3e50;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #crop-section {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    #crop-container {
+      display: none;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      padding: 10px;
+      max-width: 350px;
+    }
+
+    #crop-container img {
+      max-width: 100%;
+      display: block;
+      width: 100%;
+    }
+
+    #cropped-preview {
+      display: none;
+    }
+
+    #cropped-preview img {
+      max-width: 250px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+
+    #results {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Camera Capture & Crop Demo</h2>
+
+  <!-- ✅ File input triggers camera or gallery -->
+  <input type="file"
+         id="image-upload"
+         accept="image/*"
+         capture="environment" />
+
+  <div id="crop-section">
+    <div id="crop-container">
+      <img id="preview" alt="Preview image" />
+      <div style="margin-top:10px;">
+        <button id="crop-btn">Crop Image</button>
+        <button id="cancel-crop" style="background:#e74c3c;">Cancel</button>
+      </div>
+    </div>
+
+    <div id="cropped-preview">
+      <h4>Cropped Image:</h4>
+      <img id="cropped-img" alt="Cropped preview" />
+    </div>
+  </div>
+
+  <div id="results"></div>
+
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script>
+    let cropper;
+    const img = document.getElementById("preview");
+    const cropContainer = document.getElementById("crop-container");
+    const croppedPreview = document.getElementById("cropped-preview");
+    const croppedImg = document.getElementById("cropped-img");
+
+    // ====== CAMERA OR FILE UPLOAD ======
+    document.getElementById("image-upload").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      img.src = url;
+
+      // Show container first
+      cropContainer.style.display = "block";
+      croppedPreview.style.display = "none";
+
+      // When image fully loads
+      img.onload = async () => {
+        // 🪄 Samsung Chrome fix: wait to ensure image rendered
+        await new Promise((r) => setTimeout(r, 600));
+
+        // Destroy previous cropper instance
+        if (cropper) {
+          try { cropper.destroy(); } catch (err) {}
+        }
+
+        // Create new cropper
+        cropper = new Cropper(img, {
+          aspectRatio: NaN, // free crop
+          viewMode: 1,
+          background: false,
+          autoCropArea: 1,
+          responsive: true,
+          zoomable: true,
+          movable: true,
+          ready() {
+            console.log("✅ Cropper ready");
+          },
+        });
+      };
+    });
+
+    // ====== CANCEL ======
+    document.getElementById("cancel-crop").addEventListener("click", () => {
+      if (cropper) cropper.destroy();
+      cropContainer.style.display = "none";
+      croppedPreview.style.display = "none";
+      document.getElementById("image-upload").value = "";
+    });
+
+    // ====== CROP ======
+    document.getElementById("crop-btn").addEventListener("click", async () => {
+      if (!cropper) {
+        alert("Please select or capture an image first.");
+        return;
+      }
+
+      const canvas = cropper.getCroppedCanvas({
+        width: 256,
+        height: 256,
+        fillColor: "#fff",
+      });
+
+      if (!canvas) {
+        alert("Crop failed. Please try again.");
+        return;
+      }
+
+      croppedPreview.style.display = "block";
+      croppedImg.src = canvas.toDataURL("image/jpeg", 0.9);
+      console.log("✅ Cropped image created");
+    });
+  </script>
+</body>
+</html>
+
