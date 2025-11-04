@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Samsung Tablet Cropper Fix</title>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 20px;
+  background: #f2f2f2;
+}
+h2 { color: #2c3e50; }
+#crop-container { display: none; margin-top: 15px; }
+#crop-container img { max-width: 100%; display: block; }
+#buttons { margin-top: 10px; }
+button {
+  margin: 5px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  background: #3498db;
+  color: white;
+}
+button.cancel { background: #e74c3c; }
+#cropped-result img {
+  max-width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<h2>📸 Camera Capture & Cropper.js (Samsung Fix)</h2>
+
+<input type="file" id="fileInput" accept="image/*" >
+
+<div id="crop-container">
+  <img id="image" alt="Preview">
+  <div id="buttons">
+    <button id="cropBtn">Crop</button>
+    <button id="cancelBtn" class="cancel">Cancel</button>
+  </div>
+</div>
+
+<div id="cropped-result"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+let cropper;
+const input = document.getElementById("fileInput");
+const img = document.getElementById("image");
+const container = document.getElementById("crop-container");
+const resultDiv = document.getElementById("cropped-result");
+
+// ========== READ & DISPLAY IMAGE ==========
+input.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Read via FileReader (works better on tablets)
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    let imgData = ev.target.result;
+
+    // Wait a moment for Samsung Chrome to finalize the blob
+    await new Promise(r => setTimeout(r, 300));
+
+    // Create a hidden <img> to test rendering
+    const testImg = new Image();
+    testImg.src = imgData;
+
+    testImg.onload = async () => {
+      // Downscale if too large (>2048px)
+      if (testImg.width > 2048 || testImg.height > 2048) {
+        const scale = Math.min(2048 / testImg.width, 2048 / testImg.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = testImg.width * scale;
+        canvas.height = testImg.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(testImg, 0, 0, canvas.width, canvas.height);
+        imgData = canvas.toDataURL("image/jpeg", 0.9);
+      }
+
+      // Show container + main image
+      img.src = imgData;
+      container.style.display = "block";
+
+      // Give Chrome time to render the <img>
+      await new Promise(r => setTimeout(r, 500));
+
+      if (cropper) cropper.destroy();
+
+      cropper = new Cropper(img, {
+        aspectRatio: NaN,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true,
+        movable: true,
+        zoomable: true,
+        background: false,
+        ready() {
+          alert("✅ Cropper initialized");
+        }
+      });
+    };
+
+    testImg.onerror = () => {
+      alert("❌ This image format isn't supported (HEIC?). Try gallery or JPEG mode.");
+    };
+  };
+
+  reader.readAsDataURL(file);
+});
+
+// ========== CANCEL ==========
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  if (cropper) cropper.destroy();
+  container.style.display = "none";
+  resultDiv.innerHTML = "";
+  input.value = "";
+});
+
+// ========== CROP ==========
+document.getElementById("cropBtn").addEventListener("click", async () => {
+  if (!cropper) {
+    alert("No image to crop.");
+    return;
+  }
+
+  const canvas = cropper.getCroppedCanvas({
+    width: 400,
+    height: 400,
+    fillColor: "#fff",
+  });
+
+  if (!canvas) {
+    alert("Crop failed — try again.");
+    return;
+  }
+
+  resultDiv.innerHTML = `<h4>✅ Cropped Output:</h4><img src="${canvas.toDataURL("image/jpeg", 0.9)}">`;
+});
+</script>
+
+</body>
+</html>
+
