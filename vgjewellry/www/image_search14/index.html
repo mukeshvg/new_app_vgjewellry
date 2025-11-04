@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>VG Jewellery Image & Text Search</title>
+
+  <!-- Cropper.js CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+  />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h2 { text-align: center; color: #2c3e50; }
+
+    select, input[type="text"], button {
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background-color: #2980b9; }
+
+    .filters, .search, .upload {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #crop-section {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      gap: 30px;
+    }
+
+    #crop-container {
+      display: none;
+      max-width: 320px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      padding: 10px;
+    }
+
+    #preview { max-width: 100%; border-radius: 6px; }
+    #cropped-preview { display: none; text-align: center; max-width: 250px; }
+    #cropped-preview img { width: 100%; border-radius: 6px; }
+
+    #results {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .result {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 180px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .result img {
+      width: 150px; height: 150px; object-fit: contain;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>VG Jewellery Image & Text Search</h2>
+
+  <div class="upload">
+    <input type="file" id="image-upload" accept="image/*" capture="environment" />
+  </div>
+
+  <div id="crop-section">
+    <div id="crop-container">
+      <img id="preview" alt="Image for cropping" />
+      <div style="text-align:center;margin-top:8px;">
+        <button id="crop-btn">Crop & Search</button>
+        <button id="cancel-crop" style="background:#e74c3c;">Cancel</button>
+      </div>
+    </div>
+
+    <div id="cropped-preview">
+      <h4>Cropped Preview:</h4>
+      <img id="cropped-img" alt="Cropped preview" />
+    </div>
+  </div>
+
+  <div id="results"></div>
+
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+  <script>
+    let cropper;
+    const img = document.getElementById("preview");
+    const cropContainer = document.getElementById("crop-container");
+    const croppedPreview = document.getElementById("cropped-preview");
+    const croppedImg = document.getElementById("cropped-img");
+    const input = document.getElementById("image-upload");
+
+    // --- CAMERA / GALLERY UPLOAD HANDLER ---
+    input.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      console.log("📷 File selected:", file.name, file.type, file.size);
+
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        let imgData = ev.target.result;
+
+        // Give Chrome time to decode
+        await new Promise(r => setTimeout(r, 500));
+
+        const testImg = new Image();
+        testImg.onload = async () => {
+          console.log("✅ Image decoded:", testImg.width, testImg.height);
+
+          img.src = imgData;
+          cropContainer.style.display = "block";
+
+          // Wait a moment for render
+          await new Promise(r => setTimeout(r, 500));
+
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(img, {
+            viewMode: 1,
+            aspectRatio: NaN,
+            responsive: true,
+            background: false,
+            movable: true,
+            zoomable: true,
+            autoCropArea: 1,
+            ready() {
+              alert("✅ Cropper initialized successfully");
+            }
+          });
+        };
+
+        testImg.onerror = () => {
+          alert("⚠️ Could not load this image format. Please select a JPEG or PNG.");
+        };
+        testImg.src = imgData;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // --- CROP BUTTON ---
+    document.getElementById("crop-btn").addEventListener("click", async () => {
+      if (!cropper) return alert("No image loaded.");
+
+      const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 });
+      if (!canvas) return alert("Unable to crop image.");
+
+      croppedPreview.style.display = "block";
+      croppedImg.src = canvas.toDataURL("image/jpeg");
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+      const formData = new FormData();
+      formData.append("image", blob, "cropped.jpg");
+
+      // Upload to your backend
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+
+      try {
+        const response = await fetch("/api/method/vgjewellry.image_search.image_search", {
+          method: "POST",
+          body: formData,
+          credentials: "omit"
+        });
+        const results = await response.json();
+        displayResults(results["message"]);
+      } catch (err) {
+        console.error("❌ Upload failed:", err);
+        alert("Upload failed. Please try again.");
+      }
+    });
+
+    // --- CANCEL BUTTON ---
+    document.getElementById("cancel-crop").addEventListener("click", () => {
+      if (cropper) cropper.destroy();
+      cropContainer.style.display = "none";
+      croppedPreview.style.display = "none";
+      input.value = "";
+    });
+
+    // --- DISPLAY RESULTS ---
+    function displayResults(results) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+      if (!results || results.length === 0) {
+        resultsDiv.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+      results.forEach((r) => {
+        const div = document.createElement("div");
+        div.className = "result";
+        div.innerHTML = `
+          <img src="${r.path}" alt="${r.path}">
+          <div>Score: ${r.score?.toFixed(3) || "-"}</div>
+          <div>Item: ${r.db_lookup?.Item || "-"}</div>
+          <div>Branch: ${r.db_lookup?.Branch || "-"}</div>
+        `;
+        resultsDiv.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
+
