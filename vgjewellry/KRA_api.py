@@ -18,6 +18,7 @@ def process_import(docname):
 
         if not os.path.exists(filepath):
             frappe.throw(f"File not found: {filepath}")
+            
 
         # Now read CSV
         df = pd.read_csv(filepath)
@@ -30,6 +31,7 @@ def process_import(docname):
         return "kra added successfully"
 
     except Exception:
+        return f"CSV Import Error: {frappe.get_traceback()}"
         frappe.log_error(frappe.get_traceback(), "CSV Import Error")
 
 import frappe
@@ -68,7 +70,11 @@ import decimal
 def insert_kra(name,data1):
     kra_mon = data1["KRA MON"]
     kra = data1["KRA"]
-    weightage=decimal.Decimal(data1["WEIGHTAGE"].replace("%",""))
+    #weightage=decimal.Decimal(data1["WEIGHTAGE"].replace("%",""))
+    weightage_value = data1.get("WEIGHTAGE", "")
+    if isinstance(weightage_value, str) and "%" in weightage_value:
+        weightage_value = weightage_value.replace("%", "")
+    weightage = decimal.Decimal(str(weightage_value or 0))
     target=decimal.Decimal(data1["TARGET"])
     achieve_target=decimal.Decimal(data1["ACHIEVED TARGET"])
     try:
