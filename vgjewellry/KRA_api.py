@@ -42,6 +42,8 @@ def get_or_create_kra(data1):
     department=data1["DEPARTMENT"];
     emp_name=data1["NAME"]
     counter=data1["COUNTER"]
+    if emp_code is None or (isinstance(emp_code, float) and math.isnan(emp_code)):
+        return f"{data1}"
     existing = frappe.db.get_value("Employee_KRA_System", {"emp_code": emp_code}, "name")
     if existing:
         frappe.db.sql(""" update tabEmployee_KRA_System set department=%s , emp_name=%s , counter=%s where emp_code=%s
