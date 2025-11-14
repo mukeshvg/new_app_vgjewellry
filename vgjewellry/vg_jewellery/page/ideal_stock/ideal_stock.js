@@ -75,6 +75,11 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 		<input type="date" id="to_date">
 	    </div>
 	    <button class="dr-submit" id="fetch_btn">Submit</button>
+	    <div class="dr-field">
+		<label for="target_stock">Target Stock</label>
+                <input type="number" id="target_stock">
+		<button class="dr-submit" id="set_target_stock">Set Target Stock</button>
+	    </div>
 	</div>
 	<div class="dr-result" id="result_box"></div>
 	<div id="pivotContainer"  style=" width: 100%;"></div>
@@ -84,6 +89,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 	// --- JS Logic ---
 	const fromInput = $("#from_date");
 	const toInput = $("#to_date");
+	console.log(target_stock);
 	const resultBox = $("#result_box");
 
 	// Default range: last 7 days
@@ -103,11 +109,38 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 		return `${y}-${m}-${d}`;
 	}
 
-	$("#fetch_btn").on("click", function () {
-		//debugger;
+	var pivot;
+	$("#set_target_stock").on("click",function(){
+		const target_stock1 = $("#target_stock");
+		let target_stock=target_stock1.val();
+		if (!target_stock) {
+                        frappe.msgprint("Input target stock");
+                        return;
+                }
+		frappe.call({
+			method: "vgjewellry.ideal_stock_api.set_target_stock", 
+			args: {
+				target_stock: target_stock,  
+			},
+			callback: function (r) {
+				console.log(r);
+				if (r.message) {
+					//stdPivotUi(r.message);
+					pivot.updateData({
+    data: r.message
+});
+				} else {
+					resultBox.html("<div>No data found</div>").show();
+				}
+			}
+		});
+
+	})
+
         var usr = frappe.session.user;
         var bu = frappe.pages[Object.keys(frappe.pages)[0]].baseURI;
         let rpt = bu.substring(bu.lastIndexOf('/') + 1).trim();
+	$("#fetch_btn").on("click", function () {
 
 		 frappe.call({
                 method: "vgjewellry.VG_api.ucr_fetch",
@@ -115,11 +148,8 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
                 args: {"rpt": rpt,"usr": usr},
                 callback: function (res) {
 			window.ucrformats = res.message;
-			console.log(res.message);
                 }
         });
-
-		console.log(usr,bu,rpt);
 
 		let from_iso = fromInput.val();
 		let to_iso = toInput.val();
@@ -245,7 +275,7 @@ else {
 				}
 
 				// Initialize Flexmonster with consistent configuration
-				let pivot = new Flexmonster(baseConfig);
+				pivot = new Flexmonster(baseConfig);
 
 				// Add event listener for report complete
 				pivot.on("reportcomplete", function() {

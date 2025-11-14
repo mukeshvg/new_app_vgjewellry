@@ -17,162 +17,150 @@ def get_ideal_stock(from_date, to_date):
     #get_sale_data(from_date,to_date)
     return calculate_ideal_stock()
 
+
+@frappe.whitelist(allow_guest=True)
+def set_target_stock(target_stock):
+    target_stock = float(target_stock)
+
+    dict_list= calculate_ideal_stock()
+    total_ideal_stock = sum(d["Ideal_Stock"] for d in dict_list)
+    for d in dict_list:
+        ideal_stock = float(d["Ideal_Stock"])
+        d["Target_Stock"]= round(target_stock * ideal_stock /total_ideal_stock,2)
+    return dict_list    
+    
+
 def get_stock_data(from_date, to_date):
     con = connect()
     cursor = con.cursor()
 
     full_query = r'''
     IF OBJECT_ID('tempdb..#LabelData') IS NOT NULL DROP TABLE #LabelData;
-    IF OBJECT_ID('tempdb..#LabelWithRange') IS NOT NULL DROP TABLE #LabelWithRange;
+IF OBJECT_ID('tempdb..#LabelDays') IS NOT NULL DROP TABLE #LabelDays;
 
-    DECLARE 
-        @FromDate DATE = (?),
-        @ToDate   DATE = (?);
+DECLARE 
+    @FromDate DATE = (?),
+    @ToDate   DATE = (?);
 
-    SELECT 
-        lb.LabelNo,
-        lb.NetWt,
-        lb.ItemMstID,
-        lb.BranchID,
-        lb.VouDate,
-        lb.NextVouDate,
-        lt.VarietyMstId,
+-- Step 1️⃣: Prepare Label Data with latest transaction info
+SELECT 
+    lb.LabelNo,
+    lb.NetWt,
+    lb.ItemMstID,
+    lb.BranchID,
+    lb.VouDate,
+    lb.NextVouDate,
+    lt.LatestItemMstID,
+    lt.LatestVarietyMstId,
+    lt.ItemName,
+    lt.VarietyName,
+    lt.BranchShortCode
+INTO #LabelData
+FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelDtWiseBal lb
+CROSS APPLY (
+    SELECT TOP 1
+        lt.ItemMstID AS LatestItemMstID,
+        lt.VarietyMstId AS LatestVarietyMstId,
         im.ItemName,
         vm.VarietyName,
         bm.BranchName AS BranchShortCode
-    INTO #LabelData
-    FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelDtWiseBal AS lb
-    INNER JOIN dbo.LabelTransaction AS lt ON lb.LabelNo = lt.LabelNo
-    LEFT JOIN dbo.ItemMst AS im ON im.ItemMstID = lt.ItemMstID
-    LEFT JOIN dbo.VarietyMst AS vm ON vm.VarietyMstId = lt.VarietyMstId
-    LEFT JOIN dbo.BranchMaster AS bm ON bm.BranchID = lb.BranchID
-    WHERE lb.NetWt > 0
-      AND lb.ItemTradMstID = 1002
-      AND lb.NextVouDate >= @FromDate
-      AND lb.VouDate <= @ToDate;
+    FROM dbo.LabelTransaction lt
+    LEFT JOIN dbo.ItemMst im ON im.ItemMstID = lt.ItemMstID
+    LEFT JOIN dbo.VarietyMst vm ON vm.VarietyMstId = lt.VarietyMstId
+    LEFT JOIN dbo.BranchMaster bm ON bm.BranchID = lb.BranchID
+    WHERE lt.LabelNo = lb.LabelNo
+    ORDER BY lt.LabelTransID DESC
+) lt
+WHERE lb.NetWt > 0
+  AND lb.NextVouDate >= @FromDate
+  AND lb.VouDate <= @ToDate
+  AND lb.ItemTradMstID = 1002;
 
-    SELECT
-        l.BranchID,
-        l.ItemMstID,
-        l.VarietyMstId,
-        l.ItemName,
-        l.VarietyName,
-        l.BranchShortCode,
-        CASE 
-            WHEN l.NetWt <= 5 THEN '0-5'
-            WHEN l.NetWt <= 10 THEN '5.001-10'
-            WHEN l.NetWt <= 15 THEN '10.001-15'
-            WHEN l.NetWt <= 20 THEN '15.001-20'
-            WHEN l.NetWt <= 25 THEN '20.001-25'
-            WHEN l.NetWt <= 30 THEN '25.001-30'
-            WHEN l.NetWt <= 35 THEN '30.001-35'
-            WHEN l.NetWt <= 40 THEN '35.001-40'
-            WHEN l.NetWt <= 45 THEN '40.001-45'
-            WHEN l.NetWt <= 50 THEN '45.001-50'
-            WHEN l.NetWt <= 55 THEN '50.001-55'
-            WHEN l.NetWt <= 60 THEN '55.001-60'
-            WHEN l.NetWt <= 65 THEN '60.001-65'
-            WHEN l.NetWt <= 70 THEN '65.001-70'
-            WHEN l.NetWt <= 75 THEN '70.001-75'
-            WHEN l.NetWt <= 80 THEN '75.001-80'
-            WHEN l.NetWt <= 85 THEN '80.001-85'
-            WHEN l.NetWt <= 90 THEN '85.001-90'
-            WHEN l.NetWt <= 95 THEN '90.001-95'
-            WHEN l.NetWt <= 100 THEN '95.001-100'
-            WHEN l.NetWt <= 120 THEN '100.001-120'
-            WHEN l.NetWt <= 140 THEN '120.001-140'
-            WHEN l.NetWt <= 160 THEN '140.001-160'
-            WHEN l.NetWt <= 180 THEN '160.001-180'
-            WHEN l.NetWt <= 200 THEN '180.001-200'
-            WHEN l.NetWt <= 220 THEN '200.001-220'
-            WHEN l.NetWt <= 240 THEN '220.001-240'
-            WHEN l.NetWt <= 260 THEN '240.001-260'
-            WHEN l.NetWt <= 280 THEN '260.001-280'
-            WHEN l.NetWt <= 300 THEN '280.001-300'
-            WHEN l.NetWt <= 320 THEN '300.001-320'
-            WHEN l.NetWt <= 340 THEN '320.001-340'
-            WHEN l.NetWt <= 360 THEN '340.001-360'
-            WHEN l.NetWt <= 380 THEN '360.001-380'
-            ELSE '>380'
-        END AS WeightRange,
-        COUNT(DISTINCT l.LabelNo) AS LabelCount,
-        SUM(l.NetWt) AS TotalNetWt,
-        SUM(
-            CASE 
-                WHEN DATEDIFF(DAY,
-                    CASE WHEN l.VouDate < @FromDate THEN @FromDate ELSE l.VouDate END,
-                    CASE WHEN l.NextVouDate > @ToDate THEN @ToDate ELSE l.NextVouDate END
-                ) + 1 > DATEDIFF(DAY, @FromDate, @ToDate) + 1
-                THEN DATEDIFF(DAY, @FromDate, @ToDate) + 1
-                ELSE DATEDIFF(DAY,
-                    CASE WHEN l.VouDate < @FromDate THEN @FromDate ELSE l.VouDate END,
-                    CASE WHEN l.NextVouDate > @ToDate THEN @ToDate ELSE l.NextVouDate END
-                ) + 1
-            END
-        ) AS DaysActive
-    INTO #LabelWithRange
-    FROM #LabelData l
-    GROUP BY
-        l.BranchID, l.ItemMstID, l.VarietyMstId, l.ItemName, l.VarietyName, l.BranchShortCode,
-        CASE 
-            WHEN l.NetWt <= 5 THEN '0-5'
-            WHEN l.NetWt <= 10 THEN '5.001-10'
-            WHEN l.NetWt <= 15 THEN '10.001-15'
-            WHEN l.NetWt <= 20 THEN '15.001-20'
-            WHEN l.NetWt <= 25 THEN '20.001-25'
-            WHEN l.NetWt <= 30 THEN '25.001-30'
-            WHEN l.NetWt <= 35 THEN '30.001-35'
-            WHEN l.NetWt <= 40 THEN '35.001-40'
-            WHEN l.NetWt <= 45 THEN '40.001-45'
-            WHEN l.NetWt <= 50 THEN '45.001-50'
-            WHEN l.NetWt <= 55 THEN '50.001-55'
-            WHEN l.NetWt <= 60 THEN '55.001-60'
-            WHEN l.NetWt <= 65 THEN '60.001-65'
-            WHEN l.NetWt <= 70 THEN '65.001-70'
-            WHEN l.NetWt <= 75 THEN '70.001-75'
-            WHEN l.NetWt <= 80 THEN '75.001-80'
-            WHEN l.NetWt <= 85 THEN '80.001-85'
-            WHEN l.NetWt <= 90 THEN '85.001-90'
-            WHEN l.NetWt <= 95 THEN '90.001-95'
-            WHEN l.NetWt <= 100 THEN '95.001-100'
-            WHEN l.NetWt <= 120 THEN '100.001-120'
-            WHEN l.NetWt <= 140 THEN '120.001-140'
-            WHEN l.NetWt <= 160 THEN '140.001-160'
-            WHEN l.NetWt <= 180 THEN '160.001-180'
-            WHEN l.NetWt <= 200 THEN '180.001-200'
-            WHEN l.NetWt <= 220 THEN '200.001-220'
-            WHEN l.NetWt <= 240 THEN '220.001-240'
-            WHEN l.NetWt <= 260 THEN '240.001-260'
-            WHEN l.NetWt <= 280 THEN '260.001-280'
-            WHEN l.NetWt <= 300 THEN '280.001-300'
-            WHEN l.NetWt <= 320 THEN '300.001-320'
-            WHEN l.NetWt <= 340 THEN '320.001-340'
-            WHEN l.NetWt <= 360 THEN '340.001-360'
-            WHEN l.NetWt <= 380 THEN '360.001-380'
-            ELSE '>380'
-        END;
+-- Step 2️⃣: Expand each label into individual active dates
+SELECT
+    l.BranchID,
+    l.ItemMstID,
+    l.LatestVarietyMstId AS VarietyMstId,
+    l.ItemName,
+    l.VarietyName,
+    l.BranchShortCode,
+    l.LabelNo,
+    l.NetWt,
+    CASE 
+        WHEN l.NetWt <= 5 THEN '0-5'
+        WHEN l.NetWt <= 10 THEN '5.001-10'
+        WHEN l.NetWt <= 15 THEN '10.001-15'
+        WHEN l.NetWt <= 20 THEN '15.001-20'
+        WHEN l.NetWt <= 25 THEN '20.001-25'
+        WHEN l.NetWt <= 30 THEN '25.001-30'
+        WHEN l.NetWt <= 35 THEN '30.001-35'
+        WHEN l.NetWt <= 40 THEN '35.001-40'
+        WHEN l.NetWt <= 45 THEN '40.001-45'
+        WHEN l.NetWt <= 50 THEN '45.001-50'
+        WHEN l.NetWt <= 55 THEN '50.001-55'
+        WHEN l.NetWt <= 60 THEN '55.001-60'
+        WHEN l.NetWt <= 65 THEN '60.001-65'
+        WHEN l.NetWt <= 70 THEN '65.001-70'
+        WHEN l.NetWt <= 75 THEN '70.001-75'
+        WHEN l.NetWt <= 80 THEN '75.001-80'
+        WHEN l.NetWt <= 85 THEN '80.001-85'
+        WHEN l.NetWt <= 90 THEN '85.001-90'
+        WHEN l.NetWt <= 95 THEN '90.001-95'
+        WHEN l.NetWt <= 100 THEN '95.001-100'
+        WHEN l.NetWt <= 120 THEN '100.001-120'
+        WHEN l.NetWt <= 140 THEN '120.001-140'
+        WHEN l.NetWt <= 160 THEN '140.001-160'
+        WHEN l.NetWt <= 180 THEN '160.001-180'
+        WHEN l.NetWt <= 200 THEN '180.001-200'
+        WHEN l.NetWt <= 220 THEN '200.001-220'
+        WHEN l.NetWt <= 240 THEN '220.001-240'
+        WHEN l.NetWt <= 260 THEN '240.001-260'
+        WHEN l.NetWt <= 280 THEN '260.001-280'
+        WHEN l.NetWt <= 300 THEN '280.001-300'
+        WHEN l.NetWt <= 320 THEN '300.001-320'
+        WHEN l.NetWt <= 340 THEN '320.001-340'
+        WHEN l.NetWt <= 360 THEN '340.001-360'
+        WHEN l.NetWt <= 380 THEN '360.001-380'
+        ELSE '>380'
+    END AS WeightRange,
+    DATEADD(DAY, n.number, 
+        CASE WHEN l.VouDate < @FromDate THEN @FromDate ELSE l.VouDate END
+    ) AS ActiveDate
+INTO #LabelDays
+FROM #LabelData l
+INNER JOIN master..spt_values n 
+    ON n.type = 'P'
+    AND DATEADD(DAY, n.number, 
+        CASE WHEN l.VouDate < @FromDate THEN @FromDate ELSE l.VouDate END
+    ) <= CASE WHEN l.NextVouDate > @ToDate THEN @ToDate ELSE l.NextVouDate END;
 
-    SELECT 
-        BranchID,
-        ItemMstID,
-        VarietyMstId,
-        ItemName,
-        VarietyName,
-        BranchShortCode,
-        WeightRange,
-        LabelCount,
-        TotalNetWt,
-        CASE 
-            WHEN DaysActive > DATEDIFF(DAY, @FromDate, @ToDate) + 1 
-            THEN DATEDIFF(DAY, @FromDate, @ToDate) + 1
-            ELSE DaysActive
-        END AS DaysActive
-    FROM #LabelWithRange
-    ORDER BY 
-        BranchID,
-        ItemMstID,
-        VarietyMstId,
-        TRY_CAST(LEFT(WeightRange, CHARINDEX('-', WeightRange + '-') - 1) AS DECIMAL(10,3));
+-- Step 3️⃣: Aggregate by group, counting unique active days
+SELECT 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange,
+    COUNT(DISTINCT LabelNo) AS LabelCount,
+    SUM(NetWt) AS TotalNetWt,
+    COUNT(DISTINCT ActiveDate) AS TotalActiveDays
+FROM #LabelDays
+GROUP BY 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange
+ORDER BY 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    TRY_CAST(LEFT(WeightRange, CHARINDEX('-', WeightRange + '-') - 1) AS DECIMAL(10,3));
+
     '''
 
     cursor.execute(full_query, (from_date, to_date))
@@ -367,14 +355,14 @@ import json
 def calculate_ideal_stock():
     query = """
     SELECT branch, item, variety, weight_range, avg_stock
-    FROM `tabStockDataForIdeal`
+    FROM `tabStockDataForIdeal` where item='Bali' and branch_id !=9
 """
     rows = frappe.db.sql(query, as_dict=True)
     stock_data = [[row["branch"], row["item"], row["variety"], row["weight_range"], row["avg_stock"]] for row in rows]
 
     query1 = """
     SELECT branch, item, variety, weight_range, total_net_wt
-    FROM `tabSaleDataForIdeal`
+    FROM `tabSaleDataForIdeal` where item='Bali' 
 """
     rows1 = frappe.db.sql(query1, as_dict=True)
     sales_data = [[row["branch"], row["item"], row["variety"], row["weight_range"], row["total_net_wt"]] for row in rows1]
@@ -384,7 +372,8 @@ def calculate_ideal_stock():
     stock_df = pd.DataFrame(stock_data, columns=["Branch","Item", "Variety", "Weight_Range",  "Stock_Weight"])
 
 
-    df = pd.merge(sales_df, stock_df, on=["Branch", "Item", "Variety", "Weight_Range"], how="left")
+    #df = pd.merge(sales_df, stock_df, on=["Branch", "Item", "Variety", "Weight_Range"], how="left")
+    df = pd.merge(stock_df, sales_df, on=["Branch", "Item", "Variety", "Weight_Range"], how="left")
 
     # --- Convert to numeric safely ---
     df["Sales_Weight"] = pd.to_numeric(df["Sales_Weight"], errors='coerce').fillna(0)
@@ -395,18 +384,18 @@ def calculate_ideal_stock():
     df["STR"] = df.apply(lambda x: round(x["Sales_Weight"] / x["Stock_Weight"], 2) if x["Stock_Weight"] > 0 else 0, axis=1)
     
 
-    df["GAST"] = df.groupby(["Branch", "Item", "Variety"]).apply(
-    lambda g: g.assign(GAST=(g["Sales_Weight"].sum() / g["Stock_Weight"].sum() if g["Stock_Weight"].sum() > 0 else 0))
-)["GAST"].values
+    df["Sales_Weight"] = df["Sales_Weight"].astype(float)
+    df["Stock_Weight"] = df["Stock_Weight"].astype(float)
 
 
-    # --- Calculate GAST safely ---
-    #df["GAST"] = df.groupby(["Branch", "Item", "Variety"]).apply(
-    #    lambda g: pd.Series(
-    #        g["Sales_Weight"].sum() / g["Stock_Weight"].sum() if g["Stock_Weight"].sum() > 0 else 0,
-    #        index=g.index
-    #    )
-    #)
+    # Using apply with resetting index
+    df_gast = df.groupby(["Branch", "Item", "Variety"]).apply(
+    lambda g: g.assign(GAST=round(g["Sales_Weight"].sum() / g["Stock_Weight"].sum(),2) if g["Stock_Weight"].sum() > 0 else 0)
+).reset_index(drop=True)
+
+    # Now merge the result back into the original DataFrame based on the common index
+    df = df.merge(df_gast[["Branch", "Item", "Variety", "GAST"]], on=["Branch", "Item", "Variety"], how="inner")
+    df = df.drop_duplicates(subset=["Branch", "Item", "Variety", "Sales_Weight", "Stock_Weight"])
 
 
 
@@ -433,22 +422,24 @@ def calculate_ideal_stock():
 
     def ideal_stock(row):
         if row["Quadrant"] == "Q1 – Low Appeal":
-            return row["Stock_Weight"] * 0.3
+            return round(row["Stock_Weight"] * 0.3,3)
         elif row["Quadrant"] == "Q2 – Saturated":
-            return row["Sales_Weight"] / row["GAST"]
+            return round(row["Sales_Weight"] / row["GAST"],3)
         else:
-            return row["Stock_Weight"]
+            return round(row["Stock_Weight"],3)
 
     df["Ideal_Stock"] = df.apply(ideal_stock, axis=1)
+     
+    
 
 
     # --- Step 8: Calculate difference (for stock correction) ---
     df["Correction"] = df["Ideal_Stock"] - df["Stock_Weight"]
-    data = df[["Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Correction"]].values.tolist()
+    data = df[["Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock"]].values.tolist()
     columns = [
-    "Branch", "Category", "Subcategory", "Weight_Range",
+    "Branch", "Item", "Variety", "Weight_Range",
     "Sales_Weight", "Stock_Weight", "STR", "GAST",
-    "Quadrant", "Ideal_Stock", "Correction"
+    "Quadrant", "Ideal_Stock", "Target_Stock"
 ]
     dict_list = [dict(zip(columns, row)) for row in data]
     return dict_list
