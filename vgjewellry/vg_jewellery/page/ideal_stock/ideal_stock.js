@@ -140,6 +140,24 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 	var usr = frappe.session.user;
 	var bu = frappe.pages[Object.keys(frappe.pages)[0]].baseURI;
 	let rpt = bu.substring(bu.lastIndexOf('/') + 1).trim();
+
+	frappe.call({
+                        method: "vgjewellry.VG_api.ucr_fetch",
+                        // args: {"rpt":rpt},
+                        args: {"rpt": rpt,"usr": usr},
+                        callback: function (res) {
+                                window.ucrformats = res.message;
+                        }
+                });
+
+	frappe.call({
+                        method: "vgjewellry.ideal_stock_api.calculate_ideal_stock",
+                        callback: function (r) {
+				stdPivotUi(r.message);
+                        }
+                });
+
+
 	$("#fetch_btn").on("click", function () {
 
 		frappe.call({

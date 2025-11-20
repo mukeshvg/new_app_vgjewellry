@@ -352,6 +352,7 @@ ORDER BY
 
 import json
 
+@frappe.whitelist(allow_guest=True)
 def calculate_ideal_stock():
     query = """
     SELECT branch, item, variety, weight_range, avg_stock ,branch_id ,item_id,variety_id
