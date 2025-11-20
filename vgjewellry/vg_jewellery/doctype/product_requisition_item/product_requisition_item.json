@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-15 16:16:50.027692",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "column_break_senp",
+  "variety",
+  "column_break_asaz",
+  "weight_range",
+  "column_break_bkzk",
+  "qty",
+  "section_break_alhp",
+  "image_1",
+  "column_break_mlam",
+  "image_2",
+  "column_break_idfi",
+  "image_3",
+  "column_break_mpii",
+  "image_4"
+ ],
+ "fields": [
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Ornate_Item_Master",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_senp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Variety",
+   "options": "Ornate_Variety_Master",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_asaz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Weight Range",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_bkzk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Qty",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_alhp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "image_1",
+   "fieldtype": "Attach Image",
+   "label": "Image 1"
+  },
+  {
+   "fieldname": "column_break_mlam",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_2",
+   "fieldtype": "Attach Image",
+   "label": "Image 2"
+  },
+  {
+   "fieldname": "column_break_idfi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_3",
+   "fieldtype": "Attach Image",
+   "label": "Image 3"
+  },
+  {
+   "fieldname": "column_break_mpii",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_4",
+   "fieldtype": "Attach Image",
+   "label": "Image 4"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-18 18:27:29.010510",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Product_Requisition_Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

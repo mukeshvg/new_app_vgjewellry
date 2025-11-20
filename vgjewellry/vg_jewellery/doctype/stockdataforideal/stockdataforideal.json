@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-11-12 12:47:10.908248",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch_id",
+  "column_break_pkco",
+  "branch",
+  "section_break_kphj",
+  "item_id",
+  "column_break_gtds",
+  "item",
+  "section_break_dqgt",
+  "variety_id",
+  "column_break_wjjd",
+  "variety",
+  "section_break_kjsf",
+  "weight_range",
+  "column_break_bcie",
+  "total_net_wt",
+  "section_break_zbwx",
+  "label_count",
+  "column_break_jpdb",
+  "days_present",
+  "column_break_wejr",
+  "avg_stock"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch Id"
+  },
+  {
+   "fieldname": "column_break_pkco",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Data",
+   "label": "Branch"
+  },
+  {
+   "fieldname": "section_break_kphj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_id",
+   "fieldtype": "Data",
+   "label": "Item Id"
+  },
+  {
+   "fieldname": "column_break_gtds",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "section_break_dqgt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "variety_id",
+   "fieldtype": "Data",
+   "label": "Variety Id"
+  },
+  {
+   "fieldname": "column_break_wjjd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Data",
+   "label": "Variety"
+  },
+  {
+   "fieldname": "section_break_kjsf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Data",
+   "label": "Weight Range"
+  },
+  {
+   "fieldname": "column_break_bcie",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_net_wt",
+   "fieldtype": "Data",
+   "label": "Total Net wt"
+  },
+  {
+   "fieldname": "section_break_zbwx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "label_count",
+   "fieldtype": "Data",
+   "label": "Label Count"
+  },
+  {
+   "fieldname": "column_break_jpdb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "days_present",
+   "fieldtype": "Data",
+   "label": "Days Present"
+  },
+  {
+   "fieldname": "column_break_wejr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "avg_stock",
+   "fieldtype": "Data",
+   "label": "Avg Stock"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-12 16:15:25.280803",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "StockDataForIdeal",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
