@@ -13,8 +13,8 @@ def connect():
 
 @frappe.whitelist(allow_guest=True)
 def get_ideal_stock(from_date, to_date):
-    #get_stock_data(from_date,to_date)
-    #get_sale_data(from_date,to_date)
+    get_stock_data(from_date,to_date)
+    get_sale_data(from_date,to_date)
     return calculate_ideal_stock()
 
 
