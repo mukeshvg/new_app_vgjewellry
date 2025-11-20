@@ -15,12 +15,34 @@ def connect():
 def get_ideal_stock(from_date, to_date):
     get_stock_data(from_date,to_date)
     get_sale_data(from_date,to_date)
+
+    doc = frappe.get_doc({
+        "doctype":"ideal_stock_dates",
+        "from_date":from_date,
+        "to_date":to_date
+        })
+    doc.save()
+    frappe.db.commit()
     return calculate_ideal_stock()
 
 
 @frappe.whitelist(allow_guest=True)
 def set_target_stock(target_stock):
     target_stock = float(target_stock)
+    last_doc = frappe.get_all(
+    "ideal_stock_dates",                
+    order_by="creation desc",   
+    limit_page_length=1            
+)
+    if last_doc:
+        doc_name = last_doc[0].name
+        doc = frappe.get_doc("ideal_stock_dates", doc_name)
+
+        # Update fields
+        doc.target = target_stock
+        # Save changes
+        doc.save()
+        frappe.db.commit()
 
     dict_list= calculate_ideal_stock()
     total_ideal_stock = sum(d["Ideal_Stock"] for d in dict_list)
@@ -699,5 +721,12 @@ def get_todays_stock(branch, item, variety=None, weight_range=None):
 
     return data
 
-
+@frappe.whitelist()
+def get_ideal_stock_date():
+    query = """
+        SELECT from_date, to_date, target
+        FROM `tabideal_stock_dates` order by creation desc limit 1
+    """
+    data = frappe.db.sql(query, (), as_dict=True)
+    return data
 

@@ -82,6 +82,10 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 	    </div>
 	</div>
 	<div class="dr-result" id="result_box"></div>
+	<div id="custombutton">
+        <span id="ucrrpt"></span>
+        </div>
+        <br>
 	<div id="pivotContainer"  style=" width: 100%;"></div>
     `;
 	$(page.body).append(html);
@@ -117,6 +121,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 			frappe.msgprint("Input target stock");
 			return;
 		}
+		loadingDiv()
 		frappe.call({
 			method: "vgjewellry.ideal_stock_api.set_target_stock", 
 			args: {
@@ -124,6 +129,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 			},
 			callback: function (r) {
 				console.log(r);
+				unloadingicon();
 				if (r.message) {
 					//stdPivotUi(r.message);
 					pivot.updateData({
@@ -140,6 +146,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 	var usr = frappe.session.user;
 	var bu = frappe.pages[Object.keys(frappe.pages)[0]].baseURI;
 	let rpt = bu.substring(bu.lastIndexOf('/') + 1).trim();
+	loadingicon()
 
 	frappe.call({
                         method: "vgjewellry.VG_api.ucr_fetch",
@@ -149,17 +156,110 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
                                 window.ucrformats = res.message;
                         }
                 });
-
-	frappe.call({
-                        method: "vgjewellry.ideal_stock_api.calculate_ideal_stock",
-                        callback: function (r) {
-				stdPivotUi(r.message);
+		
+		frappe.call({
+                        method: "vgjewellry.ideal_stock_api.get_ideal_stock_date",
+                        callback: function (res) {
+				let r=res.message[0]
+				fromInput.val(r.from_date);
+				toInput.val(r.to_date);
+				$("#target_stock").val(r.target)
                         }
                 });
 
+		frappe.call({
+                        method: "vgjewellry.ideal_stock_api.calculate_ideal_stock",
+                        callback: function (r) {
+				stdPivotUi(r.message);
+				unloadingicon()
+                        }
+                });
+
+function unloadingicon() {
+	let loadElements = document.querySelectorAll('[id="loading"]');
+	loadElements.forEach(function (element) {
+		element.setAttribute("hidden", "hidden");
+	});
+	clearInterval(window.interval);
+
+}
+
+function loadingicon() {
+	if (window.isLoading == 1) {
+		unloadingicon()
+	}
+
+	if (window.isLoading == undefined) {
+		window.isLoading = 1;
+	}
+
+	let custbtn = document.querySelector("#custombutton");
+	let loadingDiv = document.createElement("div");
+
+	loadingDiv.innerHTML = `
+		<div class="loading-container" style="margin-top: 20px; text-align: center;">
+			<div class="loading-spinner" style="
+				display: inline-block;
+				width: 50px;
+				height: 50px;
+				border: 5px solid #f3f3f3;
+				border-top: 5px solid #3498db;
+				border-radius: 50%;
+				animation: spin 1s linear infinite;
+				margin-right: 15px;
+				vertical-align: middle;">
+			</div>
+			<div id="clock" style="
+				display: inline-block;
+				font-family: 'Arial', sans-serif;
+				font-size: 24px;
+				color: #333;
+				background: linear-gradient(145deg, #f0f0f0, #ffffff);
+				padding: 15px 25px;
+				border-radius: 10px;
+				box-shadow: 5px 5px 10px #d1d1d1, -5px -5px 10px #ffffff;
+				vertical-align: middle;">
+				00:00
+			</div>
+			<div class="loading-text" style="
+				margin-top: 10px;
+				font-size: 16px;
+				color: #666;
+				font-family: 'Arial', sans-serif;">
+				Processing your request...
+			</div>
+		</div>
+		<style>
+			@keyframes spin {
+				0% { transform: rotate(0deg); }
+				100% { transform: rotate(360deg); }
+			}
+		</style>
+	`;
+	
+	loadingDiv.id = "loading";
+	custbtn.after(loadingDiv);
+	window.isLoading = 1;
+
+	var timeLeft = 1;
+	window.interval = setInterval(updateClock, 1000);
+
+	function updateClock() {
+		var minutes = Math.floor(timeLeft / 60);
+		var seconds = timeLeft % 60;
+		minutes = minutes < 10 ? "0" + minutes : minutes;
+		seconds = seconds < 10 ? "0" + seconds : seconds;
+		document.getElementById("clock").innerHTML = minutes + ":" + seconds;
+		timeLeft++;
+		if (timeLeft > 120) {
+			clearInterval(interval);
+			document.getElementById("clock").innerHTML = "Time's up!";
+		}
+	}
+}
 
 	$("#fetch_btn").on("click", function () {
-
+		loadingDiv()
 		frappe.call({
 			method: "vgjewellry.VG_api.ucr_fetch",
 			// args: {"rpt":rpt},
@@ -198,6 +298,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 			},
 			callback: function (r) {
 				console.log(r);
+				unloadingicon();
 				if (r.message) {
 					stdPivotUi(r.message);
 					/*resultBox
