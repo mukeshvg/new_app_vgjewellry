@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:salesmanid",
  "creation": "2025-11-21 11:25:54.327393",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -17,7 +18,8 @@
   {
    "fieldname": "salesmanid",
    "fieldtype": "Data",
-   "label": "SalesManId"
+   "label": "SalesManId",
+   "unique": 1
   },
   {
    "fieldname": "column_break_obkf",
@@ -50,10 +52,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-21 11:27:18.792128",
+ "modified": "2025-11-21 16:52:54.031848",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Salesman",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -70,7 +73,9 @@
   }
  ],
  "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "sales_man_name"
 }

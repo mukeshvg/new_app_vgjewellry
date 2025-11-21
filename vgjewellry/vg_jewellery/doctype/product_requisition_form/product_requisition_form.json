@@ -8,6 +8,8 @@
   "request_by",
   "column_break_gviw",
   "branch",
+  "column_break_mhif",
+  "sales_person",
   "section_break_ptqi",
   "product_details",
   "section_break_tdzv",
@@ -74,12 +76,22 @@
    "fieldtype": "Small Text",
    "label": "Purchase Department Remark",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mhif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Ornate_Salesman"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-18 12:51:08.864423",
+ "modified": "2025-11-21 16:43:37.136045",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Form",

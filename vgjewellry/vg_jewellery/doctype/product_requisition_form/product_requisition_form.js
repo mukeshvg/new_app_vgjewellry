@@ -42,20 +42,27 @@ frappe.ui.form.on("Product_Requisition_Item", {
 			args: { item: row.item },
 			callback(r) {
 				if (r && r.message && r.message) {
-		let grid_row = frm.fields_dict.product_details.grid.grid_rows_by_docname[cdn];
-		console.log(grid_row)
-		let fields = ["variety", "weight_range", "qty"];
-		fields.forEach(f => {
-			grid_row.on_grid_fields_dict[f].df.read_only = 0;
-		})
-		let variety_field = grid_row.on_grid_fields_dict.variety;
-		variety_field.get_query = function() {
-                    return {
-                        filters: {
-                            name: ["in", r.message]
-                        }
-                    };
-                };
+					let grid_row = frm.fields_dict.product_details.grid.grid_rows_by_docname[cdn];
+					let fields = ["variety", "weight_range", "qty"];
+					fields.forEach(f => {
+						grid_row.on_grid_fields_dict[f].df.read_only = 0;
+					})
+					let variety_field = grid_row.on_grid_fields_dict.variety;
+					variety_field.get_query = function() {
+						return {
+							filters: {
+								name: ["in", r.message]
+							}
+						};
+					};
+					let wt_field = grid_row.on_grid_fields_dict.weight_range;
+					weight_range.get_query = function() {
+						return {
+							filters: {
+								name: ["in", row.item]
+							}
+						};
+					};
 				}
 
 			}
