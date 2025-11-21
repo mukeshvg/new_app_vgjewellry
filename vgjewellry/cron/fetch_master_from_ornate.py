@@ -26,6 +26,12 @@ def fetch_master_from_ornate():
     '''
     cursor.execute(var_query)
     var_rows = cursor.fetchall()
+    
+    salesman_query = '''
+        SELECT smm.SalesManMstID ,smm.SalesManName ,smm.IsActive ,smm.BranchID  FROM SalesManMst AS smm
+    '''
+    cursor.execute(salesman_query)
+    salesman_rows = cursor.fetchall()
     cursor.close()
     con.close()
 
@@ -75,6 +81,33 @@ def fetch_master_from_ornate():
                 "variety_id": str(name),
                 "variety_name": var_name,
                 "item_trade_mst_id": trade_id
+            }).insert(ignore_permissions=True)
+
+    frappe.db.commit()
+    
+    for row in salesman_rows:
+        name, sales_man_name, is_active, branch = row
+
+        if frappe.db.exists("Ornate_Salesman", name):
+            # Update existing
+            frappe.db.set_value(
+                "Ornate_Salesman",
+                name,
+                {
+                    "salesmanid": str(name),
+                    "sales_man_name": sales_man_name,
+                    "is_active": is_active,
+                    "branch": branch,
+                }
+            )
+        else:
+            # Insert new
+            frappe.get_doc({
+                "doctype": "Ornate_Salesman",
+                "salesmanid": str(name),
+                 "sales_man_name": sales_man_name,
+                 "is_active": is_active,
+                 "branch": branch,
             }).insert(ignore_permissions=True)
 
     frappe.db.commit()

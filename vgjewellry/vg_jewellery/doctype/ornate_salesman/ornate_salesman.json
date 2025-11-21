@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-21 11:25:54.327393",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "salesmanid",
+  "column_break_obkf",
+  "sales_man_name",
+  "column_break_qpey",
+  "is_active",
+  "column_break_romt",
+  "branch"
+ ],
+ "fields": [
+  {
+   "fieldname": "salesmanid",
+   "fieldtype": "Data",
+   "label": "SalesManId"
+  },
+  {
+   "fieldname": "column_break_obkf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_man_name",
+   "fieldtype": "Data",
+   "label": "Sales Man Name"
+  },
+  {
+   "fieldname": "column_break_qpey",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Data",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "column_break_romt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Data",
+   "label": "Branch"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-21 11:27:18.792128",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Ornate_Salesman",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
