@@ -56,10 +56,11 @@ frappe.ui.form.on("Product_Requisition_Item", {
 						};
 					};
 					let wt_field = grid_row.on_grid_fields_dict.weight_range;
-					weight_range.get_query = function() {
+					wt_field.get_query = function() {
+						console.log(row.item)
 						return {
 							filters: {
-								name: ["in", row.item]
+								item: ["in", [row.item]]
 							}
 						};
 					};
