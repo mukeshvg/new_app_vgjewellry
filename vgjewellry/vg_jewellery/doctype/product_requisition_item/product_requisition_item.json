@@ -13,6 +13,8 @@
   "weight_range",
   "column_break_bkzk",
   "qty",
+  "column_break_thlz",
+  "pcs",
   "section_break_alhp",
   "image_1",
   "column_break_mlam",
@@ -103,13 +105,22 @@
    "fieldname": "image_4",
    "fieldtype": "Attach Image",
    "label": "Image 4"
+  },
+  {
+   "fieldname": "column_break_thlz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pcs",
+   "fieldtype": "Data",
+   "label": "Pcs"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-18 18:27:29.010510",
+ "modified": "2025-11-21 10:36:31.016824",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Item",
