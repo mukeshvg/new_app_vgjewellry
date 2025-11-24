@@ -1,0 +1,143 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "RQ-.#####",
+ "creation": "2025-11-15 15:56:10.637467",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "request_by",
+  "column_break_gviw",
+  "branch",
+  "column_break_mhif",
+  "sales_person",
+  "section_break_ptqi",
+  "product_details",
+  "section_break_tdzv",
+  "requester_remark",
+  "column_break_iccz",
+  "manager_remark",
+  "column_break_piwd",
+  "purchase_department_remark"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_by",
+   "fieldtype": "Data",
+   "label": "Request By",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gviw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch_Master",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ptqi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "product_details",
+   "fieldtype": "Table",
+   "label": "Product Details",
+   "options": "Product_Requisition_Item"
+  },
+  {
+   "fieldname": "section_break_tdzv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "requester_remark",
+   "fieldtype": "Small Text",
+   "label": "Requester Remark",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_iccz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manager_remark",
+   "fieldtype": "Small Text",
+   "label": "Manager Remark",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_piwd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "purchase_department_remark",
+   "fieldtype": "Small Text",
+   "label": "Purchase Department Remark",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mhif",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Ornate_Salesman"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-21 19:34:40.181536",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Product_Requisition_Form",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Order",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

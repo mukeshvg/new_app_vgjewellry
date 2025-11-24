@@ -13,14 +13,36 @@ def connect():
 
 @frappe.whitelist(allow_guest=True)
 def get_ideal_stock(from_date, to_date):
-    #get_stock_data(from_date,to_date)
-    #get_sale_data(from_date,to_date)
+    get_stock_data(from_date,to_date)
+    get_sale_data(from_date,to_date)
+
+    doc = frappe.get_doc({
+        "doctype":"ideal_stock_dates",
+        "from_date":from_date,
+        "to_date":to_date
+        })
+    doc.save()
+    frappe.db.commit()
     return calculate_ideal_stock()
 
 
 @frappe.whitelist(allow_guest=True)
 def set_target_stock(target_stock):
     target_stock = float(target_stock)
+    last_doc = frappe.get_all(
+    "ideal_stock_dates",                
+    order_by="creation desc",   
+    limit_page_length=1            
+)
+    if last_doc:
+        doc_name = last_doc[0].name
+        doc = frappe.get_doc("ideal_stock_dates", doc_name)
+
+        # Update fields
+        doc.target = target_stock
+        # Save changes
+        doc.save()
+        frappe.db.commit()
 
     dict_list= calculate_ideal_stock()
     total_ideal_stock = sum(d["Ideal_Stock"] for d in dict_list)
@@ -352,24 +374,23 @@ ORDER BY
 
 import json
 
+@frappe.whitelist(allow_guest=True)
 def calculate_ideal_stock():
     query = """
-    SELECT branch, item, variety, weight_range, avg_stock
-    FROM `tabStockDataForIdeal` where item='Bali' and branch_id !=9
-"""
+    SELECT branch, item, variety, weight_range, avg_stock ,branch_id ,item_id,variety_id
+    FROM `tabStockDataForIdeal` """
     rows = frappe.db.sql(query, as_dict=True)
-    stock_data = [[row["branch"], row["item"], row["variety"], row["weight_range"], row["avg_stock"]] for row in rows]
+    stock_data = [[row["branch_id"],row["item_id"],row["variety_id"],row["branch"], row["item"], row["variety"], row["weight_range"], row["avg_stock"]] for row in rows]
 
     query1 = """
-    SELECT branch, item, variety, weight_range, total_net_wt
-    FROM `tabSaleDataForIdeal` where item='Bali' 
+    SELECT branch, item, variety, weight_range, total_net_wt,branch_id ,item_id,variety_id  FROM `tabSaleDataForIdeal`  
 """
     rows1 = frappe.db.sql(query1, as_dict=True)
-    sales_data = [[row["branch"], row["item"], row["variety"], row["weight_range"], row["total_net_wt"]] for row in rows1]
+    sales_data = [[row["branch_id"],row["item_id"],row["variety_id"],row["branch"], row["item"], row["variety"], row["weight_range"], row["total_net_wt"]] for row in rows1]
 
 
-    sales_df = pd.DataFrame(sales_data, columns=["Branch", "Item", "Variety", "Weight_Range",  "Sales_Weight"])
-    stock_df = pd.DataFrame(stock_data, columns=["Branch","Item", "Variety", "Weight_Range",  "Stock_Weight"])
+    sales_df = pd.DataFrame(sales_data, columns=["Branch Id","Item Id","Variety Id","Branch", "Item", "Variety", "Weight_Range",  "Sales_Weight"])
+    stock_df = pd.DataFrame(stock_data, columns=["Branch Id","Item Id","Variety Id","Branch","Item", "Variety", "Weight_Range",  "Stock_Weight"])
 
 
     #df = pd.merge(sales_df, stock_df, on=["Branch", "Item", "Variety", "Weight_Range"], how="left")
@@ -441,7 +462,271 @@ def calculate_ideal_stock():
     "Sales_Weight", "Stock_Weight", "STR", "GAST",
     "Quadrant", "Ideal_Stock", "Target_Stock"
 ]
+
+
+    frappe.db.sql("TRUNCATE TABLE `tabIdeal_Stock`")
+    frappe.db.commit()
+    fields = [
+        "name",    
+        "branch_id",
+        "item_id",
+        "variety_id",
+        "branch",
+        "item",
+        "variety",
+        "weight_range",
+        "sales_weight",
+        "stock_weight",
+        "stock_turn",
+        "group_average_stock_turn",
+        "quadrant",
+        "ideal_stock",
+        "target_stock",
+    ]
+
+    # Convert fetched data into list of tuples
+
+    db_insert_data=df[["Branch Id_x","Item Id_x","Variety Id_x","Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock"]].values.tolist()
+    values = []
+    for i, row in enumerate(db_insert_data, start=1):
+        values.append((i,) + tuple(row))
+    # Insert all records quickly
+    frappe.db.bulk_insert("Ideal_Stock", fields, values)
+
+    frappe.db.commit()
+
     dict_list = [dict(zip(columns, row)) for row in data]
     return dict_list
 
+@frappe.whitelist(allow_guest=True)
+def get_current_stock():
+    con = connect()
+    cursor = con.cursor()
+
+    full_query = r'''
+IF OBJECT_ID('tempdb..#LabelData1') IS NOT NULL DROP TABLE #LabelData1;
+IF OBJECT_ID('tempdb..#LabelDays1') IS NOT NULL DROP TABLE #LabelDays1;
+
+
+-- Step 1⃣: Prepare Label Data with latest transaction info
+SELECT
+    lb.LabelNo,
+    lb.NetWt,
+    lb.ItemMstID,
+    lb.BranchID,
+    
+    lt.LatestItemMstID,
+    lt.LatestVarietyMstId,
+    lt.ItemName,
+    lt.VarietyName,
+    lt.BranchShortCode
+INTO #LabelData1
+FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelBalance lb
+CROSS APPLY (
+    SELECT TOP 1
+        lt.ItemMstID AS LatestItemMstID,
+        lt.VarietyMstId AS LatestVarietyMstId,
+        im.ItemName,
+        vm.VarietyName,
+        bm.BranchName AS BranchShortCode
+    FROM dbo.LabelTransaction lt
+    LEFT JOIN dbo.ItemMst im ON im.ItemMstID = lt.ItemMstID
+    LEFT JOIN dbo.VarietyMst vm ON vm.VarietyMstId = lt.VarietyMstId
+    LEFT JOIN dbo.BranchMaster bm ON bm.BranchID = lb.BranchID
+    WHERE lt.LabelNo = lb.LabelNo
+    ORDER BY lt.LabelTransID DESC
+    ) lt
+WHERE lb.NetWt > 0
+  AND lb.ItemTradMstID = 1002;
+
+-- Step 2⃣: Expand each label into individual active dates
+SELECT
+    l.BranchID,
+    l.ItemMstID,
+    l.LatestVarietyMstId AS VarietyMstId,
+    l.ItemName,
+    l.VarietyName,
+    l.BranchShortCode,
+    l.LabelNo,
+    l.NetWt,
+    CASE
+        WHEN l.NetWt <= 5 THEN '0-5'
+        WHEN l.NetWt <= 10 THEN '5.001-10'
+        WHEN l.NetWt <= 15 THEN '10.001-15'
+        WHEN l.NetWt <= 20 THEN '15.001-20'
+        WHEN l.NetWt <= 25 THEN '20.001-25'
+        WHEN l.NetWt <= 30 THEN '25.001-30'
+        WHEN l.NetWt <= 35 THEN '30.001-35'
+        WHEN l.NetWt <= 40 THEN '35.001-40'
+        WHEN l.NetWt <= 45 THEN '40.001-45'
+        WHEN l.NetWt <= 50 THEN '45.001-50'
+        WHEN l.NetWt <= 55 THEN '50.001-55'
+        WHEN l.NetWt <= 60 THEN '55.001-60'
+        WHEN l.NetWt <= 65 THEN '60.001-65'
+        WHEN l.NetWt <= 70 THEN '65.001-70'
+        WHEN l.NetWt <= 75 THEN '70.001-75'
+        WHEN l.NetWt <= 80 THEN '75.001-80'
+        WHEN l.NetWt <= 85 THEN '80.001-85'
+        WHEN l.NetWt <= 90 THEN '85.001-90'
+        WHEN l.NetWt <= 95 THEN '90.001-95'
+        WHEN l.NetWt <= 100 THEN '95.001-100'
+        WHEN l.NetWt <= 120 THEN '100.001-120'
+        WHEN l.NetWt <= 140 THEN '120.001-140'
+        WHEN l.NetWt <= 160 THEN '140.001-160'
+        WHEN l.NetWt <= 180 THEN '160.001-180'
+        WHEN l.NetWt <= 200 THEN '180.001-200'
+        WHEN l.NetWt <= 220 THEN '200.001-220'
+        WHEN l.NetWt <= 240 THEN '220.001-240'
+        WHEN l.NetWt <= 260 THEN '240.001-260'
+        WHEN l.NetWt <= 280 THEN '260.001-280'
+        WHEN l.NetWt <= 300 THEN '280.001-300'
+        WHEN l.NetWt <= 320 THEN '300.001-320'
+        WHEN l.NetWt <= 340 THEN '320.001-340'
+        WHEN l.NetWt <= 360 THEN '340.001-360'
+        WHEN l.NetWt <= 380 THEN '360.001-380'
+        ELSE '>380'
+    END AS WeightRange
+INTO #LabelDays1
+FROM #LabelData1 l
+
+-- Step 3⃣: Aggregate by group, counting unique active days
+SELECT
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange,
+    COUNT(DISTINCT LabelNo) AS LabelCount,
+    SUM(NetWt) AS TotalNetWt
+    FROM #LabelDays1
+GROUP BY
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange
+ORDER BY
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    TRY_CAST(LEFT(WeightRange, CHARINDEX('-', WeightRange + '-') - 1) AS DECIMAL(10,3));
+
+    '''
+
+    cursor.execute(full_query, ())
+
+    # Skip all intermediate non-result sets until we reach the final SELECT
+    while True:
+        try:
+            if cursor.description:  # means this set has columns => it's the final SELECT
+                break
+            if not cursor.nextset():  # no more sets
+                break
+        except pyodbc.ProgrammingError:
+            break
+
+    # Now fetch the actual data
+    rows = cursor.fetchall()
+    
+    frappe.db.sql("TRUNCATE TABLE `tabCurrent_Stock_Ideal_Stock`")
+    frappe.db.commit()
+
+    fields = [
+        "name",    
+        "branch_id",
+        "item_id",
+        "variety_id",
+        "item",
+        "variety",
+        "branch",
+        "weight_range",
+        "stock_pcs",
+        "stock_weight",
+    ]
+
+    # Convert fetched data into list of tuples
+
+    values = []
+    for i, row in enumerate(rows, start=1):
+        values.append((i,) + tuple(row))
+
+    # Insert all records quickly
+    frappe.db.bulk_insert("Current_Stock_Ideal_Stock", fields, values)
+
+    frappe.db.commit()
+    
+    cursor.close()
+    con.close()
+    compare_cureent_stock_with_ideal_stock()
+    return f"{len(values)} records inserted successfully123"
+
+def compare_cureent_stock_with_ideal_stock():
+    
+    query = """
+    UPDATE tabCurrent_Stock_Ideal_Stock AS c
+JOIN tabIdeal_Stock AS i
+    ON  c.branch_id   = i.branch_id
+    AND c.item_id     = i.item_id
+    AND c.variety_id  = i.variety_id
+    AND c.weight_range = i.weight_range
+SET
+    c.ideal_weight = i.ideal_stock;
+"""
+    frappe.db.sql(query)
+    data = frappe.db.sql("""
+        SELECT branch, item, variety, weight_range, ideal_weight ,stock_weight,stock_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
+    """, as_list=True)
+
+    columns = [
+    "branch", "item", "variety", "weight_range", "ideal_weight", "stock_weight", "stock_pcs"
+]
+
+    dict_list = [dict(zip(columns, row)) for row in data]
+
+    return dict_list
+
+
+
+@frappe.whitelist()
+def get_todays_stock(branch, item, variety=None, weight_range=None):
+    # Validate mandatory fields
+    if not branch or not item:
+        frappe.throw("Branch and Item are required fields.")
+
+    # Base query
+    query = """
+        SELECT branch, item, variety, weight_range, ideal_weight, stock_weight, stock_pcs
+        FROM `tabCurrent_Stock_Ideal_Stock`
+        WHERE branch_id=%s AND item_id=%s
+    """
+
+    # Parameters for SQL placeholders
+    params = [branch, item]
+
+    # Add optional filters
+    if variety:
+        query += " AND variety_id=%s"
+        params.append(variety)
+
+    if weight_range:
+        query += " AND weight_range=%s"
+        params.append(weight_range)
+
+    # Execute query safely
+    data = frappe.db.sql(query, tuple(params), as_dict=True)
+
+    return data
+
+@frappe.whitelist()
+def get_ideal_stock_date():
+    query = """
+        SELECT from_date, to_date, target
+        FROM `tabideal_stock_dates` order by creation desc limit 1
+    """
+    data = frappe.db.sql(query, (), as_dict=True)
+    return data
 

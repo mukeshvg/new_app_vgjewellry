@@ -1,0 +1,132 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-11-12 12:53:54.088870",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch_id",
+  "column_break_ptby",
+  "branch",
+  "section_break_hgig",
+  "item_id",
+  "column_break_qcjh",
+  "item",
+  "section_break_fyss",
+  "variety_id",
+  "column_break_qemr",
+  "variety",
+  "section_break_thse",
+  "weight_range",
+  "column_break_badx",
+  "total_net_wt",
+  "section_break_bync",
+  "label_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch Id"
+  },
+  {
+   "fieldname": "column_break_ptby",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Data",
+   "label": "Branch"
+  },
+  {
+   "fieldname": "section_break_hgig",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_id",
+   "fieldtype": "Data",
+   "label": "Item Id"
+  },
+  {
+   "fieldname": "column_break_qcjh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "section_break_fyss",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "variety_id",
+   "fieldtype": "Data",
+   "label": "Variety Id"
+  },
+  {
+   "fieldname": "column_break_qemr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Data",
+   "label": "Variety"
+  },
+  {
+   "fieldname": "section_break_thse",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Data",
+   "label": "Weight Range"
+  },
+  {
+   "fieldname": "column_break_badx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_net_wt",
+   "fieldtype": "Data",
+   "label": "Total Net wt"
+  },
+  {
+   "fieldname": "section_break_bync",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "label_count",
+   "fieldtype": "Data",
+   "label": "Label Count"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-12 15:07:19.772255",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "SaleDataForIdeal",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

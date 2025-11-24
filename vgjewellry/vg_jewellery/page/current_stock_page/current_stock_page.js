@@ -1,7 +1,7 @@
-frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
+frappe.pages['current_stock_page'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Ideal Stock',
+		title: "Today's Stock",
 		single_column: true
 	});
 	// --- CSS Styling ---
@@ -26,6 +26,7 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 		padding: 6px 10px;
 		border: 1px solid #e2e8f0;
 		border-radius: 8px;
+		flex-direction:column;
 	    }
 	    .dr-field label {
 		font-size: 13px;
@@ -67,136 +68,118 @@ frappe.pages['ideal-stock'].on_page_load = function(wrapper) {
 	const html = `
 	<div class="date-range-container">
 	    <div class="dr-field">
-		<label for="from_date">From</label>
-		<input type="date" id="from_date">
+		<label for="branch">Branch</label>
+		<select id="branch"><option value="">Select Branch</option></select>
 	    </div>
 	    <div class="dr-field">
-		<label for="to_date">To</label>
-		<input type="date" id="to_date">
+		<label for="item">Item</label>
+		<select id="item"><option value="">Select Item</option></select>
 	    </div>
-	    <button class="dr-submit" id="fetch_btn">Submit</button>
 	    <div class="dr-field">
-		<label for="target_stock">Target Stock</label>
-		<input type="number" id="target_stock">
-		<button class="dr-submit" id="set_target_stock">Set Target Stock</button>
+		<label for="variety">Variety</label>
+		<select id="variety"><option value="">Select Variety</option></select>
 	    </div>
+	    <div class="dr-field">
+		<label for="weight_range">Weight Range</label>
+		<select id="weight_range"><option value="">Select Weight Range</option></select>
+	    </div>
+	    <button class="dr-submit" id="fetch_btn">Fetch Data</button>
 	</div>
 	<div class="dr-result" id="result_box"></div>
 	<div id="custombutton">
-        <span id="ucrrpt"></span>
-        </div>
-        <br>
+	<span id="ucrrpt"></span>
+	</div>
+	<br>
 	<div id="pivotContainer"  style=" width: 100%;"></div>
     `;
 	$(page.body).append(html);
+	frappe.call({
+		method: "vgjewellry.master_api.get_all_branch",
+		callback: function (res) {
+			var branch_sel = res.message;
+			var str="";
+			for(var k in branch_sel){
+				$('#branch').append(`<option value="${branch_sel[k]["branch_id"]}">${branch_sel[k]["branch"]}</option>`);
+			}
 
-	// --- JS Logic ---
-	const fromInput = $("#from_date");
-	const toInput = $("#to_date");
-	console.log(target_stock);
-	const resultBox = $("#result_box");
-
-	// Default range: last 7 days
-	const today = frappe.datetime.get_today();
-	const weekAgo = frappe.datetime.add_days(today, -225);
-
-	fromInput.val(weekAgo);
-	toInput.val(today);
-
-	function formatDateToDMY(isoDate) {
-		const [y, m, d] = isoDate.split("-");
-		return `${d}-${m}-${y}`;
-	}
-
-	function formatDateToISO(dmy) {
-		const [d, m, y] = dmy.split("-");
-		return `${y}-${m}-${d}`;
-	}
-
-	var pivot;
-	$("#set_target_stock").on("click",function(){
-		const target_stock1 = $("#target_stock");
-		let target_stock=target_stock1.val();
-		if (!target_stock) {
-			frappe.msgprint("Input target stock");
-			return;
 		}
-		loadingDiv()
+	});
+
+	$("#branch").on("change",()=>{
 		frappe.call({
-			method: "vgjewellry.ideal_stock_api.set_target_stock", 
-			args: {
-				target_stock: target_stock,  
-			},
-			callback: function (r) {
-				console.log(r);
-				unloadingicon();
-				if (r.message) {
-					//stdPivotUi(r.message);
-					pivot.updateData({
-						data: r.message
-					});
-				} else {
-					resultBox.html("<div>No data found</div>").show();
+			method: "vgjewellry.master_api.get_all_branch_item",
+			args: {"branch": $("#branch").val()},
+			callback: function (res) {
+				$('#item').empty();
+				$('#item').append('<option value="">Select Item</option>');
+
+				var item_sel = res.message;
+				var str="";
+				for(var k in item_sel){
+					$('#item').append(`<option value="${item_sel[k]["item_id"]}">${item_sel[k]["item"]}</option>`);
 				}
+
 			}
 		});
 
 	})
-
-	var usr = frappe.session.user;
-	var bu = frappe.pages[Object.keys(frappe.pages)[0]].baseURI;
-	let rpt = bu.substring(bu.lastIndexOf('/') + 1).trim();
-	loadingicon()
-
-	frappe.call({
-                        method: "vgjewellry.VG_api.ucr_fetch",
-                        // args: {"rpt":rpt},
-                        args: {"rpt": rpt,"usr": usr},
-                        callback: function (res) {
-                                window.ucrformats = res.message;
-                        }
-                });
-		
+	$("#item").on("change",()=>{
 		frappe.call({
-                        method: "vgjewellry.ideal_stock_api.get_ideal_stock_date",
-                        callback: function (res) {
-				let r=res.message[0]
-				fromInput.val(r.from_date);
-				toInput.val(r.to_date);
-				$("#target_stock").val(r.target)
-                        }
-                });
+			method: "vgjewellry.master_api.get_all_branch_item_variety",
+			args: {"branch": $("#branch").val(),"item":$("#item").val()},
+			callback: function (res) {
+				var variety_sel = res.message;
+				var str="";
+				$('#variety').empty();
+				$('#variety').append('<option value="">Select Variety</option>');
+				for(var k in variety_sel){
+					$('#variety').append(`<option value="${variety_sel[k]["variety_id"]}">${variety_sel[k]["variety"]}</option>`);
+				}
 
+			}
+		});
+
+	})
+	$("#variety").on("change",()=>{
 		frappe.call({
-                        method: "vgjewellry.ideal_stock_api.calculate_ideal_stock",
-                        callback: function (r) {
-				stdPivotUi(r.message);
-				unloadingicon()
-                        }
-                });
+			method: "vgjewellry.master_api.get_all_branch_item_variety_weight_range",
+			args: {"branch": $("#branch").val(),"item":$("#item").val(),"variety":$("#variety").val()},
+			callback: function (res) {
+				var wt_sel = res.message;
+				var str="";
+				$('#weight_range').empty();
+				$('#weight_range').append('<option value="">Select Weight Range</option>');
 
-function unloadingicon() {
-	let loadElements = document.querySelectorAll('[id="loading"]');
-	loadElements.forEach(function (element) {
-		element.setAttribute("hidden", "hidden");
-	});
-	clearInterval(window.interval);
+				for(var k in wt_sel){
+					$('#weight_range').append(`<option value="${wt_sel[k]["weight_range"]}">${wt_sel[k]["weight_range"]}</option>`);
+				}
 
-}
+			}
+		});
 
-function loadingicon() {
-	if (window.isLoading == 1) {
-		unloadingicon()
+	})
+	function unloadingicon() {
+		let loadElements = document.querySelectorAll('[id="loading"]');
+		loadElements.forEach(function (element) {
+			element.setAttribute("hidden", "hidden");
+		});
+		clearInterval(window.interval);
+
 	}
 
-	if (window.isLoading == undefined) {
-		window.isLoading = 1;
-	}
+	function loadingicon() {
+		if (window.isLoading == 1) {
+			unloadingicon()
+		}
 
-	let custbtn = document.querySelector("#custombutton");
-	let loadingDiv = document.createElement("div");
+		if (window.isLoading == undefined) {
+			window.isLoading = 1;
+		}
 
-	loadingDiv.innerHTML = `
+		let custbtn = document.querySelector("#custombutton");
+		let loadingDiv = document.createElement("div");
+
+		loadingDiv.innerHTML = `
 		<div class="loading-container" style="margin-top: 20px; text-align: center;">
 			<div class="loading-spinner" style="
 				display: inline-block;
@@ -236,74 +219,88 @@ function loadingicon() {
 			}
 		</style>
 	`;
-	
-	loadingDiv.id = "loading";
-	custbtn.after(loadingDiv);
-	window.isLoading = 1;
 
-	var timeLeft = 1;
-	window.interval = setInterval(updateClock, 1000);
+		loadingDiv.id = "loading";
+		custbtn.after(loadingDiv);
+		window.isLoading = 1;
 
-	function updateClock() {
-		var minutes = Math.floor(timeLeft / 60);
-		var seconds = timeLeft % 60;
-		minutes = minutes < 10 ? "0" + minutes : minutes;
-		seconds = seconds < 10 ? "0" + seconds : seconds;
-		document.getElementById("clock").innerHTML = minutes + ":" + seconds;
-		timeLeft++;
-		if (timeLeft > 120) {
-			clearInterval(interval);
-			document.getElementById("clock").innerHTML = "Time's up!";
+		var timeLeft = 1;
+		window.interval = setInterval(updateClock, 1000);
+
+		function updateClock() {
+			var minutes = Math.floor(timeLeft / 60);
+			var seconds = timeLeft % 60;
+			minutes = minutes < 10 ? "0" + minutes : minutes;
+			seconds = seconds < 10 ? "0" + seconds : seconds;
+			document.getElementById("clock").innerHTML = minutes + ":" + seconds;
+			timeLeft++;
+			if (timeLeft > 120) {
+				clearInterval(interval);
+				document.getElementById("clock").innerHTML = "Time's up!";
+			}
 		}
 	}
-}
 
-	$("#fetch_btn").on("click", function () {
-		loadingDiv()
+	const resultBox = $("#result_box");
+
+	// Default range: last 7 days
+
+	var pivot;
+
+	var usr = frappe.session.user;
+	var bu = frappe.pages[Object.keys(frappe.pages)[0]].baseURI;
+	let rpt = bu.substring(bu.lastIndexOf('/') + 1).trim();
+	$("#fetch_btn").on("click", function (e) {
+		e.preventDefault();
+		var branch = $('#branch').val().trim();
+		var item = $('#item').val().trim();
+		var variety = $('#variety').val().trim();
+		var weightRange = $('#weight_range').val().trim();
+
+		// Validate branch
+		if (branch === "") {
+			alert("Please select a branch.");
+			$('#branch').focus();
+			return false;
+		}
+
+		// Validate item
+		if (item === "") {
+			alert("Please select an item.");
+			$('#item').focus();
+			return false;
+		}
+
+		// Both branch and item are selected — prepare data
+		var data = {
+			branch: branch,
+			item: item,
+			variety: variety,
+			weight_range: weightRange
+		};
+
 		frappe.call({
 			method: "vgjewellry.VG_api.ucr_fetch",
-			// args: {"rpt":rpt},
 			args: {"rpt": rpt,"usr": usr},
 			callback: function (res) {
 				window.ucrformats = res.message;
 			}
 		});
 
-		let from_iso = fromInput.val();
-		let to_iso = toInput.val();
 
-		if (!from_iso || !to_iso) {
-			frappe.msgprint("Please select both dates");
-			return;
-		}
 
-		// Convert to D-M-Y for display
-		const from_dmy = formatDateToDMY(from_iso);
-		const to_dmy = formatDateToDMY(to_iso);
 
-		// Validate range
-		if (from_iso > to_iso) {
-			frappe.msgprint("Start date cannot be after End date");
-			return;
-		}
 
-		resultBox.hide().html(`<div>Fetching data from <b>${from_dmy}</b> to <b>${to_dmy}</b>...</div>`);
-
+		loadingicon();
 		// Example backend call
 		frappe.call({
-			method: "vgjewellry.ideal_stock_api.get_ideal_stock", 
-			args: {
-				from_date: from_iso,  
-				to_date: to_iso
-			},
+			method: "vgjewellry.ideal_stock_api.get_todays_stock", 
+			args:data,
 			callback: function (r) {
-				console.log(r);
-				unloadingicon();
+				console.log(r.message);
+				unloadingicon()
 				if (r.message) {
 					stdPivotUi(r.message);
-					/*resultBox
-						.html(`<div><b>From:</b> ${from_dmy} <b>To:</b> ${to_dmy}</div><pre>${JSON.stringify(r.message, null, 2)}</pre>`)
-						.show();*/
 				} else {
 					resultBox.html("<div>No data found</div>").show();
 				}
