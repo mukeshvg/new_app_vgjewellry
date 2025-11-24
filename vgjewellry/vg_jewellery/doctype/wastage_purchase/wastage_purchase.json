@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-20 13:10:47.114815",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_name",
+  "supplier_name",
+  "supplier_code",
+  "sp_variety_name",
+  "vg_variety_name",
+  "metal_id",
+  "purwast"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Link",
+   "label": "Item Name",
+   "options": "Item_Master"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "label": "Supplier Name",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "supplier_code",
+   "fieldtype": "Link",
+   "label": "Supplier Code",
+   "options": "Supplier_Master"
+  },
+  {
+   "fieldname": "sp_variety_name",
+   "fieldtype": "Data",
+   "label": "SP_Variety Name"
+  },
+  {
+   "fieldname": "vg_variety_name",
+   "fieldtype": "Data",
+   "label": "VG_Variety Name"
+  },
+  {
+   "fieldname": "metal_id",
+   "fieldtype": "Data",
+   "label": "Metal ID"
+  },
+  {
+   "fieldname": "purwast",
+   "fieldtype": "Data",
+   "label": "Pur.Wast.%"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-22 12:37:07.422041",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Wastage_Purchase",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
