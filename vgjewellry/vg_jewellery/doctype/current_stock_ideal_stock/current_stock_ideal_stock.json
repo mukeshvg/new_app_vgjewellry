@@ -15,6 +15,7 @@
   "ideal_weight",
   "stock_weight",
   "stock_pcs",
+  "target_pcs",
   "difference_in_weight",
   "difference_in_pcs",
   "stock_date"
@@ -84,12 +85,17 @@
    "fieldname": "stock_date",
    "fieldtype": "Date",
    "label": "Stock Date"
+  },
+  {
+   "fieldname": "target_pcs",
+   "fieldtype": "Data",
+   "label": "Target Pcs"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-17 19:43:05.249660",
+ "modified": "2025-11-24 13:27:09.524732",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Current_Stock_Ideal_Stock",

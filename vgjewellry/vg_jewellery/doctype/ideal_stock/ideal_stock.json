@@ -16,6 +16,8 @@
   "quadrant",
   "ideal_stock",
   "target_stock",
+  "ideal_pcs",
+  "target_pcs",
   "column_break_tlra",
   "branch",
   "item",
@@ -95,12 +97,22 @@
    "fieldname": "weight_range",
    "fieldtype": "Data",
    "label": "Weigth Range"
+  },
+  {
+   "fieldname": "ideal_pcs",
+   "fieldtype": "Data",
+   "label": "Ideal Pcs"
+  },
+  {
+   "fieldname": "target_pcs",
+   "fieldtype": "Data",
+   "label": "Target Pcs"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-19 07:39:30.306470",
+ "modified": "2025-11-24 13:18:13.663843",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ideal_Stock",
