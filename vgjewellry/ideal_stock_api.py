@@ -25,6 +25,13 @@ def get_ideal_stock(from_date, to_date):
     frappe.db.commit()
     return calculate_ideal_stock()
 
+def get_mid_weight(row):
+        if(row["Weight_Range"]==">380"):
+            return 500
+        num1, num2 = [float(x.strip()) for x in row["Weight_Range"].split('-')]
+        mid = (num1 + num2) / 2
+        return mid
+
 
 @frappe.whitelist(allow_guest=True)
 def set_target_stock(target_stock):
@@ -49,6 +56,8 @@ def set_target_stock(target_stock):
     for d in dict_list:
         ideal_stock = float(d["Ideal_Stock"])
         d["Target_Stock"]= round(target_stock * ideal_stock /total_ideal_stock,2)
+        mid_wt=get_mid_weight(d)
+        df["Target_Pcs"] = (df["Target_Stock"] / mid_wt).round().astype(int)
     return dict_list    
     
 
@@ -443,7 +452,7 @@ def calculate_ideal_stock():
 
     def ideal_stock(row):
         if row["Quadrant"] == "Q1 – Low Appeal":
-            return round(row["Stock_Weight"] * 0.3,3)
+            return round(row["Stock_Weight"] * 0.7,3)
         elif row["Quadrant"] == "Q2 – Saturated":
             return round(row["Sales_Weight"] / row["GAST"],3)
         else:
@@ -453,14 +462,22 @@ def calculate_ideal_stock():
      
     
 
+    def mid_weight(row):
+        if(row["Weight_Range"]==">380"):
+            return 500
+        num1, num2 = [float(x.strip()) for x in row["Weight_Range"].split('-')]
+        mid = (num1 + num2) / 2
+        return mid
 
+    mid_wt = df.apply(mid_weight, axis=1)
     # --- Step 8: Calculate difference (for stock correction) ---
     df["Correction"] = df["Ideal_Stock"] - df["Stock_Weight"]
-    data = df[["Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock"]].values.tolist()
+    df["Ideal_Pcs"] = (df["Ideal_Stock"] / mid_wt).round().astype(int)
+    data = df[["Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock","Ideal_Pcs","Ideal_Pcs"]].values.tolist()
     columns = [
     "Branch", "Item", "Variety", "Weight_Range",
     "Sales_Weight", "Stock_Weight", "STR", "GAST",
-    "Quadrant", "Ideal_Stock", "Target_Stock"
+    "Quadrant", "Ideal_Stock", "Target_Stock","Ideal_Pcs","Target_Pcs"
 ]
 
 
@@ -482,11 +499,13 @@ def calculate_ideal_stock():
         "quadrant",
         "ideal_stock",
         "target_stock",
+        "ideal_pcs",
+        "target_pcs"
     ]
 
     # Convert fetched data into list of tuples
 
-    db_insert_data=df[["Branch Id_x","Item Id_x","Variety Id_x","Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock"]].values.tolist()
+    db_insert_data=df[["Branch Id_x","Item Id_x","Variety Id_x","Branch", "Item", "Variety", "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock","Ideal_Pcs","Ideal_Pcs"]].values.tolist()
     values = []
     for i, row in enumerate(db_insert_data, start=1):
         values.append((i,) + tuple(row))
@@ -645,7 +664,7 @@ ORDER BY
         "branch",
         "weight_range",
         "stock_pcs",
-        "stock_weight",
+        "stock_weight"
     ]
 
     # Convert fetched data into list of tuples
@@ -654,6 +673,7 @@ ORDER BY
     for i, row in enumerate(rows, start=1):
         values.append((i,) + tuple(row))
 
+    
     # Insert all records quickly
     frappe.db.bulk_insert("Current_Stock_Ideal_Stock", fields, values)
 
@@ -674,15 +694,16 @@ JOIN tabIdeal_Stock AS i
     AND c.variety_id  = i.variety_id
     AND c.weight_range = i.weight_range
 SET
-    c.ideal_weight = i.ideal_stock;
+    c.ideal_weight = i.ideal_stock,
+    c.target_pcs = i.target_pcs;
 """
     frappe.db.sql(query)
     data = frappe.db.sql("""
-        SELECT branch, item, variety, weight_range, ideal_weight ,stock_weight,stock_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
+        SELECT branch, item, variety, weight_range, ideal_weight ,stock_weight,stock_pcs,target_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
     """, as_list=True)
 
     columns = [
-    "branch", "item", "variety", "weight_range", "ideal_weight", "stock_weight", "stock_pcs"
+    "branch", "item", "variety", "weight_range", "ideal_weight", "stock_weight", "stock_pcs","target_pcs"
 ]
 
     dict_list = [dict(zip(columns, row)) for row in data]
@@ -699,7 +720,7 @@ def get_todays_stock(branch, item, variety=None, weight_range=None):
 
     # Base query
     query = """
-        SELECT branch, item, variety, weight_range, ideal_weight, stock_weight, stock_pcs
+        SELECT branch, item, variety, weight_range, ideal_weight, stock_weight, stock_pcs , target_pcs
         FROM `tabCurrent_Stock_Ideal_Stock`
         WHERE branch_id=%s AND item_id=%s
     """
