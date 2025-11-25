@@ -18,19 +18,19 @@
    "fieldname": "item_name",
    "fieldtype": "Link",
    "label": "Item Name",
-   "options": "Item_Master"
+   "options": "Ornate_Item_Master"
   },
   {
    "fieldname": "supplier_name",
    "fieldtype": "Link",
    "label": "Supplier Name",
-   "options": "Supplier_Master"
+   "options": "Ornate_Supplier_Master"
   },
   {
+   "fetch_from": "supplier_name.supplier_code",
    "fieldname": "supplier_code",
-   "fieldtype": "Link",
-   "label": "Supplier Code",
-   "options": "Supplier_Master"
+   "fieldtype": "Data",
+   "label": "Supplier Code"
   },
   {
    "fieldname": "sp_variety_name",
@@ -39,13 +39,15 @@
   },
   {
    "fieldname": "vg_variety_name",
-   "fieldtype": "Data",
-   "label": "VG_Variety Name"
+   "fieldtype": "Link",
+   "label": "VG_Variety Name",
+   "options": "Ornate_Variety_Master"
   },
   {
    "fieldname": "metal_id",
-   "fieldtype": "Data",
-   "label": "Metal ID"
+   "fieldtype": "Link",
+   "label": "Metal ID",
+   "options": "Ornate_Item_Trade_Master"
   },
   {
    "fieldname": "purwast",
@@ -56,7 +58,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-22 12:37:07.422041",
+ "modified": "2025-11-25 10:06:00.802314",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Wastage_Purchase",

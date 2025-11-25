@@ -1,0 +1,134 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 22:14:46.094109",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "column_break_npov",
+  "metal",
+  "column_break_prqy",
+  "metal_color",
+  "section_break_risy",
+  "weight_range",
+  "column_break_rmag",
+  "diamond_carat_range",
+  "section_break_obqz",
+  "size",
+  "column_break_zguk",
+  "qty",
+  "column_break_pnud",
+  "pcs",
+  "column_break_nenw",
+  "total_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item_Master",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_npov",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "metal",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Metal",
+   "options": "Vg Metal",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_risy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Weight Range",
+   "options": "\n0-5\n5.001-10\n10.001-15\n15.001-20\n20.001-25\n25.001-30\n30.001-35\n35.001-40\n40.001-45\n45.001-50\n50.001-55\n55.001-60\n60.001-65\n65.001-70\n70.001-75\n75.001-80\n80.001-85\n85.001-90\n90.001-95\n95.001-100\n100.001-120\n120.001-140\n140.001-160\n160.001-180\n180.001-200\n200.001-220\n220.001-240\n240.001-260\n260.001-280\n280.001-300\n300.001-320\n320.001-340\n340.001-360\n360.001-380",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_rmag",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "diamond_carat_range",
+   "fieldtype": "Select",
+   "label": "Diamond Carat Range",
+   "options": "\n0-0.100\n0.101-0.200\n0.201-0.300\n0.301-0.400\n0.401-0.500\n0.501-0.700\n0.701-1.000\n1.001-1.250\n1.251-1.500\n1.501-1.750\n1.751-2.000\n2.001-2.250\n2.251-2.500\n2.501-3.000\n3.001-3.500\n3.501-4.000\n4.001-5.000\n5.001-6.000\n6.001-7.000\n7.001-8.000\n8.001-9.000\n9.001-10.000\n10.001-12.000\n12.001-15.000\n15.001-17.000\n17.001-20.000\n20.001-25.000\n25.001-30.000\n30.001-40.000\n40.001-50.000\n50.001-60.000\n60.001-70.000\n70.001-80.000\n80.001-90.000\n90.001-100.000\n100.001-999.000"
+  },
+  {
+   "fieldname": "section_break_obqz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Link",
+   "label": "Size",
+   "options": "Size Master"
+  },
+  {
+   "fieldname": "column_break_zguk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_pnud",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pcs",
+   "fieldtype": "Data",
+   "label": "Pcs"
+  },
+  {
+   "fieldname": "column_break_nenw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Data",
+   "label": "Total Weight",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_prqy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "metal_color",
+   "fieldtype": "Select",
+   "label": "Metal Color",
+   "options": "\nYellow\nRose\nWhite\nYellow+White Gold\nRose+White Gold\nYellow+Rose Gold\nYellow+Rose+White Gold\nYellow Antique\nPlatinum\nPlatinum+Rose Gold\nPlatinum+Yellow Gold"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-08 11:27:22.779636",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Vg Purchase Order Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
