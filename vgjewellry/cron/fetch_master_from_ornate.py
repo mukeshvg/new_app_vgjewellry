@@ -32,6 +32,20 @@ def fetch_master_from_ornate():
     '''
     cursor.execute(salesman_query)
     salesman_rows = cursor.fetchall()
+
+    
+    supplier_query = '''
+        SELECT scm.SupplierID,scm.SupplierCode ,scm.SupplierName ,scm.ItemTradMstId  FROM SupplierCodeMaster AS scm
+    '''
+    cursor.execute(supplier_query)
+    supplier_rows = cursor.fetchall()
+
+
+    item_trade_query = '''
+        SELECT itm.ItemTradMstID ,itm.TradName ,itm.TradShortName  FROM ItemTradMst AS itm
+    '''
+    cursor.execute(item_trade_query)
+    item_trade_rows = cursor.fetchall()
     cursor.close()
     con.close()
 
@@ -108,6 +122,56 @@ def fetch_master_from_ornate():
                  "sales_man_name": sales_man_name,
                  "is_active": is_active,
                  "branch": branch,
+            }).insert(ignore_permissions=True)
+
+    frappe.db.commit()
+    
+    for row in supplier_rows:
+        name, supplier_code, supplier_name ,item_trade= row
+
+        if frappe.db.exists("Ornate_Supplier_Master", name):
+            # Update existing
+            frappe.db.set_value(
+                "Ornate_Supplier_Master",
+                name,
+                {
+                    "supplier_id": str(name),
+                    "supplier_code": supplier_code,
+                    "supplier_name": supplier_name
+                }
+            )
+        else:
+            # Insert new
+            frappe.get_doc({
+                "doctype": "Ornate_Supplier_Master",
+                "supplier_id": str(name),
+                 "supplier_code": supplier_code,
+                 "supplier_name": supplier_name,
+            }).insert(ignore_permissions=True)
+
+    frappe.db.commit()
+    
+    for row in item_trade_rows:
+        name,trade_name,trade_short_name = row
+
+        if frappe.db.exists("Ornate_Item_Trade_Master", name):
+            # Update existing
+            frappe.db.set_value(
+                "Ornate_Item_Trade_Master",
+                name,
+                {
+                    "item_trade_mst_id": str(name),
+                    "trade_name": trade_name,
+                    "trade_short_name": trade_short_name
+                }
+            )
+        else:
+            # Insert new
+            frappe.get_doc({
+                "doctype": "Ornate_Item_Trade_Master",
+                "item_trade_mst_id": str(name),
+                 "trade_name": trade_name,
+                 "trade_short_name": trade_short_name,
             }).insert(ignore_permissions=True)
 
     frappe.db.commit()
