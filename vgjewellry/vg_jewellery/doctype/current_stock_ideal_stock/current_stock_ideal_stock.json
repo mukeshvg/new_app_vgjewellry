@@ -12,6 +12,11 @@
   "variety_id",
   "variety",
   "weight_range",
+  "total_sale_weight",
+  "avg_stock_weight",
+  "stock_turn",
+  "group_average_stock_turn",
+  "quadrant",
   "ideal_weight",
   "stock_weight",
   "stock_pcs",
@@ -90,12 +95,37 @@
    "fieldname": "target_pcs",
    "fieldtype": "Data",
    "label": "Target Pcs"
+  },
+  {
+   "fieldname": "total_sale_weight",
+   "fieldtype": "Data",
+   "label": "Total Sale Weight"
+  },
+  {
+   "fieldname": "avg_stock_weight",
+   "fieldtype": "Data",
+   "label": "Avg Stock Weight"
+  },
+  {
+   "fieldname": "stock_turn",
+   "fieldtype": "Data",
+   "label": "Stock Turn"
+  },
+  {
+   "fieldname": "group_average_stock_turn",
+   "fieldtype": "Data",
+   "label": "Group Average Stock Turn"
+  },
+  {
+   "fieldname": "quadrant",
+   "fieldtype": "Data",
+   "label": "Quadrant"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-24 13:27:09.524732",
+ "modified": "2025-11-27 17:05:02.179051",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Current_Stock_Ideal_Stock",

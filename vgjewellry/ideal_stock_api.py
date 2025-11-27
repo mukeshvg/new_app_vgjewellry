@@ -452,7 +452,7 @@ def calculate_ideal_stock():
 
     def ideal_stock(row):
         if row["Quadrant"] == "Q1 – Low Appeal":
-            return round(row["Stock_Weight"] * 0.7,3)
+            return round(row["Stock_Weight"] * 0.75,3)
         elif row["Quadrant"] == "Q2 – Saturated":
             return round(row["Sales_Weight"] / row["GAST"],3)
         else:
@@ -695,15 +695,20 @@ JOIN tabIdeal_Stock AS i
     AND c.weight_range = i.weight_range
 SET
     c.ideal_weight = i.ideal_stock,
-    c.target_pcs = i.target_pcs;
+    c.target_pcs = i.target_pcs,
+    c.total_sale_weight=i.sales_weight,
+    c.avg_stock_weight=i.stock_weight,
+    c.stock_turn=i.stock_turn,
+    c.group_average_stock_turn=i.group_average_stock_turn,
+    c.quadrant=i.quadrant
 """
     frappe.db.sql(query)
     data = frappe.db.sql("""
-        SELECT branch, item, variety, weight_range, ideal_weight ,stock_weight,stock_pcs,target_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
+        SELECT branch, item, variety, weight_range,total_sale_weight,avg_stock_weight,stock_turn,group_average_stock_turn,quadrant, ideal_weight ,stock_weight,stock_pcs,target_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
     """, as_list=True)
 
     columns = [
-    "branch", "item", "variety", "weight_range", "ideal_weight", "stock_weight", "stock_pcs","target_pcs"
+    "branch", "item", "variety", "weight_range","total_sale_weight","avg_stock_weight","stock_turn","group_average_stock_turn","quadrant", "ideal_weight", "stock_weight", "stock_pcs","target_pcs"
 ]
 
     dict_list = [dict(zip(columns, row)) for row in data]
@@ -741,6 +746,21 @@ def get_todays_stock(branch, item, variety=None, weight_range=None):
     data = frappe.db.sql(query, tuple(params), as_dict=True)
 
     return data
+
+@frappe.whitelist()
+def get_current_stock_for_admin():
+
+    data = frappe.db.sql("""
+        SELECT branch, item, variety, weight_range,total_sale_weight,avg_stock_weight,stock_turn,group_average_stock_turn,quadrant, ideal_weight ,stock_weight,stock_pcs,target_pcs  FROM `tabCurrent_Stock_Ideal_Stock`
+    """, as_list=True)
+
+    columns = [
+    "branch", "item", "variety", "weight_range","total_sale_weight","avg_stock_weight","stock_turn","group_average_stock_turn","quadrant", "ideal_weight", "stock_weight", "stock_pcs","target_pcs"
+]
+
+    dict_list = [dict(zip(columns, row)) for row in data]
+
+    return dict_list
 
 @frappe.whitelist()
 def get_ideal_stock_date():

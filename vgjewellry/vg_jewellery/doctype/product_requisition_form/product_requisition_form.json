@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "RQ-.#####",
  "creation": "2025-11-15 15:56:10.637467",
@@ -92,7 +93,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-21 19:34:40.181536",
+ "modified": "2025-11-25 13:16:03.963300",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Form",

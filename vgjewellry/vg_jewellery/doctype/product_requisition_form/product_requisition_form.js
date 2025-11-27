@@ -17,19 +17,25 @@ frappe.ui.form.on("Product_Requisition_Form", {
 					if (r.message && r.message.branch) {
 						frm.set_value('branch', r.message.branch);
 						frm.set_value('request_by', r.message.username);
-						let order_roles_l = ['Administrator', 'Order'];
-						let order_access_l = order_roles_l.some(role => frappe.user.has_role(role))
-						if (order_access_l) {
-							frm.set_df_property('requester_remark', 'read_only', false);	
-						}
-						let manager_roles_l = ['Administrator', 'Manager'];
-						let manager_access_l = manager_roles_l.some(role => frappe.user.has_role(role))
-						if (manager_access_l) {
-							frm.set_df_property('manager_remark', 'read_only', false);	
-						}
 					}
 				}
 			})
+		}
+		let order_roles_l = ['Administrator', 'Order'];
+		let order_access_l = order_roles_l.some(role => frappe.user.has_role(role))
+		if (order_access_l) {
+			frm.set_df_property('requester_remark', 'read_only', false);	
+		}
+		let manager_roles_l = ['Administrator', 'Manager'];
+		let manager_access_l = manager_roles_l.some(role => frappe.user.has_role(role))
+		if (manager_access_l) {
+			frm.set_df_property('manager_remark', 'read_only', false);	
+		}
+		let purchase_manager_roles_l = ['Administrator', 'Purchase Manager'];
+		let pmanager_access_l = purchase_manager_roles_l.some(role => frappe.user.has_role(role))
+		if (pmanager_access_l) {
+			console.log("weere");
+			frm.set_df_property('purchase_department_remark', 'read_only', false);	
 		}
 	},
 });

@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2025-11-27 17:13:09.105813",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-11-27 17:13:09.105813",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "current-stock-admin",
+ "owner": "Administrator",
+ "page_name": "current-stock-admin",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Today's Stock (Admin Only)"
+}
