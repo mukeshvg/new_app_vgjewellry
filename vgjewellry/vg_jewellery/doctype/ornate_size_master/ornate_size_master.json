@@ -1,48 +1,40 @@
 {
  "actions": [],
  "allow_import": 1,
- "allow_rename": 1,
- "creation": "2025-08-20 09:38:21.390835",
+ "autoname": "autoincrement",
+ "creation": "2025-11-29 17:45:45.165496",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "item",
-  "column_break_zlsx",
+  "column_break_tmlk",
   "size"
  ],
  "fields": [
   {
    "fieldname": "item",
    "fieldtype": "Link",
-   "in_filter": 1,
-   "in_list_view": 1,
-   "in_preview": 1,
-   "in_standard_filter": 1,
    "label": "Item",
-   "options": "Item_Master",
-   "reqd": 1
+   "options": "Ornate_Item_Master"
   },
   {
-   "fieldname": "column_break_zlsx",
+   "fieldname": "column_break_tmlk",
    "fieldtype": "Column Break"
   },
   {
    "fieldname": "size",
    "fieldtype": "Data",
-   "in_filter": 1,
-   "in_list_view": 1,
-   "in_preview": 1,
-   "in_standard_filter": 1,
    "label": "Size"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-29 16:41:18.292067",
+ "modified": "2025-11-29 17:51:20.253169",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
- "name": "Size Master",
+ "name": "Ornate_Size_Master",
+ "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [
   {
@@ -56,33 +48,8 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Order",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "VG",
-   "share": 1,
-   "write": 1
   }
  ],
- "quick_entry": 1,
  "row_format": "Dynamic",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
