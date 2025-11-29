@@ -10,6 +10,8 @@
   "branch",
   "column_break_wany",
   "delivery_date",
+  "section_break_dtxv",
+  "is_email_send",
   "section_break_jaqy",
   "item_details",
   "section_break_uumi",
@@ -64,12 +66,23 @@
    "fieldname": "item_details",
    "fieldtype": "Table",
    "options": "Vg Purchase Order Item"
+  },
+  {
+   "fieldname": "section_break_dtxv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "No",
+   "fieldname": "is_email_send",
+   "fieldtype": "Data",
+   "label": "Is email send",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-29 15:23:28.262122",
+ "modified": "2025-11-29 18:53:02.947554",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Vg Purchase Order",
