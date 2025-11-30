@@ -771,3 +771,342 @@ def get_ideal_stock_date():
     data = frappe.db.sql(query, (), as_dict=True)
     return data
 
+from decimal import Decimal
+@frappe.whitelist(allow_guest=True)
+def new_stock_data():
+    from decimal import Decimal
+
+    # 1️⃣ Fetch weight ranges from Frappe DocType
+    weight_ranges = frappe.get_all("weight_range", fields=["item_id", "weight_range"])
+
+    # 2️⃣ Connect to SQL Server
+    con = connect()
+    cursor = con.cursor()
+
+    # 3️⃣ Drop & create #WeightRange temp table
+    cursor.execute("IF OBJECT_ID('tempdb..#WeightRange') IS NOT NULL DROP TABLE #WeightRange;")
+    cursor.execute("""
+    CREATE TABLE #WeightRange (
+        item_id INT, 
+        MinWt DECIMAL(10,3), 
+        MaxWt DECIMAL(10,3),
+        weight_range VARCHAR(50)
+    );
+    """)
+    con.commit()
+
+    # 4️⃣ Insert weight ranges into temp table
+    for wr in weight_ranges:
+        if "-" not in wr["weight_range"]:
+            return wr["weight_range"]+wr['item_id']
+        num1, num2 = wr["weight_range"].replace(" ", "").split("-")
+        MinWt = float(Decimal(num1))
+        MaxWt = float(Decimal(num2))
+        cursor.execute(
+            "INSERT INTO #WeightRange (item_id, MinWt, MaxWt, weight_range) VALUES (?, ?, ?, ?)",
+            (wr["item_id"], MinWt, MaxWt, wr["weight_range"])
+        )
+    con.commit()
+
+    # 5️⃣ Define date range
+    from_date = '2025-04-01'
+    to_date = '2025-11-01'
+
+    # 6️⃣ Main SQL with SET NOCOUNT ON
+    cursor.execute("""
+SET NOCOUNT ON;
+
+IF OBJECT_ID('tempdb..#LabelData') IS NOT NULL DROP TABLE #LabelData;
+IF OBJECT_ID('tempdb..#LabelDays') IS NOT NULL DROP TABLE #LabelDays;
+
+-- Step 1: Prepare Label Data
+SELECT 
+    lb.LabelNo,
+    lb.NetWt,
+    lb.ItemMstID,
+    lb.BranchID,
+    lb.VouDate,
+    lb.NextVouDate,
+    lt.LatestItemMstID,
+    lt.LatestVarietyMstId,
+    lt.ItemName,
+    lt.VarietyName,
+    lt.BranchShortCode
+INTO #LabelData
+FROM [D:\\ORNNX\\ORNATENXDATA\\DATA\\SVGL\\SVGL.MDF].dbo.LabelDtWiseBal lb
+CROSS APPLY (
+    SELECT TOP 1
+        lt.ItemMstID AS LatestItemMstID,
+        lt.VarietyMstId AS LatestVarietyMstId,
+        im.ItemName,
+        vm.VarietyName,
+        bm.BranchName AS BranchShortCode
+    FROM dbo.LabelTransaction lt
+    LEFT JOIN dbo.ItemMst im ON im.ItemMstID = lt.ItemMstID
+    LEFT JOIN dbo.VarietyMst vm ON vm.VarietyMstId = lt.VarietyMstId
+    LEFT JOIN dbo.BranchMaster bm ON bm.BranchID = lb.BranchID
+    WHERE lt.LabelNo = lb.LabelNo
+    ORDER BY lt.LabelTransID DESC
+) lt
+WHERE lb.NetWt > 0
+  AND lb.NextVouDate >= ?
+  AND lb.VouDate <= ?
+  AND lb.ItemTradMstID = 1002 ;
+
+-- Step 2: Expand each label into individual active dates with dynamic weight range
+SELECT
+    l.BranchID,
+    l.ItemMstID,
+    l.LatestVarietyMstId AS VarietyMstId,
+    l.ItemName,
+    l.VarietyName,
+    l.BranchShortCode,
+    l.LabelNo,
+    l.NetWt,
+    wr.weight_range AS WeightRange,
+    DATEADD(DAY, n.number, 
+        CASE WHEN l.VouDate < ? THEN ? ELSE l.VouDate END
+    ) AS ActiveDate
+INTO #LabelDays
+FROM #LabelData l
+INNER JOIN master..spt_values n 
+    ON n.type = 'P'
+    AND DATEADD(DAY, n.number, 
+        CASE WHEN l.VouDate < ? THEN ? ELSE l.VouDate END
+    ) <= CASE WHEN l.NextVouDate > ? THEN ? ELSE l.NextVouDate END
+LEFT JOIN #WeightRange wr
+    ON wr.item_id = l.ItemMstID
+   AND l.NetWt BETWEEN wr.MinWt AND wr.MaxWt;
+
+-- Step 3: Aggregate
+SELECT 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange,
+    COUNT(DISTINCT LabelNo) AS LabelCount,
+    SUM(NetWt) AS TotalNetWt,
+    COUNT(DISTINCT ActiveDate) AS TotalActiveDays
+FROM #LabelDays
+GROUP BY 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange
+ORDER BY 
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    TRY_CAST(LEFT(WeightRange, CHARINDEX('-', WeightRange + '-') - 1) AS DECIMAL(10,3));
+""", (from_date, to_date, from_date, from_date, from_date, from_date, to_date, to_date))
+
+    # 7️⃣ Fetch only the final SELECT results
+    rows = cursor.fetchall()
+    while True:
+        try:
+            if cursor.description:  # means this set has columns => it's the final SELECT
+                break
+            if not cursor.nextset():  # no more sets
+                break
+        except pyodbc.ProgrammingError:
+            break
+
+    # Now fetch the actual data
+    #rows = cursor.fetchall()
+    
+    frappe.db.sql("TRUNCATE TABLE `tabStockDataForIdeal`")
+    frappe.db.commit()
+
+    fields = [
+        "name",    
+        "branch_id",
+        "item_id",
+        "variety_id",
+        "item",
+        "variety",
+        "branch",
+        "weight_range",
+        "label_count",
+        "total_net_wt",
+        "days_present",
+        "avg_stock"
+    ]
+
+    # Convert fetched data into list of tuples
+
+    values = []
+    for i, row in enumerate(rows, start=1):
+        total_net_wt=row[8]
+        days_present=row[9]
+        avg_stock=round((total_net_wt/days_present),2)
+        values.append((str(i),) + tuple(row)+(avg_stock,))
+
+    # Insert all records quickly
+    frappe.db.bulk_insert("StockDataForIdeal", fields, values)
+
+    frappe.db.commit()
+    
+    cursor.close()
+    con.close()
+    return f"{len(values)} records inserted successfully"
+    columns = [column[0] for column in cursor.description]
+    result = [{columns[i]: row[i] for i in range(len(columns))} for row in rows]
+
+    cursor.close()
+    con.close()
+    return result
+    
+@frappe.whitelist(allow_guest=True)    
+def new_sale_data():
+    con = connect()
+    cursor = con.cursor()
+    
+    weight_ranges = frappe.get_all("weight_range", fields=["item_id", "weight_range"])
+
+    # 2️⃣ Connect to SQL Server
+    con = connect()
+    cursor = con.cursor()
+
+    # 3️⃣ Drop & create #WeightRange temp table
+    cursor.execute("IF OBJECT_ID('tempdb..#WeightRange2') IS NOT NULL DROP TABLE #WeightRange2;")
+    cursor.execute("""
+    CREATE TABLE #WeightRange2 (
+        item_id INT, 
+        MinWt DECIMAL(10,3), 
+        MaxWt DECIMAL(10,3),
+        weight_range VARCHAR(50)
+    );
+    """)
+    con.commit()
+
+    # 4️⃣ Insert weight ranges into temp table
+    for wr in weight_ranges:
+        if "-" not in wr["weight_range"]:
+            return wr["weight_range"]+wr['item_id']
+        num1, num2 = wr["weight_range"].replace(" ", "").split("-")
+        MinWt = float(Decimal(num1))
+        MaxWt = float(Decimal(num2))
+        cursor.execute(
+            "INSERT INTO #WeightRange2 (item_id, MinWt, MaxWt, weight_range) VALUES (?, ?, ?, ?)",
+            (wr["item_id"], MinWt, MaxWt, wr["weight_range"])
+        )
+    con.commit()
+
+    # 5️⃣ Define date range
+    from_date = '2025-04-01'
+    to_date = '2025-11-01'
+
+    full_query = r'''
+    ;WITH Base AS (
+    SELECT
+        s.BranchID,
+        bm.BranchName,
+        s.ItemMstID,
+        im.ItemName,
+        s.VarietyMstID,
+        vm.VarietyName,
+        s.LabelNo,
+        s.NetWt,
+        wr.weight_range 
+        
+    FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.SPTran AS s
+    LEFT JOIN dbo.ItemMst im ON s.ItemMstID = im.ItemMstID
+    LEFT JOIN dbo.VarietyMst vm ON s.VarietyMstID = vm.VarietyMstId
+    LEFT JOIN dbo.BranchMaster bm ON s.BranchID = bm.BranchID
+    LEFT JOIN #WeightRange2 wr 
+        ON wr.item_id = s.ItemMstID
+   AND s.NetWt BETWEEN wr.MinWt AND wr.MaxWt
+    WHERE s.VouType = 'SL'
+      AND s.VouDate >= (?)
+      AND s.VouDate <= (?)
+      AND s.ItemTradMstID = 1002
+)
+SELECT
+    BranchID,
+    BranchName,
+    ItemMstID,
+    ItemName,
+    VarietyMstID,
+    VarietyName,
+    weight_range AS WeightRange,
+    COUNT(*) AS LabelCount,
+    SUM(NetWt) AS TotalNetWt
+FROM Base
+GROUP BY
+    BranchID,
+    BranchName,
+    ItemMstID,
+    ItemName,
+    VarietyMstID,
+    VarietyName,
+    weight_range
+ORDER BY
+    BranchID,
+    ItemMstID,
+    VarietyMstID,
+    TRY_CAST(LEFT(weight_range, CHARINDEX('-', weight_range + '-') - 1) AS DECIMAL(10,3));
+
+    '''
+
+    cursor.execute(full_query, (from_date, to_date))
+
+    # Skip all intermediate non-result sets until we reach the final SELECT
+    while True:
+        try:
+            if cursor.description:  # means this set has columns => it's the final SELECT
+                break
+            if not cursor.nextset():  # no more sets
+                break
+        except pyodbc.ProgrammingError:
+            break
+
+    # Now fetch the actual data
+    rows = cursor.fetchall()
+    
+    frappe.db.sql("TRUNCATE TABLE `tabSaleDataForIdeal`")
+    frappe.db.commit()
+
+    fields = [
+        "name",    
+        "branch_id",
+        "branch",
+        "item_id",
+        "item",
+        "variety_id",
+        "variety",
+        "weight_range",
+        "label_count",
+        "total_net_wt",
+    ]
+
+    # Convert fetched data into list of tuples
+
+    values = []
+    for i, row in enumerate(rows, start=1):
+        values.append((str(i),) + tuple(row))
+
+    # Insert all records quickly
+    frappe.db.bulk_insert("SaleDataForIdeal", fields, values)
+
+    frappe.db.commit()
+
+    
+    #columns = [column[0] for column in cursor.description]
+    #result = [{columns[i]: row[i] for i in range(len(columns))} for row in rows]
+    #return result
+    cursor.close()
+    con.close()
+
+    return f"{len(values)} records inserted successfully456"
+
+
+
+
+   
+

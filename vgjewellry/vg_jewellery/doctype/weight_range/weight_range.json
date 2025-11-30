@@ -16,6 +16,7 @@
   {
    "fieldname": "item",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Item",
    "options": "Ornate_Item_Master"
   },
@@ -43,7 +44,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-21 17:03:21.375226",
+ "modified": "2025-11-30 13:53:47.980084",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "weight_range",
