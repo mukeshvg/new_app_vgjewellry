@@ -7,14 +7,10 @@ from frappe.utils import now_datetime
 
 class VgPurchaseOrder(Document):
     def autoname(self):
-        branch=""
+        branch_code=""
         date_str = now_datetime().strftime("%d%m%Y")
-        if self.branch =="B-000002":
-            branch="102"
-        elif self.branch=="B-000003":
-            branch="103"
-        elif self.branch =="B-000004":
-            branch="104"
+        if self.branch:
+            branch_code = frappe.db.get_value("Ornate_Branch_Master",self.branch,"branch_code")
         
         last_doc = frappe.db.sql(
             """
@@ -28,13 +24,13 @@ class VgPurchaseOrder(Document):
         if last_doc:
             last_name = last_doc[0][0]
             try:
-                last_number = int(last_name.split("-")[-1])
+                last_number = int(last_name.split("/")[-1])
             except ValueError:
                 last_number = 0
             next_number = last_number + 1
         else:
             next_number = 1
             
-        po_name=f"PO-M/"+self.branch+"/"+date_str+"/"+ str(next_number)
+        po_name=f"PO-M/"+branch_code+"/"+date_str+"/"+ str(next_number)
 
         self.name=po_name

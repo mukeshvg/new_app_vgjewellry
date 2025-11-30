@@ -46,6 +46,13 @@ def fetch_master_from_ornate():
     '''
     cursor.execute(item_trade_query)
     item_trade_rows = cursor.fetchall()
+    
+    branch_query = '''
+        SELECT bm.BranchID ,bm.BranchCode ,bm.BranchName  FROM BranchMaster AS bm
+    '''
+    cursor.execute(branch_query)
+    branch_rows = cursor.fetchall()
+
     cursor.close()
     con.close()
 
@@ -173,6 +180,29 @@ def fetch_master_from_ornate():
                  "trade_name": trade_name,
                  "trade_short_name": trade_short_name,
             }).insert(ignore_permissions=True)
+    frappe.db.commit()
+    
+    for row in branch_rows:
+        name,branch_code,branch_name = row
 
+        if frappe.db.exists("Ornate_Branch_Master", name):
+            # Update existing
+            frappe.db.set_value(
+                "Ornate_Branch_Master",
+                name,
+                {
+                    "branch_id": str(name),
+                    "branch_code": branch_code,
+                    "branch_name": branch_name
+                }
+            )
+        else:
+            # Insert new
+            frappe.get_doc({
+                "doctype": "Ornate_Branch_Master",
+                "branch_id": str(name),
+                 "branch_code": branch_code,
+                 "branch_name": branch_name,
+            }).insert(ignore_permissions=True)
     frappe.db.commit()
     return "UPSERT completed"
