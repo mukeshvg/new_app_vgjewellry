@@ -1,4 +1,7 @@
 import frappe
+from whatsapp.api import send_whatsapp
+
+
 
 @frappe.whitelist()
 def get_all_email_pending_po():
@@ -8,9 +11,9 @@ def get_all_email_pending_po():
         fields=["name", "supplier"]
     )
     for po in po_list:
-        send_po_email(po.name, po.supplier)
+        return send_po_email(po.name, po.supplier)
         # Mark as sent
-        frappe.db.set_value("Vg Purchase Order", po.name, "is_email_send", "Yes")
+        #frappe.db.set_value("Vg Purchase Order", po.name, "is_email_send", "Yes")
         frappe.db.commit()
 
 def send_po_email(docname, sup):
@@ -116,5 +119,22 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
             "fcontent": pdf_data
         }]
     )
+
+    pdf_url=save_pdf_and_get_url(docname, pdf_data)
+    pdf_url="http://103.249.120.178:8011/jewel_new/server/purchase/purchase_pdf/PO-R-102-02122025-696.pdf"
+    body_param =[supplier_name,purchase_doc.name,"8758960079","link" ]
+    a=send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)    
+    return f"{a}"
  
+
+def save_pdf_and_get_url(docname, pdf_data):
+    file_doc = frappe.get_doc({
+        "doctype": "File",
+        "file_name": f"{docname}.pdf",
+        "content": pdf_data,
+        "is_private": 0    # must be public for WhatsApp
+    })
+    file_doc.save(ignore_permissions=True)
+
+    return file_doc.file_url
 

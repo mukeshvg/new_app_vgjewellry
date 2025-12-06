@@ -15,7 +15,7 @@ frappe.ui.form.on("Product_Requisition_Form", {
 				},
 				callback: function(r) {
 					if (r.message && r.message.branch) {
-						frm.set_value('branch', r.message.branch);
+						frm.set_value('branch', r.message.ornate_branch);
 						frm.set_value('request_by', r.message.username);
 					}
 				}
@@ -49,9 +49,12 @@ frappe.ui.form.on("Product_Requisition_Item", {
 			callback(r) {
 				if (r && r.message && r.message) {
 					let grid_row = frm.fields_dict.product_details.grid.grid_rows_by_docname[cdn];
-					let fields = ["variety", "weight_range", "qty"];
+					let fields = ["variety", "weight_range","size", "qty","jota"];
 					fields.forEach(f => {
 						grid_row.on_grid_fields_dict[f].df.read_only = 0;
+						if(f=="jota" && [86,17,57,10292,10276,10000061,10000036,10000018,10000010].indexOf(row.item) !=-1){
+							grid_row.on_grid_fields_dict[f].df.hidden = 0;
+						}
 					})
 					let variety_field = grid_row.on_grid_fields_dict.variety;
 					variety_field.get_query = function() {
@@ -63,7 +66,14 @@ frappe.ui.form.on("Product_Requisition_Item", {
 					};
 					let wt_field = grid_row.on_grid_fields_dict.weight_range;
 					wt_field.get_query = function() {
-						console.log(row.item)
+						return {
+							filters: {
+								item: ["in", [row.item]]
+							}
+						};
+					};
+					let sz_field = grid_row.on_grid_fields_dict.size;
+					sz_field.get_query = function() {
 						return {
 							filters: {
 								item: ["in", [row.item]]

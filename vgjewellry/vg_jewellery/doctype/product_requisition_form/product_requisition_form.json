@@ -19,7 +19,9 @@
   "column_break_iccz",
   "manager_remark",
   "column_break_piwd",
-  "purchase_department_remark"
+  "purchase_department_remark",
+  "section_break_ctsh",
+  "action_taken"
  ],
  "fields": [
   {
@@ -36,7 +38,7 @@
    "fieldname": "branch",
    "fieldtype": "Link",
    "label": "Branch",
-   "options": "Branch_Master",
+   "options": "Ornate_Branch_Master",
    "read_only": 1
   },
   {
@@ -88,12 +90,22 @@
    "fieldtype": "Link",
    "label": "Sales Person",
    "options": "Ornate_Salesman"
+  },
+  {
+   "fieldname": "section_break_ctsh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "action_taken",
+   "fieldtype": "Data",
+   "label": "Action Taken",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-25 13:16:03.963300",
+ "modified": "2025-12-06 13:47:53.681917",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Form",

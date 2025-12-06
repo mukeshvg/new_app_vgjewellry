@@ -1,0 +1,239 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-06 11:10:26.825330",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch",
+  "column_break_rqld",
+  "item",
+  "column_break_xcvp",
+  "variety",
+  "column_break_pedk",
+  "weight_range",
+  "section_break_jixx",
+  "size",
+  "column_break_lxpi",
+  "jota",
+  "column_break_mwic",
+  "qty_req",
+  "column_break_pitv",
+  "qty_given_by_manager",
+  "section_break_snay",
+  "suggested",
+  "column_break_qiiu",
+  "in_stock",
+  "column_break_lmzi",
+  "difference",
+  "section_break_qork",
+  "manager_status",
+  "column_break_yuyj",
+  "manager_approve_reason",
+  "column_break_uhop",
+  "manager_reject_reason",
+  "section_break_idrv",
+  "manager_remarks",
+  "column_break_swsa",
+  "delivery_date",
+  "section_break_ehiu",
+  "manager"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Ornate_Branch_Master"
+  },
+  {
+   "fieldname": "column_break_rqld",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Ornate_Item_Master"
+  },
+  {
+   "fieldname": "column_break_xcvp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Link",
+   "label": "Variety",
+   "options": "Ornate_Variety_Master"
+  },
+  {
+   "fieldname": "column_break_pedk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Link",
+   "label": "Weight Range",
+   "options": "weight_range"
+  },
+  {
+   "fieldname": "section_break_jixx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Link",
+   "label": "Size",
+   "options": "Ornate_Size_Master"
+  },
+  {
+   "fieldname": "column_break_lxpi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "jota",
+   "fieldtype": "Data",
+   "label": "Jota"
+  },
+  {
+   "fieldname": "column_break_mwic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty_req",
+   "fieldtype": "Data",
+   "label": "Qty Req"
+  },
+  {
+   "fieldname": "column_break_pitv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_snay",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "suggested",
+   "fieldtype": "Data",
+   "label": "Suggested"
+  },
+  {
+   "fieldname": "column_break_qiiu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "in_stock",
+   "fieldtype": "Data",
+   "label": "In Stock"
+  },
+  {
+   "fieldname": "column_break_lmzi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "difference",
+   "fieldtype": "Data",
+   "label": "Difference"
+  },
+  {
+   "fieldname": "section_break_qork",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_yuyj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_uhop",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_idrv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_swsa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Data",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "qty_given_by_manager",
+   "fieldtype": "Data",
+   "label": "Qty Given By_Manager"
+  },
+  {
+   "fieldname": "manager_status",
+   "fieldtype": "Data",
+   "label": "Mangager Status"
+  },
+  {
+   "fieldname": "manager_approve_reason",
+   "fieldtype": "Link",
+   "label": "Manager Approve Reason",
+   "options": "Excess_Approve_Reason"
+  },
+  {
+   "fieldname": "manager_reject_reason",
+   "fieldtype": "Link",
+   "label": "Manager Reject Reason",
+   "options": "Reduce_Reject_Reason"
+  },
+  {
+   "fieldname": "manager_remarks",
+   "fieldtype": "Data",
+   "label": "Manager_Remarks"
+  },
+  {
+   "fieldname": "section_break_ehiu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "manager",
+   "fieldtype": "Link",
+   "label": "Manager",
+   "options": "User"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-06 11:41:59.482036",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Product_Requisition_Forword",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

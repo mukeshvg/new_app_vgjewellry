@@ -61,7 +61,7 @@ def set_target_stock(target_stock):
     return dict_list    
     
 
-def get_stock_data(from_date, to_date):
+def get_stock_data_old2(from_date, to_date):
     con = connect()
     cursor = con.cursor()
 
@@ -245,7 +245,7 @@ ORDER BY
     con.close()
     return f"{len(values)} records inserted successfully123"
 
-def get_sale_data(from_date, to_date):
+def get_sale_data_old2(from_date, to_date):
     con = connect()
     cursor = con.cursor()
 
@@ -518,7 +518,7 @@ def calculate_ideal_stock():
     return dict_list
 
 @frappe.whitelist(allow_guest=True)
-def get_current_stock():
+def get_current_stock_old():
     con = connect()
     cursor = con.cursor()
 
@@ -773,7 +773,7 @@ def get_ideal_stock_date():
 
 from decimal import Decimal
 @frappe.whitelist(allow_guest=True)
-def new_stock_data():
+def get_stock_data(from_date, to_date):
     from decimal import Decimal
 
     # 1️⃣ Fetch weight ranges from Frappe DocType
@@ -809,8 +809,8 @@ def new_stock_data():
     con.commit()
 
     # 5️⃣ Define date range
-    from_date = '2025-04-01'
-    to_date = '2025-11-01'
+    #from_date = '2025-04-01'
+    #to_date = '2025-11-01'
 
     # 6️⃣ Main SQL with SET NOCOUNT ON
     cursor.execute("""
@@ -963,7 +963,7 @@ ORDER BY
     return result
     
 @frappe.whitelist(allow_guest=True)    
-def new_sale_data():
+def get_sale_data(from_date, to_date):
     con = connect()
     cursor = con.cursor()
     
@@ -999,8 +999,8 @@ def new_sale_data():
     con.commit()
 
     # 5️⃣ Define date range
-    from_date = '2025-04-01'
-    to_date = '2025-11-01'
+    #from_date = '2025-04-01'
+    #to_date = '2025-11-01'
 
     full_query = r'''
     ;WITH Base AS (
@@ -1104,6 +1104,168 @@ ORDER BY
     con.close()
 
     return f"{len(values)} records inserted successfully456"
+    
+@frappe.whitelist(allow_guest=True)
+def get_current_stock():
+    con = connect()
+    cursor = con.cursor()
+    weight_ranges = frappe.get_all("weight_range", fields=["item_id", "weight_range"])
+    
+    # 3️⃣ Drop & create #WeightRange temp table
+    cursor.execute("IF OBJECT_ID('tempdb..#WeightRange3') IS NOT NULL DROP TABLE #WeightRange3;")
+    cursor.execute("""
+    CREATE TABLE #WeightRange3 (
+        item_id INT, 
+        MinWt DECIMAL(10,3), 
+        MaxWt DECIMAL(10,3),
+        weight_range VARCHAR(50)
+    );
+    """)
+    con.commit()
+    
+    # 4️⃣ Insert weight ranges into temp table
+    for wr in weight_ranges:
+        if "-" not in wr["weight_range"]:
+            return wr["weight_range"]+wr['item_id']
+        num1, num2 = wr["weight_range"].replace(" ", "").split("-")
+        MinWt = float(Decimal(num1))
+        MaxWt = float(Decimal(num2))
+        cursor.execute(
+            "INSERT INTO #WeightRange3 (item_id, MinWt, MaxWt, weight_range) VALUES (?, ?, ?, ?)",
+            (wr["item_id"], MinWt, MaxWt, wr["weight_range"])
+        )
+    con.commit()
+
+    full_query = r'''
+IF OBJECT_ID('tempdb..#LabelData1') IS NOT NULL DROP TABLE #LabelData1;
+IF OBJECT_ID('tempdb..#LabelDays1') IS NOT NULL DROP TABLE #LabelDays1;
+
+
+-- Step 1⃣: Prepare Label Data with latest transaction info
+SELECT
+    lb.LabelNo,
+    lb.NetWt,
+    lb.ItemMstID,
+    lb.BranchID,
+    
+    lt.LatestItemMstID,
+    lt.LatestVarietyMstId,
+    lt.ItemName,
+    lt.VarietyName,
+    lt.BranchShortCode
+INTO #LabelData1
+FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelBalance lb
+CROSS APPLY (
+    SELECT TOP 1
+        lt.ItemMstID AS LatestItemMstID,
+        lt.VarietyMstId AS LatestVarietyMstId,
+        im.ItemName,
+        vm.VarietyName,
+        bm.BranchName AS BranchShortCode
+    FROM dbo.LabelTransaction lt
+    LEFT JOIN dbo.ItemMst im ON im.ItemMstID = lt.ItemMstID
+    LEFT JOIN dbo.VarietyMst vm ON vm.VarietyMstId = lt.VarietyMstId
+    LEFT JOIN dbo.BranchMaster bm ON bm.BranchID = lb.BranchID
+    WHERE lt.LabelNo = lb.LabelNo
+    ORDER BY lt.LabelTransID DESC
+    ) lt
+WHERE lb.NetWt > 0
+  AND lb.ItemTradMstID = 1002;
+
+-- Step 2⃣: Expand each label into individual active dates
+SELECT
+    l.BranchID,
+    l.ItemMstID,
+    l.LatestVarietyMstId AS VarietyMstId,
+    l.ItemName,
+    l.VarietyName,
+    l.BranchShortCode,
+    l.LabelNo,
+    l.NetWt,
+    wr.weight_range AS WeightRange
+    
+    
+INTO #LabelDays1
+FROM #LabelData1 l LEFT JOIN #WeightRange3 wr
+    ON wr.item_id = l.ItemMstID
+   AND l.NetWt BETWEEN wr.MinWt AND wr.MaxWt;
+
+-- Step 3⃣: Aggregate by group, counting unique active days
+SELECT
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange,
+    COUNT(DISTINCT LabelNo) AS LabelCount,
+    SUM(NetWt) AS TotalNetWt
+    FROM #LabelDays1
+GROUP BY
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    ItemName,
+    VarietyName,
+    BranchShortCode,
+    WeightRange
+ORDER BY
+    BranchID,
+    ItemMstID,
+    VarietyMstId,
+    TRY_CAST(LEFT(WeightRange, CHARINDEX('-', WeightRange + '-') - 1) AS DECIMAL(10,3));
+
+    '''
+
+    cursor.execute(full_query, ())
+
+    # Skip all intermediate non-result sets until we reach the final SELECT
+    while True:
+        try:
+            if cursor.description:  # means this set has columns => it's the final SELECT
+                break
+            if not cursor.nextset():  # no more sets
+                break
+        except pyodbc.ProgrammingError:
+            break
+
+    # Now fetch the actual data
+    rows = cursor.fetchall()
+    
+    frappe.db.sql("TRUNCATE TABLE `tabCurrent_Stock_Ideal_Stock`")
+    frappe.db.commit()
+
+    fields = [
+        "name",    
+        "branch_id",
+        "item_id",
+        "variety_id",
+        "item",
+        "variety",
+        "branch",
+        "weight_range",
+        "stock_pcs",
+        "stock_weight"
+    ]
+
+    # Convert fetched data into list of tuples
+
+    values = []
+    for i, row in enumerate(rows, start=1):
+        values.append((i,) + tuple(row))
+
+    
+    # Insert all records quickly
+    frappe.db.bulk_insert("Current_Stock_Ideal_Stock", fields, values)
+
+    frappe.db.commit()
+    
+    cursor.close()
+    con.close()
+    compare_cureent_stock_with_ideal_stock()
+    return f"{len(values)} records inserted successfully123"
+    
 
 
 

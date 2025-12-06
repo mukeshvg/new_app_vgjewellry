@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2025-12-05 11:06:55.995347",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-12-06 14:33:49.933921",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "product-requistion",
+ "owner": "Administrator",
+ "page_name": "product-requistion",
+ "roles": [
+  {
+   "role": "Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Product Requisition"
+}
