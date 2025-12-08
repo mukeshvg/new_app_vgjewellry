@@ -37,7 +37,19 @@
   "column_break_swsa",
   "delivery_date",
   "section_break_ehiu",
-  "manager"
+  "manager",
+  "section_break_lodn",
+  "purchase_dept_status",
+  "column_break_zyow",
+  "pd_approve_reason",
+  "column_break_uxpk",
+  "pd_reject_reason",
+  "section_break_pzth",
+  "pd_remarks",
+  "column_break_iuay",
+  "pd_delivery_date",
+  "section_break_vzrf",
+  "pd_user"
  ],
  "fields": [
   {
@@ -196,12 +208,69 @@
    "fieldtype": "Link",
    "label": "Manager",
    "options": "User"
+  },
+  {
+   "fieldname": "section_break_lodn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "purchase_dept_status",
+   "fieldtype": "Data",
+   "label": "Purchase Dept Status"
+  },
+  {
+   "fieldname": "column_break_zyow",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pd_approve_reason",
+   "fieldtype": "Link",
+   "label": "PD Approve Reason",
+   "options": "Excess_Approve_Reason"
+  },
+  {
+   "fieldname": "column_break_uxpk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pd_reject_reason",
+   "fieldtype": "Link",
+   "label": "PD Reject Reason",
+   "options": "Reduce_Reject_Reason"
+  },
+  {
+   "fieldname": "section_break_pzth",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pd_remarks",
+   "fieldtype": "Data",
+   "label": "PD Remarks"
+  },
+  {
+   "fieldname": "column_break_iuay",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pd_delivery_date",
+   "fieldtype": "Data",
+   "label": "PD Delivery Date"
+  },
+  {
+   "fieldname": "section_break_vzrf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pd_user",
+   "fieldtype": "Link",
+   "label": "PD User",
+   "options": "User"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-06 11:41:59.482036",
+ "modified": "2025-12-08 18:11:29.812160",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Forword",
@@ -228,6 +297,16 @@
    "read": 1,
    "report": 1,
    "role": "Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
    "share": 1,
    "write": 1
   }

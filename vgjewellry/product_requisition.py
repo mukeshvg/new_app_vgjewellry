@@ -18,7 +18,12 @@ def get_product_details():
             item_name=frappe.get_doc("Ornate_Item_Master",item.item)
             var_name=frappe.get_doc("Ornate_Variety_Master",item.variety)
             wt_name=frappe.get_doc("weight_range",item.weight_range)
-            sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
+            size_id= None
+            size_name=""
+            if item.size !=None:
+                sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
+                size_id =item.size
+                size_name= sz_name.size
             idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':item.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
             suggested=0;
             in_stock=0;
@@ -32,12 +37,12 @@ def get_product_details():
                     'item_id':item.item,
                     'variety_id':item.variety,
                     'wt_id':item.weight_range,
-                    'size_id':item.size,
+                    'size_id':size_id,
                     'branch':req_doc.branch,
                     'item':item_name.item_name,
                     'variety':var_name.variety_name,
                     'weight_range':wt_name.weight_range,
-                    'size':sz_name.size,
+                    'size':size_name,
                     'qty':item.qty,
                     'pcs':item.pcs,
                     'jota':item.jota,
@@ -59,6 +64,10 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
                          reject_reason, remarks, delivery_date):
 
     list_data = ast.literal_eval(used_ids)
+    if size_id=="NaN":
+        size_id = None
+    if jota =="NaN":
+        jota = None
     user = frappe.session.user
     if reject_reason=="":
         reject_reason=None

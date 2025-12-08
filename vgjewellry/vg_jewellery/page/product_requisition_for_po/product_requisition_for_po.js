@@ -1,7 +1,7 @@
-frappe.pages['product-requistion'].on_page_load = function(wrapper) {
+frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Product Requisition',
+		title: 'Product Requisition For Purchase',
 		single_column: true
 	});
 	$(wrapper).html(`
@@ -102,14 +102,13 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 	<table class="table table-striped table-hover align-middle modern-table" id="item-order-table">
     <thead class="table-dark">
 	<tr>
-	    <th>Item</th>
+	    <th>Desc</th>
+	    <!--<th>Item</th>
 	    <th>Variety</th>
 	    <th>WT Range</th>
 	    <th>Size</th>
-	    <th>JOTA</th>
+	    <th>JOTA</th>-->
 	    <th>Suggested</th>
-	    <th>In Stock</th>
-	    <th>Excess/ Short</th>
 	    <th>Qty Req</th>
 	    <th>Qty Given</th>
 	    <th>Action</th>
@@ -128,7 +127,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 		`);
 
 	frappe.call({
-		method:'vgjewellry.product_requisition.get_product_details',
+		method:'vgjewellry.product_requisition_for_po.get_product_details',
 		callback: function(response) {
 			if(response && response.message.all_item.length>0){
 				approve_reason=response.message.excess_reason
@@ -143,25 +142,44 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 				}
 				msg=response.message.all_item
 				var str=""
+				
 				for(var k in msg){
+					var suggeted_table=""
+					var ideal=msg[k]['ideal']
+					for (var n in ideal){
+						suggeted_table+=`<tr>
+							<td>`+ideal[n]["b"]+`</td>
+							<td>`+ideal[n]["s"]+`</td>
+							<td>`+ideal[n]["i"]+`</td>
+							<td>`+ideal[n]["d"]+`</td>
+							</tr>`;	
+					}
 					str+=`
 					<tr>
-			    <td>
-				<input type="hidden" class="req_used_ids" value="`+msg[k]['used_ids']+`" >
+				<td class="req_branch">Branch:`+msg[k]['branch_name']+`	
+			    <br>
+				<input type="hidden" class="req_id" value="`+msg[k]['id']+`" >
 				<input type="hidden" class="req_branch_id" value="`+msg[k]['branch']+`" >
 				<input type="hidden" class="req_item_id" value="`+msg[k]['item_id']+`" >
 				<input type="hidden" class="req_variety_id" value="`+msg[k]['variety_id']+`" >
 				<input type="hidden" class="req_wt_id" value="`+msg[k]['wt_id']+`" >
 				<input type="hidden" class="req_size_id" value="`+msg[k]['size_id']+`" >
-			    `+msg[k]["item"]+`</td>
-			    <td>`+msg[k]["variety"]+`</td>
-			    <td>`+msg[k]["weight_range"]+`</td>
-			    <td>`+msg[k]["size"]+`</td>
-			    <td class="req_jota">`+msg[k]["jota"]+`</td>
-			    <td class="req_suggested">`+msg[k]["suggested"]+`</td>
-			    <td class="req_in_stock">`+msg[k]["in_stock"]+`</td>
-			    <td class="req_in_diff">`+msg[k]["diff"]+`</td>
-			    <td class="qty-req">`+msg[k]["qty"]+`</td>
+			    Item:<b>`+msg[k]["item"]+`</b><br>
+			    Variety:<b>`+msg[k]["variety"]+`</b><br>
+			    Wt-rng:<b>`+msg[k]["weight_range"]+`</b><br>
+			    Size:<b>`+msg[k]["size"]+`</b><br>
+			    Jota:<b>`+msg[k]["jota"]+`</b></td>
+			    <td><table>
+				<tr>
+					<td>Branch</td>
+					<td>Suggested</td>
+					<td>InStock</td>
+					<td>Diff</td>
+				</tr>`+suggeted_table+`
+			    </table></td>
+			    <td class="qty-req"><strike>`+msg[k]["qty"]+`</strike>
+				<br><b>`+msg[k]['qty_manager']+`</b>
+			    </td>
 			    <td>
 				<select class="form-select form-select-sm action-select qty-given">
 					<option>1</option>
@@ -182,6 +200,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					<option>Approve</option>
 					<option>Reject</option>
 				</select>
+				<br><br><br>Manager Action:<br><b>`+msg[k]['ms']+`</b>
 			    </td>
 			    <td>
 				<select class="form-select form-select-sm reason-select approve-reason mt-1 d-none">
@@ -192,9 +211,13 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					<option value="">Select Reason</option>
 					`+reject_reason_option+`
 				</select>
+				<br><br><br>Manager Reason:<br><b>`+msg[k]['mar']+""+msg[k]['mrr']+`</b>
 			    </td>
-			    <td><textarea class="form-control form-control-sm remarks-box" rows="1"></textarea></td>
-			    <td><input type="text" class="form-control form-control-sm req-delivery-date "  placeholder="dd-mm-yyyy" ></td>
+			    <td><textarea class="form-control form-control-sm remarks-box" rows="1"></textarea>
+				<br><br>Manager Remark:<br><b>`+msg[k]['mr']+`</b>
+			    </td>
+			    <td><input type="text" class="form-control form-control-sm req-delivery-date "  placeholder="dd-mm-yyyy" >
+			    <br><br>Manager Delivery Date:<br><b>`+msg[k]['mdd']+`</b></td>
 			    <td><button type="button" class="btn btn-success btn-sm w-100 req-save-order">Save</button></td>
 			</tr>`
 				}
@@ -260,7 +283,8 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 		var row = $(this).closest('tr');
 
 		// Get the values from the row
-		var used_ids = row.find('.req_used_ids').val();  // Branch
+		//var used_ids = row.find('.req_used_ids').val();  // Branch
+		var id = row.find('.req_id').val();  // Branch
 		var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
 		var item_id = parseInt(row.find('.req_item_id').val());  // Item
 		var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
@@ -299,13 +323,12 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 		}
 
 
-		// You can now send the data to a server using AJAX, or perform any other operation with the data
-		// Example: Saving the data to the server using AJAX
-
+		used_ids=""
 		frappe.call({
-			method: "vgjewellry.product_requisition.save_product_details",
+			method: "vgjewellry.product_requisition_for_po.save_product_details",
 			type: "POST",
 			args: {
+				id: id,
 				used_ids: used_ids,
 				branch_id: branch_id,
 				item_id: item_id,
@@ -338,5 +361,4 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 		$(this).prop('disabled', true);
 		$(this).text('Saved');
 	});
-
-}
+}	
