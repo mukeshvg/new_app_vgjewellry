@@ -951,7 +951,10 @@ ORDER BY
     frappe.db.bulk_insert("StockDataForIdeal", fields, values)
 
     frappe.db.commit()
-    
+
+    frappe.db.sql("delete from tabStockDataForIdeal where weight_range is null")
+    frappe.db.commit()
+
     cursor.close()
     con.close()
     return f"{len(values)} records inserted successfully"
@@ -1096,6 +1099,8 @@ ORDER BY
 
     frappe.db.commit()
 
+    frappe.db.sql("delete from tabSaleDataForIdeal where weight_range is null")
+    frappe.db.commit()
     
     #columns = [column[0] for column in cursor.description]
     #result = [{columns[i]: row[i] for i in range(len(columns))} for row in rows]
