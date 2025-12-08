@@ -758,7 +758,21 @@ def get_current_stock_for_admin():
     "branch", "item", "variety", "weight_range","total_sale_weight","avg_stock_weight","stock_turn","group_average_stock_turn","quadrant", "ideal_weight", "stock_weight", "stock_pcs","target_pcs"
 ]
 
-    dict_list = [dict(zip(columns, row)) for row in data]
+    #dict_list = [dict(zip(columns, row)) for row in data]
+
+    dict_list = []
+    for row in data:
+        row_dict = dict(zip(columns, row))
+
+        # Rename key
+        row_dict["avg_stock_weight (2 years)"] = row_dict.pop("avg_stock_weight")
+        row_dict["total_sale_weight (2 years)"] = row_dict.pop("total_sale_weight")
+        row_dict["stock_turn (2 years)"] = row_dict.pop("stock_turn")
+        row_dict["group_average_stock_turn (2 years)"] = row_dict.pop("group_average_stock_turn")
+        row_dict["Existing stock_weight"] = row_dict.pop("stock_weight")
+        row_dict["Existing stock_pcs"] = row_dict.pop("stock_pcs")
+
+        dict_list.append(row_dict)
 
     return dict_list
 
