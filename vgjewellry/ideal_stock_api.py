@@ -774,7 +774,6 @@ def get_ideal_stock_date():
 from decimal import Decimal
 @frappe.whitelist(allow_guest=True)
 def get_stock_data(from_date, to_date):
-    from decimal import Decimal
 
     # 1️⃣ Fetch weight ranges from Frappe DocType
     weight_ranges = frappe.get_all("weight_range", fields=["item_id", "weight_range"])
