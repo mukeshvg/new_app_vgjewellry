@@ -31,7 +31,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-18 14:26:30.214371",
+ "modified": "2025-12-08 12:41:38.721974",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Item_Master",
@@ -59,6 +59,34 @@
    "read": 1,
    "report": 1,
    "role": "Order",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Counter",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
    "share": 1,
    "write": 1
   }
