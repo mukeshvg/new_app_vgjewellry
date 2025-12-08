@@ -259,7 +259,7 @@ function loadingicon() {
 }
 
 	$("#fetch_btn").on("click", function () {
-		loadingDiv()
+		loadingicon();
 		frappe.call({
 			method: "vgjewellry.VG_api.ucr_fetch",
 			// args: {"rpt":rpt},
