@@ -119,7 +119,7 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
             "fcontent": pdf_data
         }]
     )
-
+    frappe.db.commit()
     pdf_url=save_pdf_and_get_url(docname, pdf_data)
     pdf_url="http://103.249.120.178:8011/jewel_new/server/purchase/purchase_pdf/PO-R-102-02122025-696.pdf"
     body_param =[supplier_name,purchase_doc.name,"8758960079","link" ]
