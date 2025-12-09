@@ -15,7 +15,7 @@ def get_all_email_pending_po():
         # Mark as sent
         #frappe.db.set_value("Vg Purchase Order", po.name, "is_email_send", "Yes")
         frappe.db.commit()
-
+@frappe.whitelist(allow_guest=True)
 def send_po_email(docname, sup):
     email2 = "miteshthakur87@gmail.com"
 
