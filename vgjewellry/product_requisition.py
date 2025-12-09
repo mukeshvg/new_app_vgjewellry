@@ -24,13 +24,13 @@ def get_product_details():
                 sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
                 size_id =item.size
                 size_name= sz_name.size
-            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':item.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
+            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
             suggested=0;
             in_stock=0;
             if len(idea_stock)>0:
-                suggested=idea_stock[0]
-                in_stock=idea_stock[1]
-            diff = in_stock- suggested
+                suggested=idea_stock[0]['target_pcs']
+                in_stock=idea_stock[0]['stock_pcs']
+            diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
             item_data = {
                     'used_ids':str(used_ids),

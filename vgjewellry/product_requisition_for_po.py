@@ -35,23 +35,23 @@ def get_product_details():
        
         other_branch_counter=1; 
         for idea_stock in idea_stock_res:
-            if idea_stock[2]== item.branch:
-                main_branch_suggested = idea_stock[0]
-                main_branch_in_stock = idea_stock[1]
-                main_branch_diff = main_branch_suggested - main_branch_in_stock
+            if idea_stock['branch_id']== item.branch:
+                main_branch_suggested = idea_stock['target_pcs']
+                main_branch_in_stock = idea_stock['stock_pcs']
+                main_branch_diff = int(main_branch_suggested) - int(main_branch_in_stock)
                 main_branch_code=frappe.get_doc("Ornate_Branch_Master",item.branch,"branch_code")
             else:
                 if other_branch_counter == 1:
-                    other_branch1_suggested = idea_stock[0]
-                    other_branch1_in_stock = idea_stock[1]
+                    other_branch1_suggested = idea_stock['target_pcs']
+                    other_branch1_in_stock = idea_stock['stock_pcs']
                     other_branch1_diff =other_branch1_suggested - other_branch1_in_stock
-                    other_branch1_code=frappe.get_doc("Ornate_Branch_Master",idea_stock[2],"branch_code")
+                    other_branch1_code=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch_counter+=1
                 else:
-                    other_branch2_suggested = idea_stock[0]
-                    other_branch2_in_stock = idea_stock[1]
+                    other_branch2_suggested = idea_stock['target_pcs']
+                    other_branch2_in_stock = idea_stock['stock_pcs']
                     other_branch2_diff = other_branch2_suggested - other_branch2_in_stock
-                    other_branch2_code=frappe.get_doc("Ornate_Branch_Master",idea_stock[2],"branch_code")
+                    other_branch2_code=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
         item_data = {
                     #'used_ids':str(used_ids),
                     'id':item.name,
