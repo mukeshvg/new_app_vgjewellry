@@ -28,7 +28,8 @@ def get_product_details():
             suggested=0;
             in_stock=0;
             if len(idea_stock)>0:
-                suggested=idea_stock[0]['target_pcs']
+                if suggested == None:
+                    suggested=idea_stock[0]['target_pcs']
                 in_stock=idea_stock[0]['stock_pcs']
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
