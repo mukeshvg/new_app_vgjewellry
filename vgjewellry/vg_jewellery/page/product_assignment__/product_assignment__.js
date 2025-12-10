@@ -1,7 +1,7 @@
-frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
+frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Product Requisition For Purchase',
+		title: 'Product Assignment  PD',
 		single_column: true
 	});
 	$(wrapper).html(`
@@ -97,7 +97,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 }
 
 </style>
-<h2 style="text-align:center;margin-top:10px">Product Requisition</h2>
+<h2 style="text-align:center;margin-top:10px">Product Assignment</h2>
 	<div style="padding:0 10px">
 	<table class="table table-striped table-hover align-middle modern-table" id="item-order-table">
     <thead class="table-dark">
@@ -109,13 +109,10 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	    <th>Size</th>
 	    <th>JOTA</th>-->
 	    <th>Suggested</th>
-	    <th>Qty Req</th>
 	    <th>Qty Given</th>
-	    <th>Action</th>
 	    <th>Reason</th>
 	    <th>Remarks</th>
-	    <th>Delivery Date</th>
-	    <th>Save</th>
+	    <th>Action</th>
 	</tr>
     </thead>
 
@@ -127,7 +124,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 		`);
 
 	frappe.call({
-		method:'vgjewellry.product_requisition_for_po.get_product_details',
+		method:'vgjewellry.product_requisition_for_po.get_product_details_for_assignment',
 		callback: function(response) {
 			if(response && response.message.all_item.length>0){
 				approve_reason=response.message.excess_reason
@@ -142,7 +139,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 				}
 				msg=response.message.all_item
 				var str=""
-				
+
 				for(var k in msg){
 					var suggeted_table=""
 					var ideal=msg[k]['ideal']
@@ -178,48 +175,20 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 					<td>Diff</td>
 				</tr>`+suggeted_table+`
 			    </table></td>
-			    <td class="qty-req"><strike>`+msg[k]["qty"]+`</strike>
-				<br><b>`+msg[k]['qty_manager']+`</b>
+			    <td class="qty-req">
+				<b>`+msg[k]['qty_po']+`</b>
 			    </td>
 			    <td>
-				<select class="form-select form-select-sm action-select qty-given">
-					<option>1</option>
-					<option>2</option>
-					<option>3</option>
-					<option>4</option>
-					<option>5</option>
-					<option>6</option>
-					<option>7</option>
-					<option>8</option>
-					<option>9</option>
-					<option>10</option>
-				</select>
-			    </td>
-			    <td>
-				<select class="form-select form-select-sm action-select status-select">
-					<option value="">Select Action</option>
-					<option>Approve</option>
-					<option>Reject</option>
-				</select>
-				<br><br><br>Manager Action:<br><b>`+msg[k]['ms']+`</b>
-			    </td>
-			    <td>
-				<select class="form-select form-select-sm reason-select approve-reason mt-1 d-none">
-					<option value="">Select Reason</option>
-					`+approve_reason_option+`
-				</select>
-				<select class="form-select form-select-sm reason-select reject-reason mt-1 d-none">
-					<option value="">Select Reason</option>
-					`+reject_reason_option+`
-				</select>
+				PD Reason :<b>`+msg[k]['pdr']+`</b>
 				<br><br><br>Manager Reason:<br><b>`+msg[k]['mar']+""+msg[k]['mrr']+`</b>
 			    </td>
-			    <td><textarea class="form-control form-control-sm remarks-box" rows="1"></textarea>
+			    <td>
+				PD Remark:<br><b>`+msg[k]['pr']+`</b>
 				<br><br>Manager Remark:<br><b>`+msg[k]['mr']+`</b>
 			    </td>
-			    <td><input type="text" class="form-control form-control-sm req-delivery-date "  placeholder="dd-mm-yyyy" >
-			    <br><br>Manager Delivery Date:<br><b>`+msg[k]['mdd']+`</b></td>
-			    <td><button type="button" class="btn btn-success btn-sm w-100 req-save-order">Save</button></td>
+			    <td>
+				Supplier<br><input type="text" class="supplier_input" placeholder="Type supplier name"><br><br>
+			    <button type="button" class="btn btn-success btn-sm w-100 req-save-order">Add To Cart</button></td>
 			</tr>`
 				}
 				$("#product-req-table-body").html(str)
@@ -247,127 +216,71 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 			}
 		});
 	}
-	$(document).on("change", ".qty-given", function () {
-		let row = $(this).closest("tr");
-		update_status(row)
-	});
-	$(document).on("change", ".status-select", function () {
-		let row = $(this).closest("tr");
-		update_status(row)
-	});
 
 	$(document).on("click", ".in_stock_img", function () {
 		var branch_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_branch_id').val();
 		var item_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_item_id').val();
 		var variety_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_variety_id').val();
 		var wt_range = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_wt_range').val();
-		 frappe.call({
-                        method: "vgjewellry.product_requisition_for_po.get_existing_product_image",
-                        type: "POST",
-                        args: {
-                                branch_id: branch_id,
-                                item_id: item_id,
-                                variety_id: variety_id,
-                                wt_range: wt_range,
+		frappe.call({
+			method: "vgjewellry.product_requisition_for_po.get_existing_product_image",
+			type: "POST",
+			args: {
+				branch_id: branch_id,
+				item_id: item_id,
+				variety_id: variety_id,
+				wt_range: wt_range,
 			},callback: function (r) {
-				 if (r.message && Object.keys(r.message).length > 0) {
-                let html = '';
-                let branches = Object.keys(r.message);
+				if (r.message && Object.keys(r.message).length > 0) {
+					let html = '';
+					let branches = Object.keys(r.message);
 
-                // Move clicked branch to first
-                branches.sort((a,b) => {
-                    if (a == branch_id) return -1;
-                    if (b == branch_id) return 1;
-                    return a - b; // sort remaining numerically
-                });
+					// Move clicked branch to first
+					branches.sort((a,b) => {
+						if (a == branch_id) return -1;
+						if (b == branch_id) return 1;
+						return a - b; // sort remaining numerically
+					});
 
-		let branch_code={};			 
-		branches.forEach(branch => {
-			r.message[branch].forEach(img_obj => {
-				branch_code[branch]=img_obj["BranchCode"]
-			})
-		})			 
+					let branch_code={};			 
+					branches.forEach(branch => {
+						r.message[branch].forEach(img_obj => {
+							branch_code[branch]=img_obj["BranchCode"]
+						})
+					})			 
 
-                branches.forEach(branch => {
-                    html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
+					branches.forEach(branch => {
+						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
 
-                    r.message[branch].forEach(img_obj => {
-                        let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-                        // if already full URL, use as is
-                        html += `<div style="display:inline-block; margin:5px; text-align:center;">
-                                    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
-                                    <div>Label: ${img_obj.LabelNo}</div>
-                                    <div>Wt: ${img_obj.NetWt}</div>
-                                 </div>`;
-                    });
+						r.message[branch].forEach(img_obj => {
+							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+							// if already full URL, use as is
+							html += `<div style="display:inline-block; margin:5px; text-align:center;">
+				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
+				    <div>Label: ${img_obj.LabelNo}</div>
+				    <div>Wt: ${img_obj.NetWt}</div>
+				 </div>`;
+						});
 
-                    html += '</div><hr>';
-                });
+						html += '</div><hr>';
+					});
 
-                let d = new frappe.ui.Dialog({
-                    title: 'Product Images by Branch',
-                    size: 'large',
-                    fields: [
-                        { fieldname: 'images_html', fieldtype: 'HTML', options: html }
-                    ]
-                });
-                d.show();
-            } else {
-                frappe.msgprint("No images found.");
-            }
-	/*			 if (r.message && Object.keys(r.message).length > 0) {
-            let html = '';
-            // r.message is a dict grouped by branch
-            Object.values(r.message).forEach(branch_images => {
-                branch_images.forEach(img_obj => {
-                    let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+					let d = new frappe.ui.Dialog({
+						title: 'Product Images by Branch',
+						size: 'large',
+						fields: [
+							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+						]
+					});
+					d.show();
+				} else {
+					frappe.msgprint("No images found.");
+				}
+			}
 
-                    html += `<div style="display:inline-block; margin:5px;">
-                                <img src="${img_path}" style="max-width:150px; max-height:150px;"/>
-                                <div><div>Label: ${img_obj.LabelNo} </div><div>Wt: ${img_obj.NetWt}</div></div>
-                             </div>`;
-                });
-            });
-
-            let d = new frappe.ui.Dialog({
-                title: 'Product Images',
-                size: 'large',
-                fields: [
-                    { fieldname: 'images_html', fieldtype: 'HTML', options: html }
-                ]
-            });
-            d.show();
-        } else {
-            frappe.msgprint("No images found.");
-        }*/
-                        }
-
-	});
+		});
 	});
 
-	function update_status(row){
-
-		var qtyReq = parseInt(row.find('.qty-req').text())
-		var qtyGiven = parseInt(row.find('.qty-given').val());
-		var approveReasonSelect = row.find('.approve-reason');
-		var rejectReasonSelect = row.find('.reject-reason');
-		var status=row.find(".status-select").val();
-		if (qtyReq < qtyGiven && status=="Approve") {
-			// Show Reason to approve and hide Reason to reject
-			approveReasonSelect.removeClass('d-none');
-			rejectReasonSelect.addClass('d-none');
-		} 
-		else if(qtyReq == qtyGiven && status=="Approve"){
-			approveReasonSelect.addClass('d-none');
-			rejectReasonSelect.addClass('d-none');
-
-		}
-		else {
-			// Show Reason to reject and hide Reason to approve
-			rejectReasonSelect.removeClass('d-none');
-			approveReasonSelect.addClass('d-none');
-		}
-	}
 	// Event listener for Save button click
 	$(document).on('click', '.req-save-order', function () {
 		// Find the closest row (tr) for the clicked Save button
@@ -452,4 +365,4 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 		$(this).prop('disabled', true);
 		$(this).text('Saved');
 	});
-}	
+}

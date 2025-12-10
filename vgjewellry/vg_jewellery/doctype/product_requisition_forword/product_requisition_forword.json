@@ -20,6 +20,8 @@
   "qty_req",
   "column_break_pitv",
   "qty_given_by_manager",
+  "column_break_wele",
+  "qty_given_by_po",
   "section_break_snay",
   "suggested",
   "column_break_qiiu",
@@ -265,12 +267,21 @@
    "fieldtype": "Link",
    "label": "PD User",
    "options": "User"
+  },
+  {
+   "fieldname": "column_break_wele",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty_given_by_po",
+   "fieldtype": "Data",
+   "label": "Qty Given By PO"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-08 18:11:29.812160",
+ "modified": "2025-12-10 16:44:14.982786",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Forword",
