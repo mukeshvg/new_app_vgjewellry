@@ -142,7 +142,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 				}
 				msg=response.message.all_item
 				var str=""
-				
+
 				for(var k in msg){
 					var suggeted_table=""
 					var ideal=msg[k]['ideal']
@@ -261,88 +261,63 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 		var item_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_item_id').val();
 		var variety_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_variety_id').val();
 		var wt_range = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_wt_range').val();
-		 frappe.call({
-                        method: "vgjewellry.product_requisition_for_po.get_existing_product_image",
-                        type: "POST",
-                        args: {
-                                branch_id: branch_id,
-                                item_id: item_id,
-                                variety_id: variety_id,
-                                wt_range: wt_range,
+		frappe.call({
+			method: "vgjewellry.product_requisition_for_po.get_existing_product_image",
+			type: "POST",
+			args: {
+				branch_id: branch_id,
+				item_id: item_id,
+				variety_id: variety_id,
+				wt_range: wt_range,
 			},callback: function (r) {
-				 if (r.message && Object.keys(r.message).length > 0) {
-                let html = '';
-                let branches = Object.keys(r.message);
+				if (r.message && Object.keys(r.message).length > 0) {
+					let html = '';
+					let branches = Object.keys(r.message);
 
-                // Move clicked branch to first
-                branches.sort((a,b) => {
-                    if (a == branch_id) return -1;
-                    if (b == branch_id) return 1;
-                    return a - b; // sort remaining numerically
-                });
+					// Move clicked branch to first
+					branches.sort((a,b) => {
+						if (a == branch_id) return -1;
+						if (b == branch_id) return 1;
+						return a - b; // sort remaining numerically
+					});
 
-		let branch_code={};			 
-		branches.forEach(branch => {
-			r.message[branch].forEach(img_obj => {
-				branch_code[branch]=img_obj["BranchCode"]
-			})
-		})			 
+					let branch_code={};			 
+					branches.forEach(branch => {
+						r.message[branch].forEach(img_obj => {
+							branch_code[branch]=img_obj["BranchCode"]
+						})
+					})			 
 
-                branches.forEach(branch => {
-                    html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
+					branches.forEach(branch => {
+						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
 
-                    r.message[branch].forEach(img_obj => {
-                        let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-                        // if already full URL, use as is
-                        html += `<div style="display:inline-block; margin:5px; text-align:center;">
-                                    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
-                                    <div>Label: ${img_obj.LabelNo}</div>
-                                    <div>Wt: ${img_obj.NetWt}</div>
-                                 </div>`;
-                    });
+						r.message[branch].forEach(img_obj => {
+							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+							// if already full URL, use as is
+							html += `<div style="display:inline-block; margin:5px; text-align:center;">
+				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
+				    <div>Label: ${img_obj.LabelNo}</div>
+				    <div>Wt: ${img_obj.NetWt}</div>
+				 </div>`;
+						});
 
-                    html += '</div><hr>';
-                });
+						html += '</div><hr>';
+					});
 
-                let d = new frappe.ui.Dialog({
-                    title: 'Product Images by Branch',
-                    size: 'large',
-                    fields: [
-                        { fieldname: 'images_html', fieldtype: 'HTML', options: html }
-                    ]
-                });
-                d.show();
-            } else {
-                frappe.msgprint("No images found.");
-            }
-	/*			 if (r.message && Object.keys(r.message).length > 0) {
-            let html = '';
-            // r.message is a dict grouped by branch
-            Object.values(r.message).forEach(branch_images => {
-                branch_images.forEach(img_obj => {
-                    let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+					let d = new frappe.ui.Dialog({
+						title: 'Product Images by Branch',
+						size: 'large',
+						fields: [
+							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+						]
+					});
+					d.show();
+				} else {
+					frappe.msgprint("No images found.");
+				}
+			}
 
-                    html += `<div style="display:inline-block; margin:5px;">
-                                <img src="${img_path}" style="max-width:150px; max-height:150px;"/>
-                                <div><div>Label: ${img_obj.LabelNo} </div><div>Wt: ${img_obj.NetWt}</div></div>
-                             </div>`;
-                });
-            });
-
-            let d = new frappe.ui.Dialog({
-                title: 'Product Images',
-                size: 'large',
-                fields: [
-                    { fieldname: 'images_html', fieldtype: 'HTML', options: html }
-                ]
-            });
-            d.show();
-        } else {
-            frappe.msgprint("No images found.");
-        }*/
-                        }
-
-	});
+		});
 	});
 
 	function update_status(row){
@@ -400,7 +375,6 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 			alert("Please select a reason for the action.");
 			return;
 		}
-		console.log(rejectReason);
 		if((qtyReq > qtyGiven && status=="Approve" && rejectReason ==="")|| (status=="Reject" && rejectReason ==="")){
 
 			alert("Please select a reason for the action.");

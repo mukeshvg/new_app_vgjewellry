@@ -152,6 +152,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 				<input type="hidden" class="req_item_id" value="`+msg[k]['item_id']+`" >
 				<input type="hidden" class="req_variety_id" value="`+msg[k]['variety_id']+`" >
 				<input type="hidden" class="req_wt_id" value="`+msg[k]['wt_id']+`" >
+				<input type="hidden" class="req_wt_range" value="`+msg[k]['weight_range']+`" >
 				<input type="hidden" class="req_size_id" value="`+msg[k]['size_id']+`" >
 			    `+msg[k]["item"]+`</td>
 			    <td>`+msg[k]["variety"]+`</td>
@@ -159,7 +160,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 			    <td>`+msg[k]["size"]+`</td>
 			    <td class="req_jota">`+msg[k]["jota"]+`</td>
 			    <td class="req_suggested">`+msg[k]["suggested"]+`</td>
-			    <td class="req_in_stock">`+msg[k]["in_stock"]+`</td>
+			    <td class="req_in_stock in_stock_img">`+msg[k]["in_stock"]+`</td>
 			    <td class="req_in_diff">`+msg[k]["diff"]+`</td>
 			    <td class="qty-req">`+msg[k]["qty"]+`</td>
 			    <td>
@@ -254,6 +255,70 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 			approveReasonSelect.addClass('d-none');
 		}
 	}
+	$(document).on("click", ".in_stock_img", function () {
+		var row = $(this).closest('tr');
+		var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
+                var item_id = parseInt(row.find('.req_item_id').val());  // Item
+                var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
+		var wt_range = row.find('.req_wt_range').val();
+		frappe.call({
+			method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
+			type: "POST",
+			args: {
+				branch_id: branch_id,
+				item_id: item_id,
+				variety_id: variety_id,
+				wt_range: wt_range,
+			},callback: function (r) {
+				if (r.message && Object.keys(r.message).length > 0) {
+					let html = '';
+					let branches = Object.keys(r.message);
+
+					// Move clicked branch to first
+					branches.sort((a,b) => {
+						if (a == branch_id) return -1;
+						if (b == branch_id) return 1;
+						return a - b; // sort remaining numerically
+					});
+
+					let branch_code={};			 
+					branches.forEach(branch => {
+						r.message[branch].forEach(img_obj => {
+							branch_code[branch]=img_obj["BranchCode"]
+						})
+					})			 
+
+					branches.forEach(branch => {
+						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
+
+						r.message[branch].forEach(img_obj => {
+							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+							// if already full URL, use as is
+							html += `<div style="display:inline-block; margin:5px; text-align:center;">
+				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
+				    <div>Label: ${img_obj.LabelNo}</div>
+				    <div>Wt: ${img_obj.NetWt}</div>
+				 </div>`;
+						});
+
+						html += '</div><hr>';
+					});
+
+					let d = new frappe.ui.Dialog({
+						title: 'Product Images by Branch',
+						size: 'large',
+						fields: [
+							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+						]
+					});
+					d.show();
+				} else {
+					frappe.msgprint("No images found.");
+				}
+			}
+
+		});
+	});
 	// Event listener for Save button click
 	$(document).on('click', '.req-save-order', function () {
 		// Find the closest row (tr) for the clicked Save button

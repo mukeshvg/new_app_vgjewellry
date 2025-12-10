@@ -198,6 +198,63 @@ WHERE rn = 1;
     return grouped
 
 
+@frappe.whitelist()
+def get_existing_product_image_manager(branch_id, item_id, variety_id, wt_range):
+    con = connect()
+    cursor = con.cursor()
+    min_wt, max_wt = wt_range.replace(" ", "").split("-")
+    min_wt = float(min_wt)
+    max_wt = float(max_wt)
+    
+    query = f'''
+    WITH cte AS (
+    SELECT
+        lt.ImagePath1,
+        lt.NetWt,
+        lb.BranchID,
+        lt.LabelNo,
+        bm.BranchCode,
+        ROW_NUMBER() OVER (
+            PARTITION BY lb.LabelNo   
+            ORDER BY lb.LabelNo        
+        ) AS rn
+    FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelBalance lb
+    LEFT JOIN dbo.LabelTransaction lt ON lb.LabelNo = lt.LabelNo
+    LEFT JOIN dbo.BranchMaster bm ON bm.BranchID = lb.BranchID
+    WHERE lt.VarietyMstId = {variety_id}
+      AND lt.ItemMstID = {item_id}
+      AND lt.NetWt BETWEEN {min_wt} AND {max_wt}
+      AND lb.BranchID ={branch_id}
+)
+SELECT
+    ImagePath1,
+    NetWt,
+    BranchID,
+    LabelNo,
+    BranchCode
+FROM cte
+WHERE rn = 1;
+    '''
+
+    cursor.execute(query, ())
+    rows = cursor.fetchall()
+    grouped = defaultdict(list)
+
+    image_server_url="http://103.249.120.178:51"
+    for row in rows:
+        branch_id = int(row[2])
+        grouped[branch_id].append({
+            "ImagePath1": f"{image_server_url}/{row[0]}",
+            "NetWt": row[1],
+            "LabelNo":row[3],
+            "BranchCode":row[4]
+        })
+
+    # convert defaultdict to normal dict
+    grouped = dict(grouped)
+    cursor.close()
+    con.close()
+    return grouped
 
 
 @frappe.whitelist()

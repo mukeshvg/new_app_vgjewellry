@@ -4,13 +4,23 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2025-12-10 16:06:09.011238",
+ "modified": "2025-12-10 18:34:04.265389",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "product-assignment--",
  "owner": "Administrator",
  "page_name": "product-assignment--",
- "roles": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Purchase Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
