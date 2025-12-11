@@ -7,7 +7,8 @@ def get_product_details():
     user_data = frappe.get_doc("User",user)
 
     all_item =[]
-    requisition= frappe.get_all("Product_Requisition_Forword",fields=["*"],filters={'manager_status':'Approve','purchase_dept_status':['=',None]})
+    requisition= frappe.get_all("Product_Requisition_Forword",fields=["*"],filters={'manager_status':'Approve',
+                                                                             'purchase_dept_status': ['is', 'not set']})
     for item in requisition:
         branch_name=frappe.get_doc("Ornate_Branch_Master",item.branch)
         item_name=frappe.get_doc("Ornate_Item_Master",item.item)
@@ -54,7 +55,7 @@ def get_product_details():
                 else:
                     other_branch2_suggested = idea_stock['target_pcs']
                     other_branch2_in_stock = idea_stock['stock_pcs']
-                    other_branch2_diff = other_branch2_suggested - other_branch2_in_stock
+                    other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
                     other_branch2_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch2_code = other_branch2_code1.branch_code
                     
