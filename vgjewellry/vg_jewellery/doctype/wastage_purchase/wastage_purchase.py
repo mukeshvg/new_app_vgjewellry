@@ -6,7 +6,7 @@ from frappe.model.document import Document
 
 
 class Wastage_Purchase(Document):
-	def before_save(self):
+    def before_save(self):
         self.log_purwast_change()
         self.update_total_days()
 
@@ -17,10 +17,10 @@ class Wastage_Purchase(Document):
 
         # Fetch old Pur.Wast.% from DB
         old_value = frappe.db.get_value(
-            "Wastage_Purchase",
-            self.name,
-            "purwast"
-        )
+                "Wastage_Purchase",
+                self.name,
+                "purwast"
+                )
 
         # If value not changed, do nothing
         if (old_value or "") == (self.purwast or ""):
@@ -28,10 +28,10 @@ class Wastage_Purchase(Document):
 
         # Append history row in child table
         self.append("updated_purwast", {        # ✅ parent table fieldname
-            "updated_pur_wast": self.purwast,   # ✅ child fieldname
-            "date": now_datetime(),
-            "user": frappe.session.user
-        })
+                                        "updated_pur_wast": self.purwast,   # ✅ child fieldname
+                                        "date": now_datetime(),
+                                        "user": frappe.session.user
+                                        })
 
     def update_total_days(self):
         now_dt = now_datetime()
