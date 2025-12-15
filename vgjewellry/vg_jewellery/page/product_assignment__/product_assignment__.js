@@ -147,7 +147,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						suggeted_table+=`<tr>
 							<td>`+ideal[n]["b"]+`</td>
 							<td>`+ideal[n]["s"]+`</td>
-							<td><button class="in_stock_img">`+ideal[n]["i"]+`</button></td>
+							<td><button class="in_stock_img" data-id="`+msg[k]['id']+`">`+ideal[n]["i"]+`</button></td>
 							<td>`+ideal[n]["d"]+`</td>
 							</tr>`;	
 					}
@@ -237,6 +237,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 	}
 
 	$(document).on("click", ".in_stock_img", function () {
+		var id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_id').val();
 		var branch_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_branch_id').val();
 		var item_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_item_id').val();
 		var variety_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_variety_id').val();
@@ -272,13 +273,14 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
 
 						r.message[branch].forEach(img_obj => {
+							console.log(branch);
 							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
 							// if already full URL, use as is
 							html += `<div style="display:inline-block; margin:5px; text-align:center;">
 				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
 				    <div>Label: ${img_obj.LabelNo}</div>
 				    <div>Wt: ${img_obj.NetWt}</div>
-									<input type="checkbox" class="image_checkbox" data-img-id="${img_obj.LabelNo}" />
+									<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />
 
 				 </div>`;
 						});
@@ -296,19 +298,20 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 
 					d.set_primary_action('Branch Transfer', function() {
 						let selectedImages = [];
-
+						
 						// Collect selected images based on checkbox
 						$('.image_checkbox:checked').each(function() {
-							selectedImages.push($(this).data('img-id'));
+							var obj={label_no:$(this).data('img-id'),"branch":$(this).data('branch'),"requested":$(this).data("requested"),id:$(this).data('id')}
+							selectedImages.push(obj);
 						});
-
+						
 						if (selectedImages.length > 0) {
 							// Send data to backend via AJAX or frappe call
 							frappe.call({
 								method: "vgjewellry.product_requisition_for_po.transfer_images_to_branch",
 								type: "POST",
 								args: {
-									selected_image_ids: selectedImages,
+									selected_image_ids: JSON.stringify(selectedImages),
 								},
 								callback: function(r) {
 									if (r.message) {

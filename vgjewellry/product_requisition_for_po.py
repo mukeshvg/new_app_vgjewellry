@@ -364,3 +364,21 @@ def save_supplier(id,supplier):
     doc.save()
     frappe.db.commit()
     return {"message": "Added to cart successfully."}
+
+import json
+@frappe.whitelist()
+def transfer_images_to_branch(selected_image_ids):
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+    user_data = frappe.get_doc("User",user)
+    items=json.loads(selected_image_ids)
+    for item in items:
+        branch_transfer = frappe.new_doc("VG_Branch_Transfer_Request")
+        branch_transfer.requisition_id = item["id"]
+        branch_transfer.request_from = item["requested"]
+        branch_transfer.request_to = item["branch"]
+        branch_transfer.label_no = item["label_no"]
+        branch_transfer.requester= user_data.name
+        branch_transfer.save()
+    return {"message": "Branch Request Added Successfully."}    
+            

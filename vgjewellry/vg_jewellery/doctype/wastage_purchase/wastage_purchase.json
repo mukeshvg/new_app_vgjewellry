@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "creation": "2025-11-20 13:10:47.114815",
  "doctype": "DocType",
@@ -11,7 +12,8 @@
   "sp_variety_name",
   "vg_variety_name",
   "metal_id",
-  "purwast"
+  "purwast",
+  "updated_purwast"
  ],
  "fields": [
   {
@@ -53,6 +55,13 @@
    "fieldname": "purwast",
    "fieldtype": "Data",
    "label": "Pur.Wast.%"
+  },
+  {
+   "fieldname": "updated_purwast",
+   "fieldtype": "Table",
+   "label": "updated Pur.Wast%",
+   "options": "wastage_Purchase_child",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,

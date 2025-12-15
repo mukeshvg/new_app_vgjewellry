@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-15 15:40:38.468945",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "purwast",
+  "updated_pur_wast",
+  "date",
+  "user",
+  "total_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "purwast",
+   "fieldtype": "Section Break",
+   "label": "Purchase wastage update"
+  },
+  {
+   "fieldname": "updated_pur_wast",
+   "fieldtype": "Float",
+   "label": "Updated Pur.Wast.%"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "fieldname": "total_days",
+   "fieldtype": "Int",
+   "label": "Total Days"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-15 18:40:56.855436",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "wastage_Purchase_child",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

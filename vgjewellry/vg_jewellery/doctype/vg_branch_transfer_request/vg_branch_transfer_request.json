@@ -15,9 +15,13 @@
   "section_break_gdgz",
   "status",
   "column_break_avdq",
-  "sender__receiver_status",
+  "product_sender__receiver_status",
   "column_break_qbas",
   "request_status",
+  "section_break_ficy",
+  "product_send_on",
+  "column_break_xzow",
+  "product_receive_on",
   "section_break_ddlk",
   "requester",
   "column_break_nvbg",
@@ -75,17 +79,11 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "\nAccept\nRejecet\nAccept But Give Me Another"
+   "options": "\nAccept\nReject\nAccept But Give Me Another"
   },
   {
    "fieldname": "column_break_avdq",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "sender__receiver_status",
-   "fieldtype": "Select",
-   "label": "Sender / Receiver Status",
-   "options": "\nSend\nReceive"
   },
   {
    "fieldname": "section_break_ddlk",
@@ -116,12 +114,36 @@
    "fieldtype": "Select",
    "label": "Request Status",
    "options": "\nOpen\nClose"
+  },
+  {
+   "fieldname": "product_sender__receiver_status",
+   "fieldtype": "Select",
+   "label": "Product Sender / Receiver Status",
+   "options": "\nProduct Send\nProduct Receive"
+  },
+  {
+   "fieldname": "section_break_ficy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "product_send_on",
+   "fieldtype": "Datetime",
+   "label": "Product Send On"
+  },
+  {
+   "fieldname": "column_break_xzow",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "product_receive_on",
+   "fieldtype": "Datetime",
+   "label": "Product Receive On"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-14 17:39:52.818229",
+ "modified": "2025-12-15 18:31:10.905784",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "VG_Branch_Transfer_Request",
@@ -136,6 +158,30 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manager",
    "share": 1,
    "write": 1
   }
