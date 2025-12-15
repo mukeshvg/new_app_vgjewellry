@@ -182,8 +182,8 @@ WHERE rn = 1;
     rows = cursor.fetchall()
     grouped = defaultdict(list)
 
-    #image_server_url="http://103.249.120.178:51"
-    image_server_url="http://192.168.1.5:51"
+    image_server_url="http://103.249.120.178:51"
+    #image_server_url="http://192.168.1.5:51"
     for row in rows:
         branch_id = int(row[2])
         grouped[branch_id].append({
@@ -267,7 +267,7 @@ def get_product_details_for_assignment():
     user_data = frappe.get_doc("User",user)
 
     all_item =[]
-    requisition= frappe.get_all("Product_Requisition_Forword",fields=["*"],filters={'purchase_dept_status':'Approve'})
+    requisition= frappe.get_all("Product_Requisition_Forword",fields=["*"],filters={'purchase_dept_status':'Approve','supplier': ['is', 'not set']})
     for item in requisition:
         branch_name=frappe.get_doc("Ornate_Branch_Master",item.branch)
         item_name=frappe.get_doc("Ornate_Item_Master",item.item)
@@ -350,3 +350,17 @@ def get_product_details_for_assignment():
 
 
     return { 'all_item' :all_item , 'supplier':supplier}
+
+@frappe.whitelist()
+def save_supplier(id,supplier):
+    doc = frappe.get_doc(
+        "Product_Requisition_Forword",
+        {
+            "name":id,
+        }
+        )
+
+    doc.supplier= supplier
+    doc.save()
+    frappe.db.commit()
+    return {"message": "Added to cart successfully."}

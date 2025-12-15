@@ -187,15 +187,34 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				<br><br>Manager Remark:<br><b>`+msg[k]['mr']+`</b>
 			    </td>
 			    <td>
-				Supplier<br><input type="text" class="supplier_input" placeholder="Type supplier name"><br><br>
+				Supplier<br> <div class="supplier-link" data-row="${k}"></div><br><br>
 			    <button type="button" class="btn btn-success btn-sm w-100 req-save-order">Add To Cart</button></td>
 			</tr>`
 				}
 				$("#product-req-table-body").html(str)
 				initDeliveryDatePickers();
+
+				$(".supplier-link").each(function () {
+					let row_index = $(this).data("row");
+
+					let supplier = frappe.ui.form.make_control({
+						parent: this,
+						df: {
+							fieldtype: "Link",
+							options: "Ornate_Supplier_Master",
+							fieldname: "supplier_" + row_index,
+							placeholder: "Select Supplier"
+						},
+						render_input: true
+					});
+
+					supplier.refresh();
+				});
 			}
 		}
 	})
+
+
 	$('<link>')
 		.attr('rel', 'stylesheet')
 		.attr('href', '/assets/vgjewellry/css/flatpickr.min.css')
@@ -259,6 +278,8 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
 				    <div>Label: ${img_obj.LabelNo}</div>
 				    <div>Wt: ${img_obj.NetWt}</div>
+									<input type="checkbox" class="image_checkbox" data-img-id="${img_obj.LabelNo}" />
+
 				 </div>`;
 						});
 
@@ -272,6 +293,38 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
 						]
 					});
+
+					d.set_primary_action('Branch Transfer', function() {
+						let selectedImages = [];
+
+						// Collect selected images based on checkbox
+						$('.image_checkbox:checked').each(function() {
+							selectedImages.push($(this).data('img-id'));
+						});
+
+						if (selectedImages.length > 0) {
+							// Send data to backend via AJAX or frappe call
+							frappe.call({
+								method: "vgjewellry.product_requisition_for_po.transfer_images_to_branch",
+								type: "POST",
+								args: {
+									selected_image_ids: selectedImages,
+								},
+								callback: function(r) {
+									if (r.message) {
+										frappe.msgprint("Branch transfer successful!");
+									} else {
+										frappe.msgprint("Error in transferring images.");
+									}
+								}
+							});
+						} else {
+							frappe.msgprint("Please select at least one image.");
+						}
+					});
+
+					// Set button class to success (This will apply success styling to the button)
+					$(d.$wrapper).find('.btn-primary').addClass('btn-success');
 					d.show();
 				} else {
 					frappe.msgprint("No images found.");
@@ -285,11 +338,19 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 	$(document).on('click', '.req-save-order', function () {
 		// Find the closest row (tr) for the clicked Save button
 		var row = $(this).closest('tr');
+		let supplier = row.find(".supplier-link input").val();
+
+		if (!supplier) {
+			frappe.msgprint("Please select a supplier.");
+			return;
+		}
+		let supplier_pk = row.find(".supplier-link .control-value a").data("name");
+
 
 		// Get the values from the row
 		//var used_ids = row.find('.req_used_ids').val();  // Branch
 		var id = row.find('.req_id').val();  // Branch
-		var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
+		/*var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
 		var item_id = parseInt(row.find('.req_item_id').val());  // Item
 		var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
 		var wt_id = parseInt(row.find('.req_wt_id').val());  // Weight Range
@@ -325,15 +386,16 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 			alert("Please select a delivery date.");
 			return; 
 		}
-
+		*/
 
 		used_ids=""
 		frappe.call({
-			method: "vgjewellry.product_requisition_for_po.save_product_details",
+			method: "vgjewellry.product_requisition_for_po.save_supplier",
 			type: "POST",
 			args: {
 				id: id,
-				used_ids: used_ids,
+				supplier:supplier_pk
+				/*used_ids: used_ids,
 				branch_id: branch_id,
 				item_id: item_id,
 				variety_id: variety_id,
@@ -349,7 +411,8 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				approve_reason: approveReason,
 				reject_reason: rejectReason,
 				remarks: remarks,
-				delivery_date: deliveryDate
+				delivery_date: deliveryDate*/
+
 			},
 			callback: function (r) {
 				if (!r.exc) {
@@ -363,6 +426,6 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 
 		// Optional: Disable the Save button after saving or change its text
 		$(this).prop('disabled', true);
-		$(this).text('Saved');
+		$(this).text('Added To Cart');
 	});
 }

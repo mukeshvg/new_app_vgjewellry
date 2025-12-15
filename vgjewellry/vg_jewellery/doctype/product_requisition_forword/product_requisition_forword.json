@@ -51,7 +51,11 @@
   "column_break_iuay",
   "pd_delivery_date",
   "section_break_vzrf",
-  "pd_user"
+  "pd_user",
+  "column_break_tyjb",
+  "supplier",
+  "column_break_wunb",
+  "po_number"
  ],
  "fields": [
   {
@@ -276,12 +280,31 @@
    "fieldname": "qty_given_by_po",
    "fieldtype": "Data",
    "label": "Qty Given By PO"
+  },
+  {
+   "fieldname": "column_break_tyjb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Ornate_Supplier_Master"
+  },
+  {
+   "fieldname": "column_break_wunb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "po_number",
+   "fieldtype": "Data",
+   "label": "Po Number"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-10 16:44:14.982786",
+ "modified": "2025-12-14 16:06:44.427453",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Forword",

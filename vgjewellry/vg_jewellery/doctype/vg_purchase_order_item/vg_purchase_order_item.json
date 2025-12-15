@@ -11,6 +11,9 @@
   "column_break_prqy",
   "metal_color",
   "section_break_risy",
+  "column_break_tvri",
+  "variety",
+  "column_break_nigk",
   "weight_range",
   "column_break_rmag",
   "diamond_carat_range",
@@ -20,6 +23,8 @@
   "qty",
   "column_break_pnud",
   "pcs",
+  "column_break_irwh",
+  "jota",
   "column_break_nenw",
   "total_weight"
  ],
@@ -115,13 +120,37 @@
    "fieldtype": "Select",
    "label": "Metal Color",
    "options": "\nYellow\nRose\nWhite\nYellow+White Gold\nRose+White Gold\nYellow+Rose Gold\nYellow+Rose+White Gold\nYellow Antique\nPlatinum\nPlatinum+Rose Gold\nPlatinum+Yellow Gold"
+  },
+  {
+   "fieldname": "column_break_irwh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "jota",
+   "fieldtype": "Data",
+   "label": "Jota"
+  },
+  {
+   "fieldname": "column_break_tvri",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Link",
+   "label": "Variety",
+   "options": "Ornate_Variety_Master",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_nigk",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-29 20:25:11.115431",
+ "modified": "2025-12-14 14:48:19.773760",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Vg Purchase Order Item",
