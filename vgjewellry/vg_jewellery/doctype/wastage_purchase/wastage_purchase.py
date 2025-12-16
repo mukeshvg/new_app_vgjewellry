@@ -1,9 +1,9 @@
 # Copyright (c) 2025, vg and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
-
+from frappe.utils import now_datetime, get_datetime
 
 class Wastage_Purchase(Document):
     def before_save(self):
