@@ -4,13 +4,20 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2025-12-15 13:40:36.164789",
+ "modified": "2025-12-17 17:16:37.338174",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "branch-transfer-requ",
  "owner": "Administrator",
  "page_name": "branch-transfer-requ",
- "roles": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
