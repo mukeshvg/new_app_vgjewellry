@@ -112,6 +112,7 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
 
     frappe.sendmail(
         recipients=[email2],
+        bcc=["miteshthakur87@gmail.com","mukesh.k@svgjewels.com"]
         subject=f"Purchase Order-{docname}",
         message=f"{msg}",
          attachments=[{
