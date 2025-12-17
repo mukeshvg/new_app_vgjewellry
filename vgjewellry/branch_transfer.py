@@ -69,8 +69,8 @@ def get_all_branch_transfer_request():
         columns = [column[0] for column in cursor.description]
 
         data = {}
-        image_server_url="http://103.249.120.178:51"
-        #image_server_url="http://192.168.1.5:51"
+        #image_server_url="http://103.249.120.178:51"
+        image_server_url="http://192.168.1.5:51"
         for row in rows:
             row_dict = dict(zip(columns, row))
             label_no = row_dict["LabelNo"]
@@ -151,8 +151,8 @@ def get_all_branch_transfer_receive():
         columns = [column[0] for column in cursor.description]
 
         data = {}
-        image_server_url="http://103.249.120.178:51"
-        #image_server_url="http://192.168.1.5:51"
+        #image_server_url="http://103.249.120.178:51"
+        image_server_url="http://192.168.1.5:51"
         for row in rows:
             row_dict = dict(zip(columns, row))
             label_no = row_dict["LabelNo"]

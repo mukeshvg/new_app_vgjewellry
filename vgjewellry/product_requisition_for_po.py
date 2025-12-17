@@ -206,7 +206,7 @@ WHERE rn = 1;
     rows = cursor.fetchall()
     grouped = defaultdict(list)
 
-    image_server_url="http://103.249.120.178:51"
+    #image_server_url="http://103.249.120.178:51"
     image_server_url="http://192.168.1.5:51"
     for row in rows:
         branch_id = int(row[2])
