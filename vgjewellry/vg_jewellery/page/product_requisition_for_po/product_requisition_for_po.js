@@ -97,7 +97,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 }
 
 </style>
-<h2 style="text-align:center;margin-top:10px">Product Requisition</h2>
+<h2 style="text-align:center;margin-top:10px">Product Requisition <a href="./product-assignment--" class="btn btn-sm pull-right">Go Product Assignment</a></h2>
 	<div style="padding:0 10px">
 	<table class="table table-striped table-hover align-middle modern-table" id="item-order-table">
     <thead class="table-dark">

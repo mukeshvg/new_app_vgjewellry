@@ -95,9 +95,75 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 .save-btn:hover {
     background: #13d367;
 }
+/* Style for the container holding the cards */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive cards */
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Card styling */
+.card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);  /* Slight zoom effect on hover */
+}
+
+/* Card content layout: flexbox with image on the left */
+.card-content {
+    display: flex;
+    flex-direction: row;
+}
+
+/* Image on the left side */
+.card-image {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.card-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* Info section: flex container for 3x3 grid */
+.card-info {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Row layout for each section */
+.card-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 columns */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Style for card rows */
+.card-row p {
+    margin: 5px 0;
+    font-size: 0.95em;
+    color: #555;
+}
+
+/* Optional: Card hover effect */
+.card:hover {
+    transform: scale(1.05);
+}
 
 </style>
-<h2 style="text-align:center;margin-top:10px">Product Assignment</h2>
+<h2 style="text-align:center;margin-top:10px"> <a href="./product-requisition-for-po" class="btn btn-sm pull-left">Go Requisition</a> Product Assignment<a href="./vg-purchase-cart" class="btn btn-sm pull-right">Go Cart</a></h2>
 	<div style="padding:0 10px">
 	<table class="table table-striped table-hover align-middle modern-table" id="item-order-table">
     <thead class="table-dark">
@@ -166,7 +232,9 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 			    Variety:<b>`+msg[k]["variety"]+`</b><br>
 			    Wt-rng:<b>`+msg[k]["weight_range"]+`</b><br>
 			    Size:<b>`+msg[k]["size"]+`</b><br>
-			    Jota:<b>`+msg[k]["jota"]+`</b></td>
+			    Jota:<b>`+msg[k]["jota"]+`</b><br>
+			    ID:<b>`+msg[k]["id"]+`</b><br>
+			    </td>
 			    <td><table>
 				<tr>
 					<td>Branch</td>
@@ -176,7 +244,9 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				</tr>`+suggeted_table+`
 			    </table></td>
 			    <td class="qty-req">
-				<b>`+msg[k]['qty_po']+`</b>
+				Approved Qty: <b>`+msg[k]['qty_po']+`</b><br><br>
+				Branch Transfer :<b><button type="button" class="btn btn-sm show-branch-transfer" data-req_id="`+msg[k]['id']+`">`+msg[k]['qty_bt']+`</button></b><br><br>
+				Cart Qty: <b>`+msg[k]['qty_cart']+`</b><br><br>
 			    </td>
 			    <td>
 				PD Reason :<b>`+msg[k]['pdr']+`</b>
@@ -273,16 +343,18 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
 
 						r.message[branch].forEach(img_obj => {
-							console.log(branch);
 							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
 							// if already full URL, use as is
 							html += `<div style="display:inline-block; margin:5px; text-align:center;">
 				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
 				    <div>Label: ${img_obj.LabelNo}</div>
 				    <div>Wt: ${img_obj.NetWt}</div>
-									<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />
+				    `;
+							if(branch !=branch_id){
+								html+=`<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />`
+							}	
 
-				 </div>`;
+							html!=`</div>`;
 						});
 
 						html += '</div><hr>';
@@ -298,13 +370,13 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 
 					d.set_primary_action('Branch Transfer', function() {
 						let selectedImages = [];
-						
+
 						// Collect selected images based on checkbox
 						$('.image_checkbox:checked').each(function() {
 							var obj={label_no:$(this).data('img-id'),"branch":$(this).data('branch'),"requested":$(this).data("requested"),id:$(this).data('id')}
 							selectedImages.push(obj);
 						});
-						
+
 						if (selectedImages.length > 0) {
 							// Send data to backend via AJAX or frappe call
 							frappe.call({
@@ -430,5 +502,55 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 		// Optional: Disable the Save button after saving or change its text
 		$(this).prop('disabled', true);
 		$(this).text('Added To Cart');
+	});
+	$(document).on('click', '.show-branch-transfer', function () {
+		var html="";
+		var id=$(this).data('req_id');
+		frappe.call({
+			method: "vgjewellry.branch_transfer.show_branch_transfer",
+			type: "POST",
+			args: {
+				req_id: id},
+			callback: function (r) {
+				html+=`<div class="card"><div class="card-content">`;
+				var bt=r.message
+				 for (let item in bt) {
+                                var items=bt[item];
+					html+=`<div class="card-image"><img style="width:90%" src='${items['im']}' alt="Item Image" /> </div>`;
+					html+=`<div class="card-info">
+                <div class="card-row">
+                    <p><strong>Date of Request:</strong><br> ${items.c}</p>
+                    <p><strong>Transfer From:</strong><br>${items['rec_b']}</p>
+                    <p><strong>Transfer To:</strong><br>${items['req_b']}</p>
+                </div>
+                <div class="card-row">
+                    <p><strong>Item:</strong><br>${items['i']}</p>
+                    <p><strong>Variety:</strong><br>${items['v']}</p>
+                    <p><strong>Weight Range:</strong><br>${items['w']}</p>
+                </div>
+                <div class="card-row">
+                    <p><strong>Label No:</strong><br>${items['ln']}</p>
+                    <p><strong>Manager Status:</strong><br>${items['s']}</p>
+                </div>
+		<div class="card-row">
+                    <p><strong>Request ID:</strong> <br>${items.id}</p>
+                    <p><strong>Product Send On:</strong><br>${items['ps']}</p>
+		</div>
+            </div>
+        </div>`;
+
+                        }
+				html+=`</div></div>`
+
+				let d = new frappe.ui.Dialog({
+					title: 'Branch Transfer Request',
+					size: 'large',
+					fields: [
+						{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+					]
+				});
+				d.show()
+			}
+		});
 	});
 }

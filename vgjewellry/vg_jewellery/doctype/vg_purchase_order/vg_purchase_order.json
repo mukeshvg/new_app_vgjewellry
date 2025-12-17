@@ -12,6 +12,8 @@
   "delivery_date",
   "section_break_dtxv",
   "is_email_send",
+  "column_break_cecd",
+  "total_po_weight",
   "section_break_jaqy",
   "item_details",
   "section_break_uumi",
@@ -77,12 +79,21 @@
    "fieldtype": "Data",
    "label": "Is email send",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_cecd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_po_weight",
+   "fieldtype": "Data",
+   "label": "Total PO Weight"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-09 11:25:24.833600",
+ "modified": "2025-12-17 16:57:16.946643",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Vg Purchase Order",

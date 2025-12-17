@@ -93,7 +93,8 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
         "manager_reject_reason": reject_reason,
         "manager_remarks": remarks,
         "delivery_date": delivery_date,
-        "manager":user
+        "manager":user,
+        "used_ids":used_ids
     })
 
     doc.insert()

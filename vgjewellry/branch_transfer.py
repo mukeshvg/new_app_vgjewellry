@@ -120,7 +120,7 @@ def get_all_branch_transfer_receive():
         all_labels=[]
         branch_transfers= frappe.get_all("VG_Branch_Transfer_Request",fields=["*"],
         filters={
-        "product_sender__receiver_status": "Product Send"
+        #"product_sender__receiver_status": "Product Send"
     })
         for bt in branch_transfers:
             formatted_date = get_datetime(bt['creation']).strftime("%d-%m-%Y %H:%M:%S")
@@ -133,7 +133,7 @@ def get_all_branch_transfer_receive():
             item =  frappe.get_doc("Ornate_Item_Master",doc.item)
             variety = frappe.get_doc('Ornate_Variety_Master',doc.variety)
             weight_range = frappe.get_doc('weight_range',doc.weight_range)
-            item ={"req_b":req_branch.branch_code,"rec_b":rec_branch.branch_code,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"ps":product_send_on}
+            item ={"req_b":req_branch.branch_code,"rec_b":rec_branch.branch_code,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"ps":product_send_on,"s":bt.status,'id':requisition_id}
             all_items.append(item)
 
 
@@ -176,3 +176,47 @@ def is_product_receive(req_id, tid , status):
     transfer_doc.product_receive_on=now_datetime()
     transfer_doc.save();
     return f"Branch Status Successfully";
+
+@frappe.whitelist()
+def show_branch_transfer(req_id):
+    all_items=[]
+    all_labels=[]
+    bt = frappe.get_doc("VG_Branch_Transfer_Request",{"requisition_id":req_id})
+    formatted_date = get_datetime(bt.creation).strftime("%d-%m-%Y %H:%M:%S")
+    product_send_on = get_datetime(bt.product_send_on).strftime("%d-%m-%Y %H:%M:%S")
+    all_labels.append(bt.label_no)
+    requisition_id= bt.requisition_id
+    doc = frappe.get_doc("Product_Requisition_Forword",  {"name":requisition_id})
+    req_branch =  frappe.get_doc("Ornate_Branch_Master",bt.request_from)
+    rec_branch =  frappe.get_doc("Ornate_Branch_Master",bt.request_to)
+    item =  frappe.get_doc("Ornate_Item_Master",doc.item)
+    variety = frappe.get_doc('Ornate_Variety_Master',doc.variety)
+    weight_range = frappe.get_doc('weight_range',doc.weight_range)
+    item ={"req_b":req_branch.branch_code,"rec_b":rec_branch.branch_code,"ln":bt.label_no,'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt.name,"ps":product_send_on,"s":bt.status,'id':requisition_id}
+    all_items.append(item)
+    if all_labels:
+            placeholders = ",".join(["?"] * len(all_labels))
+
+    query = f"""SELECT lt.ImagePath1,lt.LabelNo  FROM [D:\ORNNX\ORNATENXDATA\DATA\SVGL\SVGL.MDF].dbo.LabelTransaction AS lt where lt.LabelNo  in ({placeholders})"""
+    con = connect()
+    cursor = con.cursor()
+
+    cursor.execute(query, all_labels)
+
+    rows = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+
+    data = {}
+    image_server_url="http://103.249.120.178:51"
+    #image_server_url="http://192.168.1.5:51"
+    for row in rows:
+        row_dict = dict(zip(columns, row))
+        label_no = row_dict["LabelNo"]
+        image_path = row_dict["ImagePath1"]
+        data[label_no] = image_path
+
+    cursor.close()
+    con.close()
+    for i in all_items:
+        i["im"]=image_server_url+"/"+image_path
+    return all_items

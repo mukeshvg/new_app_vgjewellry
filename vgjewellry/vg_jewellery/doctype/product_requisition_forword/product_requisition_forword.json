@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "REQ-.#####",
  "creation": "2025-12-06 11:10:26.825330",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -16,12 +17,15 @@
   "size",
   "column_break_lxpi",
   "jota",
+  "section_break_ganw",
   "column_break_mwic",
   "qty_req",
   "column_break_pitv",
   "qty_given_by_manager",
   "column_break_wele",
   "qty_given_by_po",
+  "column_break_qnwj",
+  "branch_transfer_qty",
   "section_break_snay",
   "suggested",
   "column_break_qiiu",
@@ -55,7 +59,9 @@
   "column_break_tyjb",
   "supplier",
   "column_break_wunb",
-  "po_number"
+  "po_number",
+  "section_break_uryp",
+  "used_ids"
  ],
  "fields": [
   {
@@ -299,15 +305,40 @@
    "fieldname": "po_number",
    "fieldtype": "Data",
    "label": "Po Number"
+  },
+  {
+   "fieldname": "section_break_uryp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "used_ids",
+   "fieldtype": "Data",
+   "label": "Used Ids",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ganw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_qnwj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "branch_transfer_qty",
+   "fieldtype": "Data",
+   "label": "Branch Transfer Qty"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-14 16:06:44.427453",
+ "modified": "2025-12-17 13:49:01.541536",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Forword",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

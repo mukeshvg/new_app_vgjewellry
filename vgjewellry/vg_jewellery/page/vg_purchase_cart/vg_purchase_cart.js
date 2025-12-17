@@ -141,7 +141,7 @@ frappe.pages['vg-purchase-cart'].on_page_load = function (wrapper) {
         height: auto;
     }
     </style>
-<h2 style="text-align:center">Cart <a href="./product-assignment--" class="go-product-assignment">Go Product Assignment</a></h2>
+<h2 style="text-align:center"><a href="./product-assignment--" class="btn btn-sm pull-left">Go Product Assignment</a>Cart <a href=".//vg-purchase-order" class="btn btn-sm pull-right">Go VG Purchase Order</a></h2>
 
     <div id="cart-container" style="padding:0 10px"></div>
     `);

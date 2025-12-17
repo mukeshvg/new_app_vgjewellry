@@ -157,7 +157,7 @@ frappe.pages['branch-trans-receive'].on_page_load = function(wrapper) {
 }
 
     </style>
-<h2 style="text-align:center">Branch Transfer Request</h2>
+<h2 style="text-align:center"> <a href="./product-assignment--" class="btn btn-sm pull-left">Go Product Assignment</a> Branch Transfer Request <a href="./vg-purchase-cart" class="btn btn-sm pull-right">Go Cart</a></h2>
 
     <div id="cart-container" style="padding:0 10px"></div>
     `);
@@ -187,6 +187,7 @@ function load_data(){
 			    <table class="cart-table">
 				<thead>
 				    <tr>
+					<th>Req ID</th>
 					<th>Date Of Request</th>
 					<th>Transfer From</th>
 					<th>Transfer To</th>
@@ -195,6 +196,7 @@ function load_data(){
 					<th>WT Range</th>
 					<th>Label No</th>
 					<th>Image</th>
+					<th>Manager Status</th>
 					<th>Product Send On</th>
 					<th>Is Product Receive</th>
 				    </tr>
@@ -207,6 +209,7 @@ function load_data(){
 				var sel=item["status"]=="Accept"?"selected":"";
 				html += `
 			    <tr>
+				<td> ${items['id'] || ""}</td>
 				<td> ${items['c'] || ""}</td>
 				<td> ${items['rec_b'] || ""}</td>
 				<td><input type="hidden" class="req_id" value="${items['rid']}" >  ${items['req_b'] || ""}</td>
@@ -216,6 +219,7 @@ function load_data(){
 				<td>${items['ln'] || ""}</td>
 
 				<td><img class="branch_transfer_img" src="${items['im']}"></td>
+				<td>${items['s'] || ""}</td>
 				<td>${items['ps'] || ""}</td>
 				<td>
 				<select class="form-select form-select-sm is-product-receive" data-rid="${items['rid']}" data-tid="${items['tid']}">
