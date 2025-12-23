@@ -354,7 +354,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 								html+=`<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />`
 							}	
 
-							html!=`</div>`;
+							html+=`</div>`;
 						});
 
 						html += '</div><hr>';
