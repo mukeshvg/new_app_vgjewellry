@@ -345,7 +345,8 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						r.message[branch].forEach(img_obj => {
 							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
 							// if already full URL, use as is
-							html += `<div style="display:inline-block; margin:5px; text-align:center;">
+							html += `<div style="display:inline-block; margin:5px; text-align:center;    margin-left: auto;
+    margin-right: auto; border: 1px solid #ccc; padding: 10px;">
 				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
 				    <div>Label: ${img_obj.LabelNo}</div>
 				    <div>Wt: ${img_obj.NetWt}</div>
