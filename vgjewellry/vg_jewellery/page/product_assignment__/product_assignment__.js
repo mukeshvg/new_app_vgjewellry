@@ -513,11 +513,11 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 			args: {
 				req_id: id},
 			callback: function (r) {
-				html+=`<div class="card"><div class="card-content">`;
 				var bt=r.message
 				 for (let item in bt) {
                                 var items=bt[item];
-					html+=`<div class="card-image"><img style="width:90%" src='${items['im']}' alt="Item Image" /> </div>`;
+				html+=`<div class="card"><div class="card-content">`;
+					html+=`<div class="card-image"><img style="width:90%;max-height:200px;object-fit:contain" src='${items['im']}' alt="Item Image" /> </div>`;
 					html+=`<div class="card-info">
                 <div class="card-row">
                     <p><strong>Date of Request:</strong><br> ${items.c}</p>
@@ -538,10 +538,12 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
                     <p><strong>Product Send On:</strong><br>${items['ps']}</p>
 		</div>
             </div>
+            </div>
+            </div>
         </div>`;
 
                         }
-				html+=`</div></div>`
+			//	html+=`</div></div>`
 
 				let d = new frappe.ui.Dialog({
 					title: 'Branch Transfer Request',
