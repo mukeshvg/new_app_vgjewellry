@@ -338,7 +338,7 @@ def get_product_details_for_assignment():
                 else:
                     other_branch2_suggested = idea_stock['target_pcs']
                     other_branch2_in_stock = idea_stock['stock_pcs']
-                    other_branch2_diff = other_branch2_suggested - other_branch2_in_stock
+                    other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
                     other_branch2_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch2_code = other_branch2_code1.branch_code
 
