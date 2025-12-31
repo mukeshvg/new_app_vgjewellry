@@ -94,7 +94,12 @@ import ast
 @frappe.whitelist()
 def save_product_details(id,used_ids,branch_id, item_id, variety_id, wt_id, size_id, jota,suggested,in_stock,diff,
                          qty_req, qty_given, status, approve_reason,
-                         reject_reason, remarks, delivery_date):
+                         reject_reason, remarks, delivery_date , selected_images):
+
+    imgs = [x.strip() for x in selected_images.split(",") if x.strip()]
+
+    img1, img2, img3, img4 = (imgs + [None]*4)[:4]
+
     user = frappe.session.user
     if reject_reason=="":
         reject_reason=None
@@ -119,6 +124,10 @@ def save_product_details(id,used_ids,branch_id, item_id, variety_id, wt_id, size
     doc.pd_remarks= remarks
     doc.pd_delivery_date= delivery_date
     doc.pd_user=user
+    doc.pd_image1 = img1
+    doc.pd_image2 = img2
+    doc.pd_image3 = img3
+    doc.pd_image4 = img4
 
 
     doc.save()
@@ -420,5 +429,30 @@ def transfer_images_to_branch(selected_image_ids):
     return {"message": "Branch Request Added Successfully."}    
 
 
+@frappe.whitelist()
+def get_item_image(req_id):
+    row = frappe.get_doc("Product_Requisition_Forword", req_id)
+    images = []
+    images.append(row.manager_image_1)
+    if row.manager_image_2 != None:
+        images.append(row.manager_image_2)
+    if row.manager_image_3 != None:
+        images.append(row.manager_image_3)
+    if row.manager_image_4 != None:
+        images.append(row.manager_image_4)
+    return images
+
+@frappe.whitelist()
+def get_item_image_for_pd(req_id):
+    row = frappe.get_doc("Product_Requisition_Forword", req_id)
+    images = []
+    images.append(row.pd_image1)
+    if row.pd_image2 != None:
+        images.append(row.pd_image2)
+    if row.pd_image3 != None:
+        images.append(row.pd_image3)
+    if row.pd_image4 != None:
+        images.append(row.pd_image4)
+    return images
 
 

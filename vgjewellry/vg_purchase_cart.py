@@ -103,7 +103,11 @@ def generate_po(supplier, branch, delivery_date, remark, items):
             "qty": qty,
             "jota": doc.jota,
             "metal":"1002",
-            "total_weight":total_weight
+            "total_weight":total_weight,
+            "image_1": doc.pd_image1,
+            "image_2": doc.pd_image2,
+            "image_3": doc.pd_image3,
+            "image_4": doc.pd_image4
         })
         doc.po_number= po.name
         doc.save()

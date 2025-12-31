@@ -6,6 +6,35 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 	});
 	$(wrapper).html(`
 	<style>
+	.image-thumb-wrapper { display:inline-block; margin:10px; position:relative; }
+.image-thumb { max-width:150px; max-height:150px; cursor:zoom-in; border-radius:6px; border:2px solid transparent; }
+.image-thumb.selected { border-color:#2490ef; }
+.image-checkbox { position:absolute; top:6px; left:6px; z-index:2; }
+
+.image-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.image-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    transition: transform 0.15s ease;
+}
+.image-overlay .close {
+    position:absolute;
+    top:20px;
+    right:30px;
+    font-size:32px;
+    color:#fff;
+    cursor:pointer;
+    z-index:999;
+}
+
 	/* Whole table look */
 .modern-table {
     background: #121212;
@@ -244,8 +273,8 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				</tr>`+suggeted_table+`
 			    </table></td>
 			    <td class="qty-req">
-				Approved Qty: <b>`+msg[k]['qty_po']+`</b><br><br>
-				Branch Transfer :<b><button type="button" class="btn btn-sm show-branch-transfer" data-req_id="`+msg[k]['id']+`">`+msg[k]['qty_bt']+`</button></b><br><br>
+				Approved Qty: <b><button type="button" class="btn btn-sm user-add-img " data-id="`+msg[k]['id']+`"  >`+msg[k]['qty_po']+`</button></b><br><br>
+				Branch Transfer :<b><button type="button" class="btn btn-sm show-branch-transfer" data-req_id="`+msg[k]['id']+`" data-qty="`+msg[k]['qty_bt']+`">`+msg[k]['qty_bt']+`</button></b><br><br>
 				Cart Qty: <b>`+msg[k]['qty_cart']+`</b><br><br>
 			    </td>
 			    <td>
@@ -305,6 +334,90 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 			}
 		});
 	}
+
+	$(document).on("click", ".user-add-img", function () {
+		var id = $(this).data('id');
+		frappe.call({
+			method: "vgjewellry.product_requisition_for_po.get_item_image_for_pd",
+			type: "POST",
+			args: {
+				req_id: id,
+			},callback: function (r) {
+				if (r.message && Object.keys(r.message).length > 0) {
+					let html = `
+					<div id="image-overlay-dialog" class="image-overlay">
+    <span class="close" onclick="closeImage()">✖</span>
+     <img id="overlay-img-dialog">
+</div>`;
+
+
+					r.message.forEach(img_obj => {
+						let img_path = img_obj.replace(/\\/g, '/');
+						html += `
+    <div class="image-thumb-wrapper">
+	<!--<input type="checkbox" class="image-checkbox" data-img="${img_path}">-->
+	<img src="${img_path}" class="image-thumb" data-full="${img_path}">
+    </div>`;
+						// if already full URL, use as is
+					});function getSelectedImages(d) {
+						return d.$wrapper.find('.image-checkbox:checked')
+							.map(function () {
+								return $(this).data('img');
+							})
+							.get();
+					}
+					let d = new frappe.ui.Dialog({
+						title: 'Product Images For Forwarding To Supplier ',
+						size: 'large',
+						fields: [
+							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+						],
+						//primary_action_label: 'Remove Selected Images',
+						/*primary_action() {
+							let selected = getSelectedImages(d);
+							row.find('.req_selected_images').val(selected)
+
+							if (!selected.length) {
+								frappe.msgprint("Please select at least one image");
+								return;
+							}
+
+							// TODO: frappe.call to forward selected images
+							frappe.msgprint(`Selected Images:<br>${selected.join("<br>")}`);
+						}*/
+					});
+					d.show();
+					d.$wrapper.on('click', '.image-thumb', function () {
+						const src = $(this).data('full');
+						const overlay = d.$wrapper.find('#image-overlay-dialog');
+						const img = d.$wrapper.find('#overlay-img-dialog');
+
+						zoomLevel = 1;
+						img.css('transform', 'scale(1)');
+						img.attr('src', src);
+						overlay.show();
+
+						img.off('wheel').on('wheel', function (e) {
+							e.preventDefault();
+							zoomLevel += e.originalEvent.deltaY < 0 ? 0.1 : -0.1;
+							zoomLevel = Math.min(Math.max(zoomLevel, 0.5), 4);
+							img.css('transform', `scale(${zoomLevel})`);
+						});
+					});
+					// Close overlay
+					d.$wrapper.on('click', '.image-overlay .close', function () {
+						d.$wrapper.find('#image-overlay-dialog').hide();
+					});
+					d.$wrapper.on('change', '.image-checkbox', function () {
+						$(this).siblings('.image-thumb').toggleClass('selected', this.checked);
+					});
+				} else {
+					frappe.msgprint("No images found.");
+				}
+			}
+		});
+	});
+
 
 	$(document).on("click", ".in_stock_img", function () {
 		var id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_id').val();
@@ -507,6 +620,11 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 	$(document).on('click', '.show-branch-transfer', function () {
 		var html="";
 		var id=$(this).data('req_id');
+		var qty=$(this).data('qty');
+		if(qty == 0){
+			frappe.msgprint("No Item From Branch Transfer.");
+			return;
+		}
 		frappe.call({
 			method: "vgjewellry.branch_transfer.show_branch_transfer",
 			type: "POST",
@@ -514,36 +632,36 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				req_id: id},
 			callback: function (r) {
 				var bt=r.message
-				 for (let item in bt) {
-                                var items=bt[item];
-				html+=`<div class="card"><div class="card-content">`;
+				for (let item in bt) {
+					var items=bt[item];
+					html+=`<div class="card"><div class="card-content">`;
 					html+=`<div class="card-image"><img style="width:90%;max-height:200px;object-fit:contain" src='${items['im']}' alt="Item Image" /> </div>`;
 					html+=`<div class="card-info">
-                <div class="card-row">
-                    <p><strong>Date of Request:</strong><br> ${items.c}</p>
-                    <p><strong>Transfer From:</strong><br>${items['rec_b']}</p>
-                    <p><strong>Transfer To:</strong><br>${items['req_b']}</p>
-                </div>
-                <div class="card-row">
-                    <p><strong>Item:</strong><br>${items['i']}</p>
-                    <p><strong>Variety:</strong><br>${items['v']}</p>
-                    <p><strong>Weight Range:</strong><br>${items['w']}</p>
-                </div>
-                <div class="card-row">
-                    <p><strong>Label No:</strong><br>${items['ln']}</p>
-                    <p><strong>Manager Status:</strong><br>${items['s']}</p>
-                </div>
 		<div class="card-row">
-                    <p><strong>Request ID:</strong> <br>${items.id}</p>
-                    <p><strong>Product Send On:</strong><br>${items['ps']}</p>
+		    <p><strong>Date of Request:</strong><br> ${items.c}</p>
+		    <p><strong>Transfer From:</strong><br>${items['rec_b']}</p>
+		    <p><strong>Transfer To:</strong><br>${items['req_b']}</p>
 		</div>
-            </div>
-            </div>
-            </div>
-        </div>`;
+		<div class="card-row">
+		    <p><strong>Item:</strong><br>${items['i']}</p>
+		    <p><strong>Variety:</strong><br>${items['v']}</p>
+		    <p><strong>Weight Range:</strong><br>${items['w']}</p>
+		</div>
+		<div class="card-row">
+		    <p><strong>Label No:</strong><br>${items['ln']}</p>
+		    <p><strong>Manager Status:</strong><br>${items['s']}</p>
+		</div>
+		<div class="card-row">
+		    <p><strong>Request ID:</strong> <br>${items.id}</p>
+		    <p><strong>Product Send On:</strong><br>${items['ps']}</p>
+		</div>
+	    </div>
+	    </div>
+	    </div>
+	</div>`;
 
-                        }
-			//	html+=`</div></div>`
+				}
+				//	html+=`</div></div>`
 
 				let d = new frappe.ui.Dialog({
 					title: 'Branch Transfer Request',

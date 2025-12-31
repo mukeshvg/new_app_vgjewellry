@@ -34,6 +34,7 @@
   {
    "fieldname": "branch",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Branch"
   },
   {
@@ -44,6 +45,7 @@
   {
    "fieldname": "item",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Item"
   },
   {
@@ -54,11 +56,13 @@
   {
    "fieldname": "variety",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Variety"
   },
   {
    "fieldname": "weight_range",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Weight Range"
   },
   {
@@ -125,7 +129,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-27 17:05:02.179051",
+ "modified": "2025-12-24 13:02:13.084141",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Current_Stock_Ideal_Stock",

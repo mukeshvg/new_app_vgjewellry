@@ -34,6 +34,7 @@ def get_product_details():
                 in_stock=idea_stock[0]['stock_pcs']
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
+            owner=frappe.get_doc("User",req_doc.owner)
             item_data = {
                     'used_ids':str(used_ids),
                     'item_id':item.item,
@@ -50,7 +51,9 @@ def get_product_details():
                     'jota':item.jota,
                     'suggested':suggested,
                     'in_stock':in_stock,
-                    'diff':diff
+                    'diff':diff,
+                    'remark':req_doc.requester_remark,
+                    'remark_user':owner.full_name
                     }
             all_item.append(item_data)
     excess_reason=frappe.get_all("Excess_Approve_Reason")
@@ -63,8 +66,13 @@ import ast
 @frappe.whitelist()
 def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id, jota,suggested,in_stock,diff,
                          qty_req, qty_given, status, approve_reason,
-                         reject_reason, remarks, delivery_date):
+                         reject_reason, remarks, delivery_date , selected_images):
 
+    imgs = [x.strip() for x in selected_images.split(",") if x.strip()]
+
+    img1, img2, img3, img4 = (imgs + [None]*4)[:4]
+
+    
     list_data = ast.literal_eval(used_ids)
     if size_id=="NaN":
         size_id = None
@@ -95,7 +103,11 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
         "manager_remarks": remarks,
         "delivery_date": delivery_date,
         "manager":user,
-        "used_ids":used_ids
+        "used_ids":used_ids,
+        "manager_image_1": img1,
+        "manager_image_2": img2,
+        "manager_image_3": img3,
+        "manager_image_4": img4
     })
 
     doc.insert()
@@ -143,3 +155,21 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
 
     return {"message": "Saved successfully", "name": doc.name}
 
+@frappe.whitelist()
+def get_item_image(used_id):
+    result = ast.literal_eval(used_id)
+    parent_doc_no=result[0]["f"]
+    child_doc_no=result[0]["p"]
+    product = frappe.get_doc("Product_Requisition_Form", parent_doc_no)
+    images = []
+    for row in product.product_details:
+        if row.name == child_doc_no:
+            images.append(row.image_1)
+            if row.image_2 != None:
+                images.append(row.image_2)
+            if row.image_3 != None:
+                images.append(row.image_3)
+            if row.image_4 != None:
+                images.append(row.image_4)
+    
+    return images

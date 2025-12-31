@@ -95,7 +95,8 @@
   {
    "fieldname": "image_1",
    "fieldtype": "Attach Image",
-   "label": "Image 1"
+   "label": "Image 1",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_mlam",
@@ -220,7 +221,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-17 12:51:09.335954",
+ "modified": "2025-12-30 12:26:02.977612",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Product_Requisition_Item",

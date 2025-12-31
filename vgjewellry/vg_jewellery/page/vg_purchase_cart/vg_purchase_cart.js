@@ -8,6 +8,34 @@ frappe.pages['vg-purchase-cart'].on_page_load = function (wrapper) {
 
 	$(wrapper).html(`
     <style>
+.image-thumb-wrapper { display:inline-block; margin:10px; position:relative; }
+.image-thumb { max-width:150px; max-height:150px; cursor:zoom-in; border-radius:6px; border:2px solid transparent; }
+.image-thumb.selected { border-color:#2490ef; }
+.image-checkbox { position:absolute; top:6px; left:6px; z-index:2; }
+
+.image-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.image-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    transition: transform 0.15s ease;
+}
+.image-overlay .close {
+    position:absolute;
+    top:20px;
+    right:30px;
+    font-size:32px;
+    color:#fff;
+    cursor:pointer;
+    z-index:999;
+}
 
     body {
 	background: #0f0f0f;
@@ -208,7 +236,7 @@ function load_cart() {
 				<td>${items[i].weight_range || ""}</td>
 				<td>${items[i].size || ""}</td>
 				<td>${items[i].jota || ""}</td>
-				<td>${items[i].qty_po || ""}</td>
+				<td class="user-add-img">${items[i].qty_po || ""}</td>
 				<td>
 				    <button class="btn btn-danger btn-sm remove-from-cart"
 					    data-supplier="${supplier}"
@@ -248,6 +276,90 @@ function load_cart() {
 		}
 	});
 }
+
+$(document).on("click", ".user-add-img", function () {
+	var row = $(this).closest('tr');
+	var id = row.find('.req_id').val();
+                frappe.call({
+                        method: "vgjewellry.product_requisition_for_po.get_item_image_for_pd",
+                        type: "POST",
+                        args: {
+                                req_id: id,
+                        },callback: function (r) {
+                                if (r.message && Object.keys(r.message).length > 0) {
+                                        let html = `
+                                        <div id="image-overlay-dialog" class="image-overlay">
+    <span class="close" onclick="closeImage()">✖</span>
+     <img id="overlay-img-dialog">
+</div>`;
+
+
+                                        r.message.forEach(img_obj => {
+                                                let img_path = img_obj.replace(/\\/g, '/');
+                                                html += `
+    <div class="image-thumb-wrapper">
+        <!--<input type="checkbox" class="image-checkbox" data-img="${img_path}">-->
+        <img src="${img_path}" class="image-thumb" data-full="${img_path}">
+    </div>`;
+                                                // if already full URL, use as is
+                                        });function getSelectedImages(d) {
+                                                return d.$wrapper.find('.image-checkbox:checked')
+                                                        .map(function () {
+                                                                return $(this).data('img');
+                                                        })
+                                                        .get();
+                                        }
+let d = new frappe.ui.Dialog({
+                                                title: 'Product Images For Forwarding To Supplier ',
+                                                size: 'large',
+                                                fields: [
+                                                        { fieldname: 'images_html', fieldtype: 'HTML', options: html }
+                                                ],
+                                                //primary_action_label: 'Remove Selected Images',
+                                                /*primary_action() {
+                                                        let selected = getSelectedImages(d);
+                                                        row.find('.req_selected_images').val(selected)
+
+                                                        if (!selected.length) {
+                                                                frappe.msgprint("Please select at least one image");
+                                                                return;
+                                                        }
+
+                                                        // TODO: frappe.call to forward selected images
+                                                        frappe.msgprint(`Selected Images:<br>${selected.join("<br>")}`);
+                                                }*/
+                                        });
+                                        d.show();
+ d.$wrapper.on('click', '.image-thumb', function () {
+                                                const src = $(this).data('full');
+                                                const overlay = d.$wrapper.find('#image-overlay-dialog');
+                                                const img = d.$wrapper.find('#overlay-img-dialog');
+
+                                                zoomLevel = 1;
+                                                img.css('transform', 'scale(1)');
+                                                img.attr('src', src);
+                                                overlay.show();
+
+                                                img.off('wheel').on('wheel', function (e) {
+                                                        e.preventDefault();
+                                                        zoomLevel += e.originalEvent.deltaY < 0 ? 0.1 : -0.1;
+                                                        zoomLevel = Math.min(Math.max(zoomLevel, 0.5), 4);
+                                                        img.css('transform', `scale(${zoomLevel})`);
+                                                });
+                                        });
+                                        // Close overlay
+                                        d.$wrapper.on('click', '.image-overlay .close', function () {
+                                                d.$wrapper.find('#image-overlay-dialog').hide();
+                                        });
+                                        d.$wrapper.on('change', '.image-checkbox', function () {
+                                                $(this).siblings('.image-thumb').toggleClass('selected', this.checked);
+                                        });
+                                } else {
+                                        frappe.msgprint("No images found.");
+                                }
+                        }
+                });
+        });
 
 
 /* ===================== DATE PICKER ===================== */

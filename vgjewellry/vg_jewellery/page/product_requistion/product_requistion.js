@@ -6,6 +6,34 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 	});
 	$(wrapper).html(`
 	<style>
+	.image-thumb-wrapper { display:inline-block; margin:10px; position:relative; }
+.image-thumb { max-width:150px; max-height:150px; cursor:zoom-in; border-radius:6px; border:2px solid transparent; }
+.image-thumb.selected { border-color:#2490ef; }
+.image-checkbox { position:absolute; top:6px; left:6px; z-index:2; }
+
+.image-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.image-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    transition: transform 0.15s ease;
+}
+.image-overlay .close {
+    position:absolute;
+    top:20px;
+    right:30px;
+    font-size:32px;
+    color:#fff;
+    cursor:pointer;
+    z-index:999;
+}
 	/* Whole table look */
 .modern-table {
     background: #121212;
@@ -147,6 +175,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					str+=`
 					<tr>
 			    <td>
+				<input type="hidden" class="req_selected_images" value="" >
 				<input type="hidden" class="req_used_ids" value="`+msg[k]['used_ids']+`" >
 				<input type="hidden" class="req_branch_id" value="`+msg[k]['branch']+`" >
 				<input type="hidden" class="req_item_id" value="`+msg[k]['item_id']+`" >
@@ -162,7 +191,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 			    <td class="req_suggested">`+msg[k]["suggested"]+`</td>
 			    <td class="req_in_stock in_stock_img">`+msg[k]["in_stock"]+`</td>
 			    <td class="req_in_diff">`+msg[k]["diff"]+`</td>
-			    <td class="qty-req">`+msg[k]["qty"]+`</td>
+			    <td class="qty-req user-add-img">`+msg[k]["qty"]+`</td>
 			    <td>
 				<select class="form-select form-select-sm action-select qty-given">
 					<option>1</option>
@@ -194,7 +223,9 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					`+reject_reason_option+`
 				</select>
 			    </td>
-			    <td><textarea class="form-control form-control-sm remarks-box" rows="1"></textarea></td>
+			    <td><textarea class="form-control form-control-sm remarks-box" rows="1"></textarea><br>
+				`+msg[k]["remark"]+`<br>By `+msg[k]['remark_user']+`
+			    </td>
 			    <td><input type="text" class="form-control form-control-sm req-delivery-date "  placeholder="dd-mm-yyyy" ></td>
 			    <td><button type="button" class="btn btn-success btn-sm w-100 req-save-order">Save</button></td>
 			</tr>`
@@ -258,8 +289,8 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 	$(document).on("click", ".in_stock_img", function () {
 		var row = $(this).closest('tr');
 		var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
-                var item_id = parseInt(row.find('.req_item_id').val());  // Item
-                var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
+		var item_id = parseInt(row.find('.req_item_id').val());  // Item
+		var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
 		var wt_range = row.find('.req_wt_range').val();
 		frappe.call({
 			method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
@@ -319,6 +350,94 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 
 		});
 	});
+	$(document).on("click", ".user-add-img", function () {
+		var row = $(this).closest('tr');
+		var used_id = row.find('.req_used_ids').val()
+		frappe.call({
+			method: "vgjewellry.product_requisition.get_item_image",
+			type: "POST",
+			args: {
+				used_id: used_id,
+			},callback: function (r) {
+				if (r.message && Object.keys(r.message).length > 0) {
+					let html = `
+					<div id="image-overlay-dialog" class="image-overlay">
+    <span class="close" onclick="closeImage()">✖</span>
+     <img id="overlay-img-dialog">
+</div>`;
+
+
+					r.message.forEach(img_obj => {
+						let img_path = img_obj.replace(/\\/g, '/');
+						html += `
+    <div class="image-thumb-wrapper">
+	<input type="checkbox" class="image-checkbox" data-img="${img_path}">
+	<img src="${img_path}" class="image-thumb" data-full="${img_path}">
+    </div>`;
+						// if already full URL, use as is
+					});
+					function getSelectedImages(d) {
+						return d.$wrapper.find('.image-checkbox:checked')
+							.map(function () {
+								return $(this).data('img');
+							})
+							.get();
+					}
+
+					let d = new frappe.ui.Dialog({
+						title: 'Select Product Images For Forwarding To Purchase Department ',
+						size: 'large',
+						fields: [
+							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
+						],
+						primary_action_label: 'Forward Selected Images',
+						primary_action() {
+							let selected = getSelectedImages(d);
+							row.find('.req_selected_images').val(selected)
+
+							if (!selected.length) {
+								frappe.msgprint("Please select at least one image");
+								return;
+							}
+
+							// TODO: frappe.call to forward selected images
+							frappe.msgprint(`Selected Images:<br>${selected.join("<br>")}`);
+						}
+					});
+					d.show();
+					// Bind events AFTER dialog renders
+					d.$wrapper.on('click', '.image-thumb', function () {
+						const src = $(this).data('full');
+						const overlay = d.$wrapper.find('#image-overlay-dialog');
+						const img = d.$wrapper.find('#overlay-img-dialog');
+
+						zoomLevel = 1;
+						img.css('transform', 'scale(1)');
+						img.attr('src', src);
+						overlay.show();
+
+						img.off('wheel').on('wheel', function (e) {
+							e.preventDefault();
+							zoomLevel += e.originalEvent.deltaY < 0 ? 0.1 : -0.1;
+							zoomLevel = Math.min(Math.max(zoomLevel, 0.5), 4);
+							img.css('transform', `scale(${zoomLevel})`);
+						});
+					});
+
+					// Close overlay
+					d.$wrapper.on('click', '.image-overlay .close', function () {
+						d.$wrapper.find('#image-overlay-dialog').hide();
+					});
+					d.$wrapper.on('change', '.image-checkbox', function () {
+						$(this).siblings('.image-thumb').toggleClass('selected', this.checked);
+					});
+				} else {
+					frappe.msgprint("No images found.");
+				}
+			}
+
+		});
+	});
 	// Event listener for Save button click
 	$(document).on('click', '.req-save-order', function () {
 		// Find the closest row (tr) for the clicked Save button
@@ -342,6 +461,11 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 		var rejectReason = row.find('.reject-reason').val();  // Reason for rejection
 		var remarks = row.find('.remarks-box').val();  // Remarks
 		var deliveryDate = row.find('.req-delivery-date').val();  // Delivery Date
+		var selected_images=row.find('.req_selected_images').val();
+		if(selected_images == ""){
+			alert("Product Images For Forwarding To Purchase Department")
+			return;
+		}
 		if(status==""){
 			alert("Please Select Action.");
 			return;
@@ -387,7 +511,8 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 				approve_reason: approveReason,
 				reject_reason: rejectReason,
 				remarks: remarks,
-				delivery_date: deliveryDate
+				delivery_date: deliveryDate,
+				selected_images: selected_images
 			},
 			callback: function (r) {
 				if (!r.exc) {
