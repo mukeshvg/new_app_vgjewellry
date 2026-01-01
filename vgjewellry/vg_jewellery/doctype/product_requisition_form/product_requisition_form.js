@@ -3,9 +3,10 @@
 
 frappe.ui.form.on("Product_Requisition_Form", {
 	refresh(frm) {
-
+		toggle_save(frm);
 	},
 	onload: function(frm) {
+		toggle_save(frm);
 		if (!frm.doc.branch) {
 			frappe.call({
 				method: "frappe.client.get",
@@ -86,3 +87,13 @@ frappe.ui.form.on("Product_Requisition_Item", {
 		})
 	}
 })
+
+function toggle_save(frm) {
+    if (frm.doc.action_taken === "Action Taken" || frm.doc.action_taken === "Partial Action Taken") {
+        frm.disable_save();      // disables Save
+        frm.page.clear_primary_action(); // hides Save button
+    } else {
+        frm.enable_save();       // enables Save
+        frm.page.set_primary_action(__('Save'), () => frm.save());
+    }
+}
