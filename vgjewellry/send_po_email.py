@@ -1,6 +1,8 @@
 import frappe
 from whatsapp.api import send_whatsapp
 import base64
+from frappe.utils import get_url
+
 
 
 @frappe.whitelist(allow_guest=True)
@@ -17,7 +19,7 @@ def get_all_email_pending_po():
         frappe.db.commit()
 @frappe.whitelist(allow_guest=True)
 def send_po_email(docname, sup):
-    docname ="PO-M/102/01012026/2"
+    docname ="PO-M/102/31122025/23"
     email2 = "miteshthakur87@gmail.com"
 
     frappe.set_user("Administrator")
@@ -138,11 +140,14 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
 def save_pdf_and_get_url(docname, pdf_data):
     file_doc = frappe.get_doc({
         "doctype": "File",
-        "file_name": f"{docname}.pdf",
-        "content": pdf_data,
-        "is_private": 0    # must be public for WhatsApp
+        "file_name": f"VG_PO_{docname}.pdf",
+        "is_private": 0,       # public file
+        "content": pdf_data
     })
-    file_doc.save(ignore_permissions=True)
 
-    return file_doc.file_url
+    file_doc.save(ignore_permissions=True)
+    frappe.db.commit()  # commit so file is available immediately
+
+    # 4️⃣ Return full URL
+    return get_url(file_doc.file_url)
 
