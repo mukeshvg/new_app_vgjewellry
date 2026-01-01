@@ -51,7 +51,7 @@ def get_all_branch_transfer_request():
             item =  frappe.get_doc("Ornate_Item_Master",doc.item)
             variety = frappe.get_doc('Ornate_Variety_Master',doc.variety)
             weight_range = frappe.get_doc('weight_range',doc.weight_range)
-            item ={"b":branch.branch_name,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"s":bt['status']}
+            item ={"b":branch.branch_name,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"s":bt['status'],"p":bt['product_sender__receiver_status']}
             all_items.append(item)
 
 

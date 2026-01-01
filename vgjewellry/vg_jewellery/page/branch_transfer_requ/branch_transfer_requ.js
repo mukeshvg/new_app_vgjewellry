@@ -234,8 +234,8 @@ function load_data(){
 				</select></td>
 				<td>
 				<select class="form-select form-select-sm is-product-send" data-rid="${items['rid']}" data-tid="${items['tid']}">
-					<option value="">Select </option>
-					<option value="Product Send">Yes</option>
+					<option value="">Select  </option>
+					<option ${items.p === "Product Send" ? "selected" : ""} value="Product Send">Yes</option>
 				</select>
 				</td>
 			    </tr>

@@ -242,7 +242,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						suggeted_table+=`<tr>
 							<td>`+ideal[n]["b"]+`</td>
 							<td>`+ideal[n]["s"]+`</td>
-							<td><button class="in_stock_img" data-id="`+msg[k]['id']+`">`+ideal[n]["i"]+`</button></td>
+							<td><button class="in_stock_img" data-appqty="`+msg[k]['qty_po']+`" data-id="`+msg[k]['id']+`">`+ideal[n]["i"]+`</button></td>
 							<td>`+ideal[n]["d"]+`</td>
 							</tr>`;	
 					}
@@ -382,10 +382,10 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 								return;
 							}
 
-							// TODO: frappe.call to forward selected images
+					// TODO: frappe.call to forward selected images
 							frappe.msgprint(`Selected Images:<br>${selected.join("<br>")}`);
 						}*/
-					});
+				});
 					d.show();
 					d.$wrapper.on('click', '.image-thumb', function () {
 						const src = $(this).data('full');
@@ -425,6 +425,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 		var item_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_item_id').val();
 		var variety_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_variety_id').val();
 		var wt_range = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_wt_range').val();
+		var po_qty = $(this).data('appqty');
 		frappe.call({
 			method: "vgjewellry.product_requisition_for_po.get_existing_product_image",
 			type: "POST",
@@ -489,6 +490,8 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 						$('.image_checkbox:checked').each(function() {
 							var obj={label_no:$(this).data('img-id'),"branch":$(this).data('branch'),"requested":$(this).data("requested"),id:$(this).data('id')}
 							selectedImages.push(obj);
+							console.log(selectedImages.length)	
+							$("#selected_images_info_span").text(selectedImages.length);
 						});
 
 						if (selectedImages.length > 0) {
@@ -502,6 +505,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 								callback: function(r) {
 									if (r.message) {
 										frappe.msgprint("Branch transfer successful!");
+										 d.hide();
 									} else {
 										frappe.msgprint("Error in transferring images.");
 									}
@@ -511,10 +515,27 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 							frappe.msgprint("Please select at least one image.");
 						}
 					});
+					$(d.$wrapper).on('change', '.image_checkbox', function() {
+						 let selectedImagesCount = $('.image_checkbox:checked').length;
+						 if(selectedImagesCount >po_qty){
+							  $(this).prop('checked', false);
+							 selectedImagesCount--;
+							frappe.throw(__("You can not select Branch Transter Qty more than Approved Qty."));
+						 }
+						 $('#selected_images_info_span').text(selectedImagesCount);
+
+					})
 
 					// Set button class to success (This will apply success styling to the button)
 					$(d.$wrapper).find('.btn-primary').addClass('btn-success');
 					d.show();
+					$(d.footer).prepend(`
+    <div  style="margin-right:auto; font-weight:600;">Approved Qty: <span id="bt_approved_qty">`+po_qty+`</div>
+    <div id="selected_images_info"
+	 style="margin-right:auto; font-weight:600;">
+	Selected Branch Transfer Qty: <span id="selected_images_info_span">0</span>
+    </div>
+`);
 				} else {
 					frappe.msgprint("No images found.");
 				}
