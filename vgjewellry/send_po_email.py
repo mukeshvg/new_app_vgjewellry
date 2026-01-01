@@ -1,9 +1,9 @@
 import frappe
 from whatsapp.api import send_whatsapp
+import base64
 
 
-
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_all_email_pending_po():
     po_list = frappe.get_all(
         "Vg Purchase Order",
@@ -19,6 +19,7 @@ def get_all_email_pending_po():
 def send_po_email(docname, sup):
     email2 = "miteshthakur87@gmail.com"
 
+    frappe.set_user("Administrator")
     pdf_data = frappe.get_print(
         doctype="Vg Purchase Order",
         name=docname,
@@ -112,7 +113,7 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
 
     frappe.sendmail(
         recipients=[email2],
-        bcc=["miteshthakur87@gmail.com","mukesh.k@svgjewels.com"]
+        #bcc=["miteshthakur87@gmail.com","mukesh.k@svgjewels.com"],
         subject=f"Purchase Order-{docname}",
         message=f"{msg}",
          attachments=[{
@@ -122,9 +123,14 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
     )
     frappe.db.commit()
     pdf_url=save_pdf_and_get_url(docname, pdf_data)
+    creation= purchase_doc.creation
     pdf_url="http://103.249.120.178:8011/jewel_new/server/purchase/purchase_pdf/PO-R-102-02122025-696.pdf"
-    body_param =[supplier_name,purchase_doc.name,"8758960079","link" ]
-    #a=send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)    
+    raw_string= f"{docname}#{supplier_id}#{creation}"
+    encoded = base64.b64encode(raw_string.encode()).decode()
+    base_url = frappe.utils.get_url()
+    link= f"{base_url}/po_page?data={encoded}"
+    body_param =[supplier_name,purchase_doc.name,"8758960079",link ]
+    a=send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)    
  
 
 def save_pdf_and_get_url(docname, pdf_data):

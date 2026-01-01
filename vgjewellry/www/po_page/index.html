@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VG Jewels</title>
+<style>
+body{
+	font-family:sans-serif;
+}
+h2{
+	text-align:center;
+}
+.bold-letter{
+	font-weight:bold;
+}
+.po-img-td{
+	width:50%;
+}
+.po-img{
+	width:50%;
+}
+.full{
+	width:100%;
+}
+.info{
+border:1px solid;border-radius:10px;margin-top:10px;
+}
+.info td:nth-child(odd) {
+	text-align: right;
+    	padding-right: 10px;
+}
+.info td:nth-child(even) {font-weight:bold}
+.info td{
+        width:50%;
+}
+.first-table{
+	font-weight: bold;
+	 font-size: small;
+	 width: 100%;
+}
+.first-table td:nth-child(even) {text-align:right}
+</style>
+</head>
+<body>
+<div style="clear:both;width:100%;height:50px">
+<img src="{{ frappe.utils.get_url() }}/assets/vgjewellry/images/name.png" style="position:absolute;left:calc(50% - 100px)" width="200px">
+<img src="{{ frappe.utils.get_url() }}/assets/vgjewellry/images/logo.png" width="50px" style="float:right">
+</div>
+<h2 style="clear:both">PO Details</h2>
+<table class="first-table">
+	<tr><td>PO No.:{{po_no}}</td><td>{{supplier_name}}</td></tr>
+	<tr><td>Branch:{{branch}}</td><td>Delivery Date:{{delivery_date}}</td></tr>
+</table>
+
+{% for item in items %}
+<table class="info" >
+	<tr >
+	<td colspan="2" style="text-align:center" >
+                {% if item.data_uri1 %}
+		<div style="width:100%;float:left;padding:2%">
+                <img style="width:40%" src="{{ item.image_1 }}" />
+        	<a href="{{ item.data_uri1 }}" download="{{ item.filename1 }}">Download</a>
+		</div>
+		{% endif %}
+                {% if item.data_uri2 %}
+		<div style="width:100%;float:left;padding:2%">
+                <img style="width:40%" src="{{ item.image_2 }}" />
+        	<a href="{{ item.data_uri2 }}" download="{{ item.filename2 }}">Download</a>
+		</div>
+		{% endif %}
+                {% if item.data_uri3 %}
+		<div style="width:100%;float:left;padding:2%">
+                <img style="width:40%" src="{{ item.image_3 }}" />
+        	<a href="{{ item.data_uri3 }}" download="{{ item.filename3 }}">Download</a>
+		</div>
+		{% endif %}
+                {% if item.data_uri4 %}
+		<div style="width:100%;float:left;padding:2%">
+                <img style="width:40%" src="{{ item.image_4 }}" />
+        	<a href="{{ item.data_uri4 }}" download="{{ item.filename4 }}">Download</a>
+		</div>
+		{% endif %}
+
+	</td></tr>
+	<tr><td>Sr. No.</td><td>{{item.sr}}</td></tr>
+	<tr><td>Item</td><td>{{item.item}}</td></tr>
+		<tr><td>Metal</td><td>{{item.metal}}</td></tr>
+		<tr><td>Metal Color</td><td>{{item.metal_color}}</td></tr>
+		<tr><td>Weight Range</td><td>{{item.wt_range}}</td></tr>
+		<tr><td>Diamond Carat Range</td><td>{{item.diamond_carat_range}}</td></tr>
+		<tr><td>Size</td><td>{{item.size}}</td></tr>
+		<tr><td>Qty</td><td>{{item.qty}}</td></tr>
+		<tr><td>Pcs</td><td>{{item.pcs}}</td></tr>
+		<tr><td>Total Weight</td><td>{{item.total_weight}}</td></tr>
+	   	
+	</tr>
+</table>
+{% endfor %}
+
+</body>
+
+</html
+
+

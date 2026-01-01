@@ -6,6 +6,12 @@ frappe.ui.form.on("Product_Requisition_Form", {
 		toggle_save(frm);
 	},
 	onload: function(frm) {
+frm.set_query("item", "product_details", function() {
+            return {
+                order_by: "item_name asc"
+            };
+        });
+
 		toggle_save(frm);
 		if (!frm.doc.branch) {
 			frappe.call({
@@ -62,7 +68,8 @@ frappe.ui.form.on("Product_Requisition_Item", {
 						return {
 							filters: {
 								name: ["in", r.message]
-							}
+							},
+							order_by: "item_name asc"
 						};
 					};
 					let wt_field = grid_row.on_grid_fields_dict.weight_range;

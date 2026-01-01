@@ -218,12 +218,19 @@ WHERE rn = 1;
     #image_server_url="http://103.249.120.178:51"
     image_server_url="http://192.168.1.5:51"
     for row in rows:
+        status = frappe.db.exists("VG_Branch_Transfer_Request",{"label_no": row[3]} ,"status")
+        is_exists = True
+        if not status or status == "Reject":
+            is_exists= False
+            
+
         branch_id = int(row[2])
         grouped[branch_id].append({
             "ImagePath1": f"{image_server_url}/{row[0]}",
             "NetWt": row[1],
             "LabelNo":row[3],
-            "BranchCode":row[4]
+            "BranchCode":row[4],
+            "is_exists":is_exists
             })
 
     # convert defaultdict to normal dict
@@ -302,6 +309,8 @@ def get_product_details_for_assignment():
     all_item =[]
     requisition= frappe.get_all("Product_Requisition_Forword",fields=["*"],filters={'purchase_dept_status':'Approve','supplier': ['is', 'not set']})
     for item in requisition:
+        if item.qty_given_by_po == item.branch_transfer_qty:
+            continue
         branch_name=frappe.get_doc("Ornate_Branch_Master",item.branch)
         item_name=frappe.get_doc("Ornate_Item_Master",item.item)
         var_name=frappe.get_doc("Ornate_Variety_Master",item.variety)

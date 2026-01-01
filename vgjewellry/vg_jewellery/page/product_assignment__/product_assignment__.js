@@ -420,6 +420,7 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 
 
 	$(document).on("click", ".in_stock_img", function () {
+		var row = $(this).closest('tr').closest('table').closest('td').closest('tr');
 		var id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_id').val();
 		var branch_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_branch_id').val();
 		var item_id = $(this).closest('tr').closest('table').closest('td').closest('tr').find('.req_item_id').val();
@@ -466,7 +467,11 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 				    <div>Wt: ${img_obj.NetWt}</div>
 				    `;
 							if(branch !=branch_id){
-								html+=`<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />`
+								if(img_obj.is_exists){
+									html+=`<div style="color:red">Already Requested</div>`
+								}else{
+									html+=`<input type="checkbox" class="image_checkbox" data-branch="${branch}"  data-img-id="${img_obj.LabelNo}" data-requested="${branch_id}" data-id="${id}" />`
+								}
 							}	
 
 							html+=`</div>`;
@@ -505,6 +510,9 @@ frappe.pages['product-assignment--'].on_page_load = function(wrapper) {
 								callback: function(r) {
 									if (r.message) {
 										frappe.msgprint("Branch transfer successful!");
+										if(selectedImages.length == po_qty){
+											row.remove()		
+										}
 										 d.hide();
 									} else {
 										frappe.msgprint("Error in transferring images.");
