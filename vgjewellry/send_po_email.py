@@ -13,13 +13,12 @@ def get_all_email_pending_po():
         fields=["name", "supplier"]
     )
     for po in po_list:
-        return send_po_email(po.name, po.supplier)
+        send_po_email(po.name, po.supplier)
         # Mark as sent
-        #frappe.db.set_value("Vg Purchase Order", po.name, "is_email_send", "Yes")
+        frappe.db.set_value("Vg Purchase Order", po.name, "is_email_send", "Yes")
         frappe.db.commit()
 @frappe.whitelist(allow_guest=True)
 def send_po_email(docname, sup):
-    docname ="PO-M/102/31122025/23"
     email2 = "miteshthakur87@gmail.com"
 
     frappe.set_user("Administrator")
@@ -75,11 +74,20 @@ def send_po_email(docname, sup):
     </tr>
     """
     second_table = f'<table style="margin-top:20px;margin-bottom:20px" border="1" cellpadding="0" cellspacing="0" width="100%">{tr_content}</table>'
-    
+   
+    owner = purchase_doc.owner
+    user_data = frappe.db.get_doc("User", owner) 
+
     supplier_id= purchase_doc.supplier
     supplier_name = None
+    mobile = "919273446652";
     if supplier_id:
         supplier_name = frappe.db.get_value("Ornate_Supplier_Master",supplier_id,"supplier_name")
+        email2 = frappe.db.get_value("Ornate_Supplier_Master",supplier_id,"po_contact_person_email")
+        mobile = frappe.db.get_value("Ornate_Supplier_Master",supplier_id,"po_contact_person_mobile1")
+        if mobile != None:
+            mobile= "91"+""+mobile
+
     msg = f"""
 Dear {supplier_name},<br>
 <div>We hope this message finds you well. We are pleased to inform you that we have issued a purchase order for the following items:</div><br>
@@ -112,11 +120,20 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
 """
 
     msg = msg + additional_msg
- 
+    
+    cc_list =[] 
+    if user_data != None:
+        user_email = user_data.email
+        if user_email != None
+            cc_list.append(user_email)
+        user_mobile_no = user_data.mobile_no
+
+
 
     frappe.sendmail(
         recipients=[email2],
-        #bcc=["miteshthakur87@gmail.com","mukesh.k@svgjewels.com"],
+        bcc=["miteshthakur87@gmail.com","mukesh.k@svgjewels.com"],
+        cc = cc_list,
         subject=f"Purchase Order-{docname}",
         message=f"{msg}",
          attachments=[{
@@ -133,7 +150,11 @@ For any assistance, please contact us via email at qc@svgjewels.com or reach us 
     base_url = frappe.utils.get_url()
     link= f"{base_url}/po_page?data={encoded}"
     body_param =[supplier_name,purchase_doc.name,"8758960079",link ]
-    a=send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)   
+    a=send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)   
+    send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)   
+    send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)   
+    if user_mobile_no != None:
+        send_whatsapp("91"+user_mobile_no,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
     return pdf_url
  
 
