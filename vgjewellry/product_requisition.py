@@ -5,7 +5,6 @@ def get_product_details():
     user = frappe.session.user
     roles = frappe.get_roles(user)
     user_data = frappe.get_doc("User",user)
-
     all_item =[]
     requisition= frappe.get_all("Product_Requisition_Form",filters={'branch':user_data.ornate_branch,'action_taken':['!=', 'Action Taken']})
     for req in requisition:
