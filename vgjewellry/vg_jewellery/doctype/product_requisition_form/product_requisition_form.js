@@ -4,13 +4,45 @@
 frappe.ui.form.on("Product_Requisition_Form", {
 	refresh(frm) {
 		toggle_save(frm);
+		let grid = frm.fields_dict.product_details.grid;
+
+		// Prevent duplicate buttons
+		if (grid.copy_row_added) return;
+		grid.copy_row_added = true;
+
+		// Add Copy Row button beside Add Row
+		grid.add_custom_button(__('Copy Row'), function () {
+			let selected = grid.get_selected_children();
+
+			if (!selected.length) {
+				frappe.msgprint(__('Please select a row to copy'));
+				return;
+			}
+
+			let source = selected[0];
+			let new_row = frm.add_child('product_details');
+
+			/*// Copy all fields except system fields
+			Object.keys(source).forEach(field => {
+				if (!['name', 'idx', 'doctype','size',''].includes(field)) {
+					new_row[field] = source[field];
+				}
+			});*/
+			new_row.item = source.item;
+			new_row.weight_range = source.weight_range;
+			new_row.variety = source.variety;
+
+			frm.refresh_field('product_details');
+			grid.selected_children = [];
+            		grid.wrapper.find('.grid-row-check').prop('checked', false);
+		});
 	},
 	onload: function(frm) {
-frm.set_query("item", "product_details", function() {
-            return {
-                order_by: "item_name asc"
-            };
-        });
+		frm.set_query("item", "product_details", function() {
+			return {
+				order_by: "item_name asc"
+			};
+		});
 
 		toggle_save(frm);
 		if (!frm.doc.branch) {
@@ -96,11 +128,11 @@ frappe.ui.form.on("Product_Requisition_Item", {
 })
 
 function toggle_save(frm) {
-    if (frm.doc.action_taken === "Action Taken" || frm.doc.action_taken === "Partial Action Taken") {
-        frm.disable_save();      // disables Save
-        frm.page.clear_primary_action(); // hides Save button
-    } else {
-        frm.enable_save();       // enables Save
-        frm.page.set_primary_action(__('Save'), () => frm.save());
-    }
+	if (frm.doc.action_taken === "Action Taken" || frm.doc.action_taken === "Partial Action Taken") {
+		frm.disable_save();      // disables Save
+		frm.page.clear_primary_action(); // hides Save button
+	} else {
+		frm.enable_save();       // enables Save
+		frm.page.set_primary_action(__('Save'), () => frm.save());
+	}
 }
