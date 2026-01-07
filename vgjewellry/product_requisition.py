@@ -20,7 +20,7 @@ def get_product_details():
             wt_name=frappe.get_doc("weight_range",item.weight_range)
             size_id= None
             size_name=""
-            if item.size !=None:
+            if item.size !="" and item.size !=None:
                 sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
                 size_id =item.size
                 size_name= sz_name.size
@@ -36,6 +36,7 @@ def get_product_details():
             used_ids.append({'f':req_doc.name,'p':item.name})
             owner=frappe.get_doc("User",req_doc.owner)
             item_data = {
+                    'name': req_doc.name,
                     'used_ids':str(used_ids),
                     'item_id':item.item,
                     'variety_id':item.variety,
@@ -173,3 +174,34 @@ def get_item_image(used_id):
                 images.append(row.image_4)
     
     return images
+
+import frappe
+from frappe.utils.file_manager import save_file
+
+@frappe.whitelist()
+def replace_item_image(file, old_image, used_id):
+    """
+    Save new image and replace old image reference
+    """
+
+    # Save new file
+    saved_file = save_file(
+        fname=file.filename,
+        content=file.stream.read(),
+        dt="Product Requisition",
+        dn=used_id,
+        is_private=0
+    )
+
+    new_file_url = saved_file.file_url
+
+    # OPTIONAL: delete old file
+    if old_image:
+        try:
+            frappe.db.delete("File", {"file_url": old_image})
+            frappe.db.commit()
+        except Exception:
+            pass
+
+    return new_file_url
+
