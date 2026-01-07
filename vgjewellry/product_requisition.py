@@ -20,7 +20,7 @@ def get_product_details():
             wt_name=frappe.get_doc("weight_range",item.weight_range)
             size_id= None
             size_name=""
-            if item.size !=None:
+            if item.size !="" and  item.size !=None:
                 sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
                 size_id =item.size
                 size_name= sz_name.size
