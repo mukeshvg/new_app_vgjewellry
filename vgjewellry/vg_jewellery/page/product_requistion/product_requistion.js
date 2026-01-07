@@ -10,6 +10,14 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 .image-thumb { max-width:150px; max-height:150px; cursor:zoom-in; border-radius:6px; border:2px solid transparent; }
 .image-thumb.selected { border-color:#2490ef; }
 .image-checkbox { position:absolute; top:6px; left:6px; z-index:2; }
+.replace-img-btn {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    padding: 2px 6px;
+}
 
 .image-overlay {
     position: fixed;
@@ -130,6 +138,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 	<table class="table table-striped table-hover align-middle modern-table" id="item-order-table">
     <thead class="table-dark">
 	<tr>
+	    <th>Sr No</th>
 	    <th>Item</th>
 	    <th>Variety</th>
 	    <th>WT Range</th>
@@ -174,6 +183,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 				for(var k in msg){
 					str+=`
 					<tr>
+					<td>`+msg[k]["name"]+`</td>
 			    <td>
 				<input type="hidden" class="req_selected_images" value="" >
 				<input type="hidden" class="req_used_ids" value="`+msg[k]['used_ids']+`" >
@@ -364,7 +374,7 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					<div id="image-overlay-dialog" class="image-overlay">
     <span class="close" onclick="closeImage()">✖</span>
      <img id="overlay-img-dialog">
-</div>`;
+</div><input type="file" id="replace-image-input" accept="image/*" hidden>`;
 
 
 					r.message.forEach(img_obj => {
@@ -373,6 +383,11 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
     <div class="image-thumb-wrapper">
 	<input type="checkbox" class="image-checkbox" data-img="${img_path}">
 	<img src="${img_path}" class="image-thumb" data-full="${img_path}">
+	<button type="button"
+            class="btn btn-xs btn-secondary replace-img-btn"
+            data-img="${img_path}">
+        Replace
+    </button>
     </div>`;
 						// if already full URL, use as is
 					});
@@ -405,6 +420,55 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 						}
 					});
 					d.show();
+					let currentReplaceImg = null;
+
+d.$wrapper.on('click', '.replace-img-btn', function (e) {
+    e.stopPropagation(); // prevent image click
+
+    currentReplaceImg = $(this).data('img');
+
+    d.$wrapper.find('#replace-image-input').click();
+});
+					d.$wrapper.on('change', '#replace-image-input', function (e) {
+    const file = e.target.files[0];
+    if (!file || !currentReplaceImg) return;
+
+    let formData = new FormData();
+    formData.append("file", file);
+    formData.append("old_image", currentReplaceImg);
+    formData.append("used_id", used_id); // ✅ from row
+
+    frappe.call({
+        method: "vgjewellry.product_requisition.replace_item_image",
+        args: formData,
+        freeze: true,
+        callback: function (r) {
+            if (r.message) {
+                const newPath = r.message;
+
+                const wrapper = d.$wrapper
+                    .find(`.replace-img-btn[data-img="${currentReplaceImg}"]`)
+                    .closest('.image-thumb-wrapper');
+
+                wrapper.find('.image-thumb')
+                    .attr('src', newPath)
+                    .attr('data-full', newPath);
+
+                wrapper.find('.replace-img-btn').attr('data-img', newPath);
+                wrapper.find('.image-checkbox').attr('data-img', newPath);
+
+                currentReplaceImg = null;
+
+                frappe.show_alert({
+                    message: "Image replaced successfully",
+                    indicator: "green"
+                });
+            }
+        }
+    });
+});
+
+
 					// Bind events AFTER dialog renders
 					d.$wrapper.on('click', '.image-thumb', function () {
 						const src = $(this).data('full');
