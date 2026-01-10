@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "autoincrement",
+ "creation": "2026-01-09 16:08:06.444062",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "supplier_code",
+  "gsize",
+  "shape",
+  "color",
+  "clarity",
+  "rate",
+  "min_carat_weight",
+  "max_carat_weight",
+  "product_1_other_details",
+  "product_2_other_details",
+  "date",
+  "section_break_yqhb",
+  "diamond_rate_rows"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Ornate_Supplier_Master"
+  },
+  {
+   "fetch_from": "supplier.supplier_code",
+   "fieldname": "supplier_code",
+   "fieldtype": "Data",
+   "label": "Supplier Code"
+  },
+  {
+   "fieldname": "diamond_rate_rows",
+   "fieldtype": "Table",
+   "label": "Diamond rate rows",
+   "options": "Diamond_rate_rows"
+  },
+  {
+   "fieldname": "shape",
+   "fieldtype": "Link",
+   "label": "Shape",
+   "options": "Diamond_Shape"
+  },
+  {
+   "fieldname": "gsize",
+   "fieldtype": "Link",
+   "label": "GSize",
+   "options": "Diamond_Gsize"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Link",
+   "label": "Color",
+   "options": "Diamond_Color"
+  },
+  {
+   "fieldname": "clarity",
+   "fieldtype": "Link",
+   "label": "Clarity",
+   "options": "Diamond_Clarity"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Data",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "min_carat_weight",
+   "fieldtype": "Link",
+   "label": "Min Carat weight",
+   "options": "Diamond_Gsize"
+  },
+  {
+   "fieldname": "max_carat_weight",
+   "fieldtype": "Data",
+   "label": "Max Carat weight"
+  },
+  {
+   "fieldname": "product_1_other_details",
+   "fieldtype": "Data",
+   "label": "Product 1 (Other Details)"
+  },
+  {
+   "fieldname": "product_2_other_details",
+   "fieldtype": "Data",
+   "label": "Product 2 (Other Details)"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Data",
+   "label": "Date"
+  },
+  {
+   "fieldname": "section_break_yqhb",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-10 12:07:37.121074",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Diamond_Purchase_Rate",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

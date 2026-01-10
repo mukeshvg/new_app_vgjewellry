@@ -8,7 +8,8 @@
  "field_order": [
   "item_trade_mst_id",
   "trade_name",
-  "trade_short_name"
+  "trade_short_name",
+  "trade_purity"
  ],
  "fields": [
   {
@@ -29,12 +30,21 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Trade Short Name"
+  },
+  {
+   "fieldname": "trade_purity",
+   "fieldtype": "Data",
+   "label": "Trade Purity"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
+<<<<<<< HEAD
  "modified": "2025-12-09 11:32:37.818913",
+=======
+ "modified": "2025-12-24 12:15:18.865181",
+>>>>>>> mukesh
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Item_Trade_Master",
