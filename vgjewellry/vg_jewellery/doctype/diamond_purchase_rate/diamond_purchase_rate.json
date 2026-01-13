@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_import": 1,
- "allow_rename": 1,
  "autoname": "autoincrement",
  "creation": "2026-01-09 16:08:06.444062",
  "doctype": "DocType",
@@ -42,6 +41,7 @@
    "options": "Diamond_rate_rows"
   },
   {
+   "bold": 1,
    "fieldname": "shape",
    "fieldtype": "Link",
    "label": "Shape",
@@ -72,9 +72,8 @@
   },
   {
    "fieldname": "min_carat_weight",
-   "fieldtype": "Link",
-   "label": "Min Carat weight",
-   "options": "Diamond_Gsize"
+   "fieldtype": "Data",
+   "label": "Min Carat weight"
   },
   {
    "fieldname": "max_carat_weight",
@@ -104,7 +103,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-10 12:07:37.121074",
+ "modified": "2026-01-13 13:06:38.703356",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_Purchase_Rate",
