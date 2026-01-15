@@ -31,14 +31,13 @@
   {
    "fieldname": "gsize",
    "fieldtype": "Data",
-   "label": "GSize",
-   "unique": 1
+   "label": "GSize"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-13 13:07:00.677949",
+ "modified": "2026-01-15 12:39:19.724160",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_Gsize",
