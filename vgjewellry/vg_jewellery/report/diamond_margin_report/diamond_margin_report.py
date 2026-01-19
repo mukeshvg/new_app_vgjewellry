@@ -75,6 +75,8 @@ def execute(filters=None):
 
     Lc_Chart_Per_Fix={"V": 1300, "Y": 1200, "X": 1500, "Z": 2000, "W": 1000, "F": 500, "XX": 1500, "K": 550, "P": 500}
 
+    shape_master = {'RD(CT)':'Round',"RADIANT(CT)":"Radiant","BR(CT)":"Tapper","CD(CT)":"Cushion","EMD(CT)":"Emerald","HRD(CT)":"Heart","MD(CT)":"Marquise","OVAL.D(CT)":"Oval","PD(CT)":"Princess","PEAR.D(CT)":"Pear"}
+
     branch="ornysis"
     table="UserMaster"
     columns= ["UserMastID","UserName"]
@@ -106,6 +108,22 @@ def execute(filters=None):
             trade[it['ItemTradMstID']]=it['TradShortName']
         
         table="VarietyMst"
+        columns=["VarietyName","VarietyMstId"]
+        condition="VarietyMstId >0"
+        var_res=get_sql_server_data(branch,table,columns,condition)
+        variety = {}
+        for it in var_res:
+            variety[it['VarietyMstId']]=it['VarietyName']
+        
+        table="StyleMst"
+        columns=["VarietyName","VarietyMstId"]
+        condition="VarietyMstId >0"
+        var_res=get_sql_server_data(branch,table,columns,condition)
+        variety = {}
+        for it in var_res:
+            variety[it['VarietyMstId']]=it['VarietyName']
+        
+        table="SizeMst"
         columns=["VarietyName","VarietyMstId"]
         condition="VarietyMstId >0"
         var_res=get_sql_server_data(branch,table,columns,condition)
@@ -200,7 +218,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' and LabelNo='DT   /  18059'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
@@ -234,16 +252,18 @@ def execute(filters=None):
             Discount = float(Discount);
             
             table="LabelTransactionStudded"
-            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt"]
+            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt","PcsName"]
             condition = "LabelTransID='"+LabelTransID+"'"
             lts_res=get_sql_server_data(branch,table,columns,condition)
             MetalAmt=0
             DiamondAmt =0 
             LabourAmt=0
+            all_diamond_pcs =[]
             for ltr in lts_res:
                 Discount+= float(ltr["DiscountAmt"])
                 if ltr["StyleID"]== 1006:
                     MetalAmt+=float(ltr["MetalAmt"])
+                    all_diamond_pcs.append({"PcsName":ltr["PcsName"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"]})
                 else:
                     DiamondAmt+=float(ltr["MetalAmt"])
             if VarietyMstId in sales_labour_dict:        
@@ -300,16 +320,18 @@ def execute(filters=None):
                     Wastage_Rate=0
                     for el in each_location:
                         key = el.upper()
-                        if Labour_Type =="Fix":
-                            Purchase_Labour = Lc_Chart_Per_Fix[key]
-                        if Labour_Type =="PerGram":
-                            Purchase_Labour= Lc_Chart_Per_Gram[key] * NetWt
+                        for adp in all_diamond_pcs:
+                            if adp["NetWt"]<=2:
+                                Purchase_Labour += Lc_Chart_Per_Fix.get(key, 0)
+                            else:
+                                Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
                 else:
                     Location_code = Location[0].upper()
-                    if Labour_Type =="Fix":
-                        Purchase_Labour = Lc_Chart_Per_Fix[Location_code]
-                    if Labour_Type =="PerGram":
-                        Purchase_Labour= Lc_Chart_Per_Gram[Location_code] * NetWt
+                    for adp in all_diamond_pcs:
+                        if adp["NetWt"]<=2:
+                            Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
+                        else:
+                            Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
             
             
             #Calculate other charge
