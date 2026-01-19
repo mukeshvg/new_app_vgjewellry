@@ -391,7 +391,7 @@ def execute(filters=None):
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
-            Purchase_Amt = Purchase_Rate + Purchase_Labour + float(other_charge_value)
+            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)
             margin = float(Sales_Amt) - Purchase_Amt
 
             return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"wastage_rate":Wastage_Rate,"location_code":Location_code,"other_charge_code":other_charge_code,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin)}
