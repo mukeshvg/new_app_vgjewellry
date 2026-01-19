@@ -115,21 +115,21 @@ def execute(filters=None):
         for it in var_res:
             variety[it['VarietyMstId']]=it['VarietyName']
         
-        table="StyleMst"
-        columns=["VarietyName","VarietyMstId"]
-        condition="VarietyMstId >0"
-        var_res=get_sql_server_data(branch,table,columns,condition)
-        variety = {}
-        for it in var_res:
-            variety[it['VarietyMstId']]=it['VarietyName']
+        #table="StyleMst"
+        #columns=["VarietyName","VarietyMstId"]
+        #condition="VarietyMstId >0"
+        #var_res=get_sql_server_data(branch,table,columns,condition)
+        #variety = {}
+        #for it in var_res:
+        #    variety[it['VarietyMstId']]=it['VarietyName']
         
-        table="SizeMst"
-        columns=["VarietyName","VarietyMstId"]
-        condition="VarietyMstId >0"
-        var_res=get_sql_server_data(branch,table,columns,condition)
-        variety = {}
-        for it in var_res:
-            variety[it['VarietyMstId']]=it['VarietyName']
+        #table="SizeMst"
+        #columns=["VarietyName","VarietyMstId"]
+        #condition="VarietyMstId >0"
+        #var_res=get_sql_server_data(branch,table,columns,condition)
+        #variety = {}
+        #for it in var_res:
+        #    variety[it['VarietyMstId']]=it['VarietyName']
         
         table="TodayRateMst"
         columns=["TDate","TodayRateMstID","ItemTradMstID","SalesRate","PurRate"]
