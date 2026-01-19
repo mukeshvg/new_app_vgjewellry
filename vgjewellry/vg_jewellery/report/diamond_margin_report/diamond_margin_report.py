@@ -218,16 +218,16 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'  ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
-            #UniqueLabelID=slr['UniqueLabelID']
-            UniqueLabelID = slr.get('UniqueLabelID')
-            if UniqueLabelID == "":
-                UniqueLabelID = 1
-            if slr['VouType']=="SRT":
+            UniqueLabelID=slr['UniqueLabelID']
+            #UniqueLabelID = slr.get('UniqueLabelID')
+            #if UniqueLabelID == "":
+            #    UniqueLabelID = 1
+            #if slr['VouType']=="SRT":
                 #return_array.pop(UniqueLabelID)
-                continue
+            #    continue
             label_user_id= user_label_res[UniqueLabelID] if UniqueLabelID in user_label_res else "no"
             #VouDate1 = datetime.strptime(slr['VouDate'],"%Y-%m-%d %H:%M:%S.%f")
             VouDate1 = slr['VouDate']
@@ -327,7 +327,7 @@ def execute(filters=None):
                             if adp["NetWt"]<=2:
                                 Purchase_Labour += Lc_Chart_Per_Fix.get(key, 0)
                             else:
-                                Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
+                                Purchase_Labour += 0 #(Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
                 else:
                     Location_code = Location[0].upper()
                     for adp in all_diamond_pcs:
@@ -385,7 +385,7 @@ def execute(filters=None):
             if UniqueLabelID in return_array:
                 NetWt += float(return_array[UniqueLabelID]['net_wt'])
                 LabourAmt += float(return_array[UniqueLabelID]['labour_amount'])
-                Discount += float(return_array[UniqueLabelID]['discount'])
+                #Discount += float(return_array[UniqueLabelID]['discount'])
                 Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
            
             # Calculate purchase rates and amounts
