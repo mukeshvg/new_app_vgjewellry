@@ -4,6 +4,7 @@ import os
 import pymysql
 from datetime import datetime
 from decimal import Decimal
+from frappe.utils.logger import get_logger
 
 
 value_ornsys= os.getenv('ornsysodbc')
@@ -62,6 +63,8 @@ def get_sql_server_data(branch,table,columns,condition ):
     return data
 
 def execute(filters=None):
+    logger = frappe.logger("diamond_margin")
+    logger.setLevel("INFO")
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
@@ -77,6 +80,7 @@ def execute(filters=None):
 
     shape_master = {'RD(CT)':'Round',"RADIANT(CT)":"Radiant","BR(CT)":"Tapper","CD(CT)":"Cushion","EMD(CT)":"Emerald","HRD(CT)":"Heart","MD(CT)":"Marquise","OVAL.D(CT)":"Oval","PD(CT)":"Princess","PEAR.D(CT)":"Pear"}
 
+    diamond_size_map_master = {'1VVS-EF':{"color":"EF","clarity":"VVS"},"2VVS-VS-FG":{"color":"FG","clarity":"VVS/VS"},"3VS-SI-GHI":{"clarity":"VS/SI","color":"GH HI"},"2VVS-VS-FG-2":{"clarity":"VVS/VS","color":"FG"},"3VS-SI-GHI-2":{"clarity":"VS/SI","color":"GH HI"},"1VVS-EF-2":{"color":"EF","clarity":"VVS"}}
     branch="ornysis"
     table="UserMaster"
     columns= ["UserMastID","UserName"]
@@ -115,21 +119,23 @@ def execute(filters=None):
         for it in var_res:
             variety[it['VarietyMstId']]=it['VarietyName']
         
-        #table="StyleMst"
-        #columns=["VarietyName","VarietyMstId"]
-        #condition="VarietyMstId >0"
-        #var_res=get_sql_server_data(branch,table,columns,condition)
-        #variety = {}
-        #for it in var_res:
-        #    variety[it['VarietyMstId']]=it['VarietyName']
+        table="DiamondStyleMst"
+        columns=["StyleName","DiamondStyleMstID"]
+        condition="DiamondStyleMstID >0"
+        dia_size_res=get_sql_server_data(branch,table,columns,condition)
+        diamond_style = {}
+        for it in dia_size_res:
+            diamond_style[it['DiamondStyleMstID']]=it['StyleName']
         
-        #table="SizeMst"
-        #columns=["VarietyName","VarietyMstId"]
-        #condition="VarietyMstId >0"
-        #var_res=get_sql_server_data(branch,table,columns,condition)
-        #variety = {}
-        #for it in var_res:
-        #    variety[it['VarietyMstId']]=it['VarietyName']
+        table="DiamondSizeMst"
+        columns=["DiamondSizeMstID","SizeName"]
+        condition="DiamondSizeMstID >0"
+        dia_size_res=get_sql_server_data(branch,table,columns,condition)
+        diamond_size = {}
+        for it in dia_size_res:
+            diamond_size[it['DiamondSizeMstID']]=it['SizeName']
+            
+
         
         table="TodayRateMst"
         columns=["TDate","TodayRateMstID","ItemTradMstID","SalesRate","PurRate"]
@@ -218,7 +224,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'  ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
@@ -255,20 +261,22 @@ def execute(filters=None):
             Discount = float(Discount);
             
             table="LabelTransactionStudded"
-            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt","PcsName"]
+            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt","PcsName","CostAmount"]
             condition = "LabelTransID='"+LabelTransID+"'"
             lts_res=get_sql_server_data(branch,table,columns,condition)
             MetalAmt=0
             DiamondAmt =0 
             LabourAmt=0
             all_diamond_pcs =[]
+            all_metal_pcs =[]
             for ltr in lts_res:
                 Discount+= float(ltr["DiscountAmt"])
                 if ltr["StyleID"]== 1006:
                     MetalAmt+=float(ltr["MetalAmt"])
-                    all_diamond_pcs.append({"PcsName":ltr["PcsName"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"]})
+                    all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"]})
                 else:
                     DiamondAmt+=float(ltr["MetalAmt"])
+                    all_diamond_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"]})
             if VarietyMstId in sales_labour_dict:        
                 for sld_obj in  sales_labour_dict[VarietyMstId]:
                     if sld_obj["from_wt"]<= NetWt and sld_obj["to_wt"] >= NetWt:
@@ -302,7 +310,39 @@ def execute(filters=None):
                 Purchase_Purity=76
                 metal_name="18KT"
             Total_Sales_Purity=LabourPer+Purity
-            
+
+            logger.info(f"{all_diamond_pcs}")
+            diamond_purchase_amount=0
+            for i in all_diamond_pcs:
+                if i['SizeID']==0 or i["SizeID"]== 1:
+                    diamond_purchase_amount=ltr["CostAmount"]
+                else:    
+                    dia_size_in_product=diamond_size[i['SizeID']]
+                    dia_color=diamond_size_map_master[dia_size_in_product]["color"]
+                    dia_clarity=diamond_size_map_master[dia_size_in_product]["clarity"]
+                    dia_style_in_product= diamond_style[i['StyleID']]
+                    dia_shape=shape_master.get(dia_style_in_product)
+                    logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
+                    one_diamond_wt= round(i['NetWt']/i['Pcs'],4)
+                    dia_supplier= slr['SupplierCode']
+                    rate = frappe.db.get_value(
+                       "Diamond_Purchase_Rate",
+                        {
+                            #"supplier": dia_supplier,
+                            "clarity": dia_clarity,
+                            "color": dia_color,
+                            "shape":dia_shape,
+                            "min_carat_weight": ("<=", one_diamond_wt),
+                            "max_carat_weight": (">=", one_diamond_wt),
+                        },
+                        "rate"
+                    ) or 0
+
+                    diamond_purchase_amount= float(rate) * float(i['NetWt'])
+                    logger.info(f"{diamond_purchase_amount}")
+
+
+                
             # Purchase 22KT
             Wastage_Rate = 0
             Location_code = ""
@@ -327,10 +367,10 @@ def execute(filters=None):
                             if adp["NetWt"]<=2:
                                 Purchase_Labour += Lc_Chart_Per_Fix.get(key, 0)
                             else:
-                                Purchase_Labour += 0 #(Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
+                                Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
                 else:
                     Location_code = Location[0].upper()
-                    for adp in all_diamond_pcs:
+                    for adp in all_metal_pcs:
                         if adp["NetWt"]<=2:
                             Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
                         else:
@@ -391,10 +431,10 @@ def execute(filters=None):
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
-            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)
+            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)
             margin = float(Sales_Amt) - Purchase_Amt
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"wastage_rate":Wastage_Rate,"location_code":Location_code,"other_charge_code":other_charge_code,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin)}
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin)}
             one_unique_id=UniqueLabelID
 
         
@@ -413,8 +453,9 @@ def execute(filters=None):
             return_array[uld]['purchase_amount']=round(Purchase_Amt)
             return_array[uld]['margin']=round(margin)
             
-
+    
     columns = [{"label":key,"fieldname":key,"fieldtype":"Data"} for key in return_array[one_unique_id].keys()]
+    #columns = [],[]
     data = list(return_array.values())
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {data}\n")
