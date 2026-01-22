@@ -323,7 +323,7 @@ def execute(filters=None):
                     dia_style_in_product= diamond_style[i['StyleID']]
                     dia_shape=shape_master.get(dia_style_in_product)
                     logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
-                    one_diamond_wt= round(i['NetWt']/i['Pcs'],4)
+                    one_diamond_wt= round(i['NetWt']/i['Pcs'],4 if i['Pcs'] != 0 else 0)
                     dia_supplier= slr['SupplierCode']
                     rate = frappe.db.get_value(
                        "Diamond_Purchase_Rate",
