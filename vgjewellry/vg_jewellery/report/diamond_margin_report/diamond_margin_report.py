@@ -328,7 +328,7 @@ def execute(filters=None):
                     rate = frappe.db.get_value(
                        "Diamond_Purchase_Rate",
                         {
-                            #"supplier": dia_supplier,
+                            "supplier": dia_supplier,
                             "clarity": dia_clarity,
                             "color": dia_color,
                             "shape":dia_shape,
@@ -338,7 +338,8 @@ def execute(filters=None):
                         "rate"
                     ) or 0
 
-                    diamond_purchase_amount= float(rate) * float(i['NetWt'])
+                    diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
+                    diamond_purchase_amount=round(diamond_purchase_amount)
                     logger.info(f"{diamond_purchase_amount}")
 
 
@@ -367,14 +368,14 @@ def execute(filters=None):
                             if adp["NetWt"]<=2:
                                 Purchase_Labour += Lc_Chart_Per_Fix.get(key, 0)
                             else:
-                                Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
+                                Purchase_Labour += (Lc_Chart_Per_Gram.get(key,0) * adp["NetWt"])
                 else:
                     Location_code = Location[0].upper()
                     for adp in all_metal_pcs:
                         if adp["NetWt"]<=2:
                             Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
                         else:
-                            Purchase_Labour += (Lc_Chart_Per_Gram[Location_code] * adp["NetWt"])
+                            Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
             
             
             #Calculate other charge
