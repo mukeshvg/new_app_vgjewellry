@@ -1,0 +1,139 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-17 09:17:42.035345",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch_id",
+  "branch",
+  "item_id",
+  "item",
+  "weight_range",
+  "total_sale_weight",
+  "avg_stock_weight",
+  "stock_turn",
+  "group_average_stock_turn",
+  "quadrant",
+  "ideal_weight",
+  "stock_weight",
+  "stock_pcs",
+  "target_pcs",
+  "difference_in_weight",
+  "difference_in_pcs",
+  "stock_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch Id"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Data",
+   "label": "Branch"
+  },
+  {
+   "fieldname": "item_id",
+   "fieldtype": "Data",
+   "label": "Item Id"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Data",
+   "label": "Weight Range"
+  },
+  {
+   "fieldname": "total_sale_weight",
+   "fieldtype": "Data",
+   "label": "Total Sale Weight"
+  },
+  {
+   "fieldname": "avg_stock_weight",
+   "fieldtype": "Data",
+   "label": "Avg Stock Weight"
+  },
+  {
+   "fieldname": "stock_turn",
+   "fieldtype": "Data",
+   "label": "Stock Turn"
+  },
+  {
+   "fieldname": "group_average_stock_turn",
+   "fieldtype": "Data",
+   "label": "Group Average Stock Turn"
+  },
+  {
+   "fieldname": "quadrant",
+   "fieldtype": "Data",
+   "label": "Quadrant"
+  },
+  {
+   "fieldname": "ideal_weight",
+   "fieldtype": "Data",
+   "label": "Ideal Weight"
+  },
+  {
+   "fieldname": "stock_weight",
+   "fieldtype": "Data",
+   "label": "Stock Weight"
+  },
+  {
+   "fieldname": "stock_pcs",
+   "fieldtype": "Data",
+   "label": "Stock Pcs"
+  },
+  {
+   "fieldname": "target_pcs",
+   "fieldtype": "Data",
+   "label": "Target Pcs"
+  },
+  {
+   "fieldname": "difference_in_weight",
+   "fieldtype": "Data",
+   "label": "Difference in Weight"
+  },
+  {
+   "fieldname": "difference_in_pcs",
+   "fieldtype": "Data",
+   "label": "Difference in Pcs"
+  },
+  {
+   "fieldname": "stock_date",
+   "fieldtype": "Date",
+   "label": "Stock Date"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-17 09:22:23.917999",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Current_Stock_Ideal_Stock_For_Diamond",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

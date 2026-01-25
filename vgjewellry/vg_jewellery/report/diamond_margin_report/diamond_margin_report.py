@@ -273,7 +273,7 @@ def execute(filters=None):
                 Discount+= float(ltr["DiscountAmt"])
                 if ltr["StyleID"]== 1006:
                     MetalAmt+=float(ltr["MetalAmt"])
-                    all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"]})
+                    all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"PcsName":ltr["PcsName"]})
                 else:
                     DiamondAmt+=float(ltr["MetalAmt"])
                     all_diamond_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount']})
@@ -312,7 +312,7 @@ def execute(filters=None):
                 metal_name="18KT"
             Total_Sales_Purity=LabourPer+Purity
 
-            logger.info(f"{all_diamond_pcs}")
+            #logger.info(f"{all_diamond_pcs}")
             diamond_purchase_amount=0
             for i in all_diamond_pcs:
                 if i['SizeID']==0 or i["SizeID"]== 1:
@@ -323,7 +323,7 @@ def execute(filters=None):
                     dia_clarity=diamond_size_map_master[dia_size_in_product]["clarity"]
                     dia_style_in_product= diamond_style[i['StyleID']]
                     dia_shape=shape_master.get(dia_style_in_product)
-                    logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
+                    #logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
                     one_diamond_wt= round(i['NetWt']/i['Pcs'],4) if i['Pcs'] != 0 else 0
                     dia_supplier= slr['SupplierCode']
                     rate = 0
@@ -342,9 +342,9 @@ def execute(filters=None):
 
                     diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
                     diamond_purchase_amount=round(diamond_purchase_amount)
-                    logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
+                    #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
 
-            logger.info(f"{diamond_purchase_amount}")
+            #logger.info(f"{diamond_purchase_amount}")
                 
             # Purchase 22KT
             Wastage_Rate = 0
@@ -379,7 +379,20 @@ def execute(filters=None):
                         else:
                             Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
             
-            
+            elif(len(Location)==2):
+                for adp in all_metal_pcs:
+                    if adp["PcsName"]=="DPPANDENT":
+                        Location_code= Location[0].upper()
+                    elif adp["PcsName"]=="DPTOPS":
+                        Location_code= Location[1].upper()
+                    if adp["NetWt"]<=2:
+                        Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
+                    else:
+                        Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
+
+
+
+
             #Calculate other charge
             other_charge_code=""
             multi_other_charge_code=[]
