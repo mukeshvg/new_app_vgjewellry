@@ -89,8 +89,8 @@ def execute(filters=None):
    
     valsad_rate_master={}
     return_array ={}
-    #branch_array=["valsad","vapi","surat"]
-    branch_array=["valsad"]
+    branch_array=["valsad","vapi","surat"]
+    #branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -440,6 +440,7 @@ def execute(filters=None):
             Sales_Amt = Sale_Rate + float(LabourAmt) + float(OtherChargeSale) - float(Discount)
             if UniqueLabelID in return_array:
                 NetWt += float(return_array[UniqueLabelID]['net_wt'])
+                LabourAmt = float(LabourAmt)
                 LabourAmt += float(return_array[UniqueLabelID]['labour_amount'])
                 #Discount += float(return_array[UniqueLabelID]['discount'])
                 Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
