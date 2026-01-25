@@ -224,7 +224,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'  ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
@@ -276,7 +276,7 @@ def execute(filters=None):
                     all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"]})
                 else:
                     DiamondAmt+=float(ltr["MetalAmt"])
-                    all_diamond_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"]})
+                    all_diamond_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount']})
             if VarietyMstId in sales_labour_dict:        
                 for sld_obj in  sales_labour_dict[VarietyMstId]:
                     if sld_obj["from_wt"]<= NetWt and sld_obj["to_wt"] >= NetWt:
@@ -316,7 +316,7 @@ def execute(filters=None):
             diamond_purchase_amount=0
             for i in all_diamond_pcs:
                 if i['SizeID']==0 or i["SizeID"]== 1:
-                    diamond_purchase_amount=ltr["CostAmount"]
+                    diamond_purchase_amount+= i["cost"]
                 else:    
                     dia_size_in_product=diamond_size[i['SizeID']]
                     dia_color=diamond_size_map_master[dia_size_in_product]["color"]
@@ -326,6 +326,7 @@ def execute(filters=None):
                     logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
                     one_diamond_wt= round(i['NetWt']/i['Pcs'],4) if i['Pcs'] != 0 else 0
                     dia_supplier= slr['SupplierCode']
+                    rate = 0
                     rate = frappe.db.get_value(
                        "Diamond_Purchase_Rate",
                         {
@@ -341,9 +342,9 @@ def execute(filters=None):
 
                     diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
                     diamond_purchase_amount=round(diamond_purchase_amount)
-                    logger.info(f"{diamond_purchase_amount}")
+                    logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
 
-
+            logger.info(f"{diamond_purchase_amount}")
                 
             # Purchase 22KT
             Wastage_Rate = 0
