@@ -2,6 +2,7 @@ import frappe
 import pyodbc
 import os
 import pandas as pd
+from frappe.utils.logger import get_logger
 
 
 value = os.getenv('sjodbc')
@@ -62,6 +63,8 @@ def set_target_stock(target_stock):
     
 
 def get_stock_data(from_date, to_date):
+    logger = frappe.logger("diamond_ideal")
+    logger.setLevel("INFO")
     con = connect()
     cursor = con.cursor()
 
@@ -77,12 +80,12 @@ DECLARE
 SELECT 
     lb.LabelNo,
     lb.NetWt,
+    lb.DiamondWt,
     lb.ItemMstID,
     lb.BranchID,
     lb.VouDate,
     lb.NextVouDate,
     lt.LatestItemMstID,
-    lt.LatestVarietyMstId,
     lt.ItemName,
     lt.BranchShortCode
 INTO #DLabelData
@@ -168,7 +171,7 @@ SELECT
     BranchShortCode,
     WeightRange,
     COUNT(DISTINCT LabelNo) AS LabelCount,
-    SUM(NetWt) AS TotalNetWt,
+    SUM(DiamondWt) AS TotalNetWt,
     COUNT(DISTINCT ActiveDate) AS TotalActiveDays
 FROM #DLabelDays
 GROUP BY 
@@ -184,6 +187,8 @@ ORDER BY
 
     '''
 
+
+
     cursor.execute(full_query, (from_date, to_date))
 
     # Skip all intermediate non-result sets until we reach the final SELECT
@@ -195,9 +200,10 @@ ORDER BY
                 break
         except pyodbc.ProgrammingError:
             break
-
+   
     # Now fetch the actual data
     rows = cursor.fetchall()
+    logger.info(f"{rows}")
     
     frappe.db.sql("TRUNCATE TABLE `tabStockDataOfDiamondForIdeal`")
     frappe.db.commit()
@@ -219,8 +225,8 @@ ORDER BY
 
     values = []
     for i, row in enumerate(rows, start=1):
-        total_net_wt=row[8]
-        days_present=row[9]
+        total_net_wt=row[6]
+        days_present=row[7]
         avg_stock=round((total_net_wt/days_present),2)
         values.append((str(i),) + tuple(row)+(avg_stock,))
 
@@ -236,6 +242,9 @@ ORDER BY
 def get_sale_data(from_date, to_date):
     con = connect()
     cursor = con.cursor()
+    
+    logger = frappe.logger("diamond_ideal")
+    logger.setLevel("INFO")
 
     full_query = r'''
     ;WITH Base AS (
@@ -299,7 +308,7 @@ SELECT
     ItemName,
     WeightRange,
     COUNT(*) AS LabelCount,
-    SUM(NetWt) AS TotalNetWt
+    SUM(DiamondWt) AS TotalNetWt
 FROM Base
 GROUP BY
     BranchID,
@@ -364,6 +373,8 @@ import json
 
 @frappe.whitelist(allow_guest=True)
 def calculate_ideal_stock():
+    logger = frappe.logger("diamond_ideal")
+    logger.setLevel("INFO")
     query = """
     SELECT branch, item, weight_range, avg_stock ,branch_id ,item_id
     FROM `tabStockDataOfDiamondForIdeal` """
@@ -397,15 +408,16 @@ def calculate_ideal_stock():
     df["Stock_Weight"] = df["Stock_Weight"].astype(float)
 
 
+
     # Using apply with resetting index
     df_gast = df.groupby(["Branch", "Item"]).apply(
     lambda g: g.assign(GAST=round(g["Sales_Weight"].sum() / g["Stock_Weight"].sum(),2) if g["Stock_Weight"].sum() > 0 else 0)
 ).reset_index(drop=True)
 
-    # Now merge the result back into the original DataFrame based on the common index
-    df = df.merge(df_gast[["Branch", "Item",  "GAST"]], on=["Branch", "Item", "Variety"], how="inner")
-    df = df.drop_duplicates(subset=["Branch", "Item",  "Sales_Weight", "Stock_Weight"])
 
+    # Now merge the result back into the original DataFrame based on the common index
+    df = df.merge(df_gast[["Branch", "Item",  "GAST"]], on=["Branch", "Item"], how="inner")
+    df = df.drop_duplicates(subset=["Branch", "Item",  "Sales_Weight", "Stock_Weight"])
 
 
     # --- Group average sales ---
@@ -447,7 +459,6 @@ def calculate_ideal_stock():
         num1, num2 = [float(x.strip()) for x in row["Weight_Range"].split('-')]
         mid = (num1 + num2) / 2
         return mid
-
     mid_wt = df.apply(mid_weight, axis=1)
     # --- Step 8: Calculate difference (for stock correction) ---
     df["Correction"] = df["Ideal_Stock"] - df["Stock_Weight"]
@@ -479,7 +490,6 @@ def calculate_ideal_stock():
         "ideal_pcs",
         "target_pcs"
     ]
-
     # Convert fetched data into list of tuples
 
     db_insert_data=df[["Branch Id_x","Item Id_x","Branch", "Item",  "Weight_Range", "Sales_Weight", "Stock_Weight","STR", "GAST", "Quadrant", "Ideal_Stock", "Ideal_Stock","Ideal_Pcs","Ideal_Pcs"]].values.tolist()

@@ -7,7 +7,7 @@
  "field_order": [
   "branch_id",
   "item_id",
-  "weigth_range",
+  "weight_range",
   "sales_weight",
   "stock_weight",
   "stock_turn",
@@ -34,11 +34,6 @@
    "label": "Item Id"
   },
   {
-   "fieldname": "weigth_range",
-   "fieldtype": "Data",
-   "label": "Weigth Range"
-  },
-  {
    "fieldname": "sales_weight",
    "fieldtype": "Data",
    "label": "Sales Weight"
@@ -60,7 +55,7 @@
   },
   {
    "fieldname": "quadrant",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "Quadrant"
   },
   {
@@ -101,12 +96,17 @@
    "fieldname": "variety",
    "fieldtype": "Data",
    "label": "Variety"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Data",
+   "label": "Weight Range"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-15 11:24:48.951558",
+ "modified": "2026-01-25 13:27:19.763929",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ideal_Stock_For_Diamond",
