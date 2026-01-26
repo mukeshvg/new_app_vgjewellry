@@ -94,6 +94,8 @@ def execute(filters=None):
     global_max_variety_wastage={}
     one_unique_id=""
     
+    all_ready_label_transaction=[]
+
     for branch in branch_array:
         table="ItemMst"
         columns=["ItemName","ItemMstID"]
@@ -224,9 +226,16 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
+            LabelTransID= int(slr['LabelTransID'])
+            if LabelTransID in all_ready_label_transaction:
+                continue
+            else:
+                all_ready_label_transaction.append(LabelTransID);
+            logger.info(f"{slr['LabelTransID']}")    
+            logger.info(f"-----------")    
             UniqueLabelID=slr['UniqueLabelID']
             #UniqueLabelID = slr.get('UniqueLabelID')
             #if UniqueLabelID == "":
@@ -344,7 +353,7 @@ def execute(filters=None):
                     diamond_purchase_amount=round(diamond_purchase_amount)
                     #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
 
-            #logger.info(f"{diamond_purchase_amount}")
+            #logger.info(f"this is {diamond_purchase_amount}")
                 
             # Purchase 22KT
             Wastage_Rate = 0
@@ -444,6 +453,8 @@ def execute(filters=None):
                 LabourAmt += float(return_array[UniqueLabelID]['labour_amount'])
                 #Discount += float(return_array[UniqueLabelID]['discount'])
                 Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
+                diamond_purchase_amount= float(diamond_purchase_amount)
+                diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
            
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
@@ -453,6 +464,9 @@ def execute(filters=None):
 
             return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin)}
             one_unique_id=UniqueLabelID
+
+
+            #logger.info(f"this is {return_array}")
 
         
         for uld in check_wastage:
