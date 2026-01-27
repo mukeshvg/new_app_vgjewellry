@@ -234,8 +234,8 @@ def execute(filters=None):
                 continue
             else:
                 all_ready_label_transaction.append(LabelTransID);
-            logger.info(f"{slr['LabelTransID']}")    
-            logger.info(f"-----------")    
+            #logger.info(f"{slr['LabelTransID']}")    
+            #logger.info(f"-----------")    
             UniqueLabelID=slr['UniqueLabelID']
             #UniqueLabelID = slr.get('UniqueLabelID')
             #if UniqueLabelID == "":
@@ -323,6 +323,7 @@ def execute(filters=None):
 
             #logger.info(f"{all_diamond_pcs}")
             diamond_purchase_amount=0
+            diamond_in_product=""
             for i in all_diamond_pcs:
                 if i['SizeID']==0 or i["SizeID"]== 1:
                     diamond_purchase_amount+= i["cost"]
@@ -348,7 +349,8 @@ def execute(filters=None):
                         },
                         "rate"
                     ) or 0
-
+                    
+                    diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''} {dia_color or ''} {dia_clarity or ''}\n"
                     diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
                     diamond_purchase_amount=round(diamond_purchase_amount)
                     #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
@@ -451,7 +453,8 @@ def execute(filters=None):
                 NetWt += float(return_array[UniqueLabelID]['net_wt'])
                 LabourAmt = float(LabourAmt)
                 LabourAmt += float(return_array[UniqueLabelID]['labour_amount'])
-                #Discount += float(return_array[UniqueLabelID]['discount'])
+                Discount= float(Discount)
+                Discount += float(return_array[UniqueLabelID]['discount'])
                 Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
                 diamond_purchase_amount= float(diamond_purchase_amount)
                 diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
@@ -462,7 +465,9 @@ def execute(filters=None):
             Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)
             margin = float(Sales_Amt) - Purchase_Amt
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin)}
+            margin_percentage= round((margin / Purchase_Amt * 100),2);
+
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
 
 
