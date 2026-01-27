@@ -44,6 +44,7 @@
    "bold": 1,
    "fieldname": "shape",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Shape",
    "options": "Diamond_Shape"
   },
@@ -56,12 +57,14 @@
   {
    "fieldname": "color",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Color",
    "options": "Diamond_Color"
   },
   {
    "fieldname": "clarity",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Clarity",
    "options": "Diamond_Clarity"
   },
@@ -103,7 +106,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-13 13:06:38.703356",
+ "modified": "2026-01-21 07:55:12.478742",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_Purchase_Rate",
