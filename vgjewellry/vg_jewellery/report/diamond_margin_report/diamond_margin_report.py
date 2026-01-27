@@ -327,6 +327,9 @@ def execute(filters=None):
             for i in all_diamond_pcs:
                 if i['SizeID']==0 or i["SizeID"]== 1:
                     diamond_purchase_amount+= i["cost"]
+                    dia_style_in_product= diamond_style[i['StyleID']]
+                    dia_shape=shape_master.get(dia_style_in_product)
+                    diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''}\n"
                 else:    
                     dia_size_in_product=diamond_size[i['SizeID']]
                     dia_color=diamond_size_map_master[dia_size_in_product]["color"]
@@ -458,6 +461,7 @@ def execute(filters=None):
                 Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
                 diamond_purchase_amount= float(diamond_purchase_amount)
                 diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
+                diamond_in_product += return_array[UniqueLabelID]['diamond_in_product']
            
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
