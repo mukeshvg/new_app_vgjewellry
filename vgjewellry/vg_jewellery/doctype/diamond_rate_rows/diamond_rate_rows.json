@@ -23,40 +23,47 @@
   {
    "fieldname": "shape",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Shape",
    "options": "Diamond_Shape"
   },
   {
    "fieldname": "color",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Color",
    "options": "Diamond_Color"
   },
   {
    "fieldname": "clarity",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Clarity",
    "options": "Diamond_Clarity"
   },
   {
    "fieldname": "date_rate",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Rate"
   },
   {
    "fieldname": "gsize",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "GSize",
    "options": "Diamond_Gsize"
   },
   {
    "fieldname": "min_carat_weight",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Min carat weight"
   },
   {
    "fieldname": "max_carat_weight",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Max carat weight"
   },
   {
@@ -78,6 +85,7 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Date"
   },
   {
@@ -91,7 +99,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-09 18:32:16.222290",
+ "modified": "2026-01-28 10:43:43.520434",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_rate_rows",

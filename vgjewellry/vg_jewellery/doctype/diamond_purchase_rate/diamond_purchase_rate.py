@@ -10,13 +10,13 @@ class Diamond_Purchase_Rate(Document):
         self.save_diamond_rate_in_child()
    
     def save_diamond_rate_in_child(self):
-        if self.is_new():
-            return
+        #if self.is_new():
+        #    return
 
-        old_value = frappe.db.get_value("Diamond_Purchase_Rate", self.name, "rate")
+        #old_value = frappe.db.get_value("Diamond_Purchase_Rate", self.name, "rate")
 
-        if (old_value or "") == (self.rate or ""):
-            return
+        #if (old_value or "") == (self.rate or ""):
+        #    return
 
         self.append("diamond_rate_rows", {
             "shape":self.shape,
