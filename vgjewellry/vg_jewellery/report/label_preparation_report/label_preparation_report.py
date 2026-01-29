@@ -99,7 +99,7 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
         data.append({
         "receive_date": current_date,
         "total_label_prepared": labels_date.get(formatted_date, 0),
-        "receive_pcs": data2.get(formatted_date,0)
+        "total_receive_pcs": data2.get(formatted_date,0)
     })
 
         current_date += timedelta(days=1)
