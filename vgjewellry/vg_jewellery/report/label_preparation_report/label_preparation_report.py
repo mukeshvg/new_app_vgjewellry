@@ -34,7 +34,10 @@ def execute(filters=None):
         user_array[row_user.UsermastID]=row_user.UserName
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
-    date_query=" vat.VDate>='"+from_date+"' and vat.VDate<='"+to_date+"'"
+
+    from_date_query='2025-10-29';
+
+    date_query=" vat.VDate>='"+from_date_query+"' and vat.VDate<='"+to_date+"'"
     con = connect_ho()
     cursor=con.cursor()
 
@@ -88,7 +91,7 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
     #    d["total_label_prepared"] = labels_date.get(d.get(date_key), 0)
     
 
-    start_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+    start_date = datetime.strptime(from_date_query, "%Y-%m-%d").date()
     end_date = datetime.strptime(to_date, "%Y-%m-%d").date()
 
     data=[]
@@ -108,8 +111,8 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
         todays_remaining = total_label - prepared_label
 
 
-
-        data.append({
+        if current_date >= from_date:
+            data.append({
         "receive_date": current_date,
         "yesterday_remaining":yesterday_remaining,
         "total_label_prepared": prepared_label,
