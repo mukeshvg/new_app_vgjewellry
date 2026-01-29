@@ -71,8 +71,14 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
 
     data2={}
     for d in data1:
-        ddate = d['receive_date'].strftime("%d-%m-%Y")
-        data2[ddate]=d["total_receive_pcs"]
+        rdate = d.get('receive_date')
+        if isinstance(rdate, (datetime, date)):
+            ddate = rdate.strftime("%d-%m-%Y")
+        elif isinstance(rdate, str):
+            ddate = datetime.strptime(rdate, "%Y-%m-%d").strftime("%d-%m-%Y")
+        else:
+            ddate = str(rdate)
+        data2[ddate] = d.get("total_receive_pcs", 0)    
         logger.info(f"{data2}")
 
 
