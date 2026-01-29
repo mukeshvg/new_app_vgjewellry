@@ -32,7 +32,8 @@ def execute(filters=None):
     user_array={}
     for row_user in rows_user:
         user_array[row_user.UsermastID]=row_user.UserName
-    from_date = filters.get("from_date")
+    from_date_str = filters.get("from_date")
+    from_date = datetime.strptime(from_date_str, "%Y-%m-%d").date()
     to_date = filters.get("to_date")
 
     from_date_query='2025-10-29';
