@@ -3,7 +3,8 @@ import os
 import pyodbc
 import pymysql
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta , date
+
 from frappe.utils.logger import get_logger
 
 
