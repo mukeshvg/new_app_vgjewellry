@@ -1,9 +1,99 @@
 import frappe
+import os
+import pyodbc
+import pymysql
+import pandas as pd
+from datetime import datetime, timedelta
+from frappe.utils.logger import get_logger
+
+
+value_ornsys= os.getenv('ornsysodbc')
+value_ho = os.getenv('hoodbc')
+def connect_ornsys():
+    conn = pyodbc.connect(value_ornsys,autocommit=True)
+    conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
+    return conn
+
+def connect_ho():
+    conn = pyodbc.connect(value_ho,autocommit=True)
+    conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
+    return conn
 
 
 def execute(filters=None):
+    con_ornysis=connect_ornsys();
+    cursor_ornysis=con_ornysis.cursor()
+    user_qry ='''
+    SELECT UsermastID , UserName  FROM UserMaster
+    '''
+    cursor_ornysis.execute(user_qry)
+    rows_user=cursor_ornysis.fetchall()
+    user_array={}
+    for row_user in rows_user:
+        user_array[row_user.UsermastID]=row_user.UserName
+    from_date = filters.get("from_date")
+    to_date = filters.get("to_date")
+    date_query=" vat.VDate>='"+from_date+"' and vat.VDate<='"+to_date+"'"
+    con = connect_ho()
+    cursor=con.cursor()
+
+    qry =f'''
+        SELECT vat.UserID as systemUserName,vat.VDate as VDate,vat.VTime as VTime,lt.pcs as Pcs ,vat.LabelNo as LabelNo, lt.NetWt as NetWt ,lt.GrossWt as GrossWt ,lt.SupplierCode,scm.SupplierName  as SupplierName,im.ItemName as ItemName , vm.VarietyName  as VarietyName
+FROM VoucherActionTran AS vat
+left join LabelTransaction lt 
+on vat.VouId =lt.VouID 
+left join SupplierCodeMaster scm  
+on scm.SupplierID  =lt.SupplierCode 
+left join ItemMst im
+on lt.ItemMstID =im.ItemMstID
+left join VarietyMst vm
+on lt.VarietyMstId =vm.VarietyMstId
+WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by vat.VoucherActionTranId
+    '''
+    cursor.execute(qry)
+    rows = cursor.fetchall()
+    labels_date={}
+    for row in rows:
+        formatted_date = row.VDate.strftime("%d-%m-%Y") if row.VDate else ""
+        if formatted_date not in labels_date:
+            labels_date[formatted_date] = 1
+        else:
+            labels_date[formatted_date] += 1
+
+
     columns = get_columns()
-    data = get_data(filters)
+    data1 = get_data(filters)
+
+    logger = frappe.logger("label")
+    logger.setLevel("INFO")
+    logger.info(f"{data1}")
+
+
+    data2={}
+    for d in data1:
+        data2[d['receive_date']]=d["total_receive_pcs"]
+
+
+    #for d in data:
+    #    date_key = d.get("receive_date")
+    #    d["total_label_prepared"] = labels_date.get(d.get(date_key), 0)
+    
+
+    start_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+    end_date = datetime.strptime(to_date, "%Y-%m-%d").date()
+
+    data=[]
+    current_date = start_date
+    while current_date <= end_date:
+        formatted_date = current_date.strftime("%d-%m-%Y")
+
+        data.append({
+        "receive_date": current_date,
+        "total_label_prepared": labels_date.get(formatted_date, 0),
+        "receive_pcs": data2.get(formatted_date,0)
+    })
+
+        current_date += timedelta(days=1)
     return columns, data
 
 def get_columns():
@@ -19,7 +109,13 @@ def get_columns():
             "fieldname": "total_receive_pcs",
             "fieldtype": "Int",
             "width": 160
-        }
+        },
+        {
+            "label": "Total Lable Prepared" ,
+            "fieldname": "total_label_prepared",
+            "fieldtype": "Data",
+            "width": 140
+        },
     ]
 
 def get_data(filters):
