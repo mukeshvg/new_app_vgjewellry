@@ -93,15 +93,33 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
 
     data=[]
     current_date = start_date
+    yesterday_remaining = 0
     while current_date <= end_date:
         formatted_date = current_date.strftime("%d-%m-%Y")
 
+        total_label=yesterday_remaining + data2.get(formatted_date,0)
+
+        prepared_label=labels_date.get(formatted_date, 0)
+
+        if total_label < prepared_label:
+            prepared_label= total_label
+
+
+        todays_remaining = total_label - prepared_label
+
+
+
         data.append({
         "receive_date": current_date,
-        "total_label_prepared": labels_date.get(formatted_date, 0),
-        "total_receive_pcs": data2.get(formatted_date,0)
+        "yesterday_remaining":yesterday_remaining,
+        "total_label_prepared": prepared_label,
+        "total_receive_pcs": data2.get(formatted_date,0),
+        "todays_carry_forward": todays_remaining
     })
 
+        yesterday_remaining = 0
+        if todays_remaining >=0:
+            yeterday_remaining= todays_remaining
         current_date += timedelta(days=1)
     return columns, data
 
@@ -114,6 +132,12 @@ def get_columns():
             "width": 120
         },
         {
+            "label": "Yesterday Remaining",
+            "fieldname": "yesterday_remaining",
+            "fieldtype": "Int",
+            "width": 160
+        },
+        {
             "label": "Total Received PCS",
             "fieldname": "total_receive_pcs",
             "fieldtype": "Int",
@@ -124,6 +148,12 @@ def get_columns():
             "fieldname": "total_label_prepared",
             "fieldtype": "Data",
             "width": 140
+        },
+        {
+            "label": "Todays Remaining",
+            "fieldname": "todays_carry_forward",
+            "fieldtype": "Int",
+            "width": 160
         },
     ]
 
