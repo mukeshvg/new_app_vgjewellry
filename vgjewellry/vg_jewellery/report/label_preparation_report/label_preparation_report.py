@@ -69,8 +69,8 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
     columns = get_columns()
     data1 = get_data(filters)
 
-    logger = frappe.logger("label")
-    logger.setLevel("INFO")
+    #logger = frappe.logger("label")
+    #logger.setLevel("INFO")
     #logger.info(f"{data1}")
 
 
@@ -84,12 +84,9 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
         else:
             ddate = str(rdate)
         data2[ddate] = d.get("total_receive_pcs", 0)    
-        logger.info(f"{data2}")
+        #logger.info(f"{data2}")
 
 
-    #for d in data:
-    #    date_key = d.get("receive_date")
-    #    d["total_label_prepared"] = labels_date.get(d.get(date_key), 0)
     
 
     start_date = datetime.strptime(from_date_query, "%Y-%m-%d").date()
