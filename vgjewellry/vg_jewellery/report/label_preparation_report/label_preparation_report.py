@@ -117,9 +117,10 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
         "todays_carry_forward": todays_remaining
     })
 
-        yesterday_remaining = 0
         if todays_remaining >=0:
-            yeterday_remaining= todays_remaining
+            yesterday_remaining= todays_remaining
+        else:
+            yesterday_remaining=0
         current_date += timedelta(days=1)
     return columns, data
 
