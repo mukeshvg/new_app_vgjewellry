@@ -66,12 +66,14 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
 
     logger = frappe.logger("label")
     logger.setLevel("INFO")
-    logger.info(f"{data1}")
+    #logger.info(f"{data1}")
 
 
     data2={}
     for d in data1:
-        data2[d['receive_date']]=d["total_receive_pcs"]
+        ddate = datetime.strptime(d['receive_date'], "%Y-%m-%d").date()
+        data2[ddate]=d["total_receive_pcs"]
+        logger.info(f"{data2}")
 
 
     #for d in data:
