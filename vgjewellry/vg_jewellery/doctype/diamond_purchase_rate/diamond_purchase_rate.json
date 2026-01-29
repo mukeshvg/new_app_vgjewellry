@@ -95,7 +95,7 @@
   },
   {
    "fieldname": "date",
-   "fieldtype": "Data",
+   "fieldtype": "Date",
    "label": "Date"
   },
   {
@@ -106,7 +106,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-21 07:55:12.478742",
+ "modified": "2026-01-29 14:13:53.386358",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_Purchase_Rate",
