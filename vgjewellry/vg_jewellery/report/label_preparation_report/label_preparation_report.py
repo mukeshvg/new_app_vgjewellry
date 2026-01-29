@@ -16,7 +16,7 @@ def get_columns():
         },
         {
             "label": "Total Received PCS",
-            "fieldname": "receive_pcs   ",
+            "fieldname": "total_receive_pcs",
             "fieldtype": "Int",
             "width": 160
         }
