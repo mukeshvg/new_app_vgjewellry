@@ -26,7 +26,7 @@ def get_data(filters):
     return frappe.db.sql("""
         SELECT
             receive_date,
-            SUM(receive_pcs) AS total_received_pcs
+            SUM(CAST(receive_pcs AS UNSIGNED)) AS total_receive_pcs
         FROM
             `tabReceived From NCH And Inhouse`
         GROUP BY
