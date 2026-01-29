@@ -4,13 +4,23 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-01-15 11:17:12.817636",
+ "modified": "2026-01-29 18:51:01.369036",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "ideal-stock-for-diam",
  "owner": "Administrator",
  "page_name": "ideal-stock-for-diam",
- "roles": [],
+ "roles": [
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Purchase Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

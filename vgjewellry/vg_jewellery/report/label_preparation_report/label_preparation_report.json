@@ -25,7 +25,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2026-01-29 15:07:04.516321",
+ "modified": "2026-01-29 18:49:42.274804",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Label Preparation Report",
@@ -36,10 +36,13 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "System Manager"
+   "role": "HR"
   },
   {
-   "role": "HR"
+   "role": "Administrator"
+  },
+  {
+   "role": "Admin"
   }
  ],
  "timeout": 0
