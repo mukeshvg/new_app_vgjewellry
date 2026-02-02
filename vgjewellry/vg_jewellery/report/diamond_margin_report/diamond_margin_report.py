@@ -369,6 +369,30 @@ def execute(filters=None):
                         order_by="rate desc"
                     ) or 0
                     
+                    if rate==0:
+                        rate = frappe.db.get_value(
+                        "Diamond_Purchase_Rate",
+                        {
+                            "clarity": dia_clarity,
+                            "color": dia_color,
+                            "min_carat_weight": ("<=", one_diamond_wt),
+                            "max_carat_weight": (">=", one_diamond_wt),
+                        },
+                        "rate",
+                        order_by="rate desc"
+                    ) or 0
+                    
+                    if rate==0:
+                        rate = frappe.db.get_value(
+                        "Diamond_Purchase_Rate",
+                        {
+                            "min_carat_weight": ("<=", one_diamond_wt),
+                            "max_carat_weight": (">=", one_diamond_wt),
+                        },
+                        "rate",
+                        order_by="rate desc"
+                    ) or 0
+                    
                     diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''} {dia_color or ''} {dia_clarity or ''}\n"
                     diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
                     diamond_purchase_amount=round(diamond_purchase_amount)
