@@ -217,16 +217,20 @@ def execute(filters=None):
             supplier[it['SupplierID']]={"n":it['SupplierName'],"c":it["SupplierCode"]}
 
         table="LabelTransaction"
-        columns=["LabelTransID","UserID","UniqueLabelID"]
+        columns=["LabelTransID","UserID","UniqueLabelID","DiamondPcs"]
         condition="VouType='ST'   and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'"
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
+        diamond_pcs_dict={}
         for sur in select_user_res:
             user_label_res[sur['UniqueLabelID']]=user_res[sur['UserID']]['UserName'] if sur['UserID'] in user_res else ""
+            if sur['UniqueLabelID'] not in diamond_pcs_dict:
+                diamond_pcs_dict[sur['UniqueLabelID']]=0;
+            diamond_pcs_dict[sur['UniqueLabelID']] += sur["DiamondPcs"]    
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             LabelTransID= int(slr['LabelTransID'])
@@ -286,7 +290,11 @@ def execute(filters=None):
                     all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"PcsName":ltr["PcsName"]})
                 else:
                     DiamondAmt+=float(ltr["MetalAmt"])
-                    all_diamond_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount']})
+                    pcs=ltr["Pcs"]
+                    if ltr["Pcs"]== 0 or ltr["Pcs"]=="0":
+                        if UniqueLabelID in diamond_pcs_dict:
+                            pcs= diamond_pcs_dict[UniqueLabelID]
+                    all_diamond_pcs.append({"Pcs":pcs,"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount'],"DiamondAmt":ltr["MetalAmt"]})
             if VarietyMstId in sales_labour_dict:        
                 for sld_obj in  sales_labour_dict[VarietyMstId]:
                     if sld_obj["from_wt"]<= NetWt and sld_obj["to_wt"] >= NetWt:
@@ -298,7 +306,7 @@ def execute(filters=None):
                 LabourAmt = slr["LabourAmount"]
 
             
-
+            
             #Discount Load From Table Directly
             VouTranID=str(slr["VouTranID"])
             table="DiscountTranNew"
@@ -340,8 +348,9 @@ def execute(filters=None):
                     dia_shape=shape_master.get(dia_style_in_product)
                     #logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
                     one_diamond_wt= round(i['NetWt']/i['Pcs'],4) if i['Pcs'] != 0 else 0
+                    #logger.info(f"--one diamond wt{one_diamond_wt}")
                     dia_supplier= slr['SupplierCode']
-                    rate = 0
+                    rate = Decimal("0")
                     rate = frappe.db.get_value(
                        "Diamond_Purchase_Rate",
                         {
@@ -353,9 +362,9 @@ def execute(filters=None):
                             "max_carat_weight": (">=", one_diamond_wt),
                         },
                         "rate"
-                    ) or 0
+                    ) or Decimal("0")
 
-                    if rate==0:
+                    if rate==0 or rate=="0":
                         rate = frappe.db.get_value(
                         "Diamond_Purchase_Rate",
                         {
@@ -367,7 +376,7 @@ def execute(filters=None):
                         },
                         "rate",
                         order_by="rate desc"
-                    ) or 0
+                    ) or Decimal("0")
                     
                     if rate==0:
                         rate = frappe.db.get_value(
@@ -380,7 +389,7 @@ def execute(filters=None):
                         },
                         "rate",
                         order_by="rate desc"
-                    ) or 0
+                    ) or Decimal("0")
                     
                     if rate==0:
                         rate = frappe.db.get_value(
@@ -391,11 +400,14 @@ def execute(filters=None):
                         },
                         "rate",
                         order_by="rate desc"
-                    ) or 0
-                    
+                    ) or Decimal("0")
                     diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''} {dia_color or ''} {dia_clarity or ''}\n"
                     diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
+                    if rate==0 or rate=="0" :
+                        if float(i['NetWt'])>=0.3 :
+                            diamond_purchase_amount= float(i['DiamondAmt'])*0.9
                     diamond_purchase_amount=round(diamond_purchase_amount)
+                    #logger.info(f"---{rate}");
                     #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
 
             #logger.info(f"this is {diamond_purchase_amount}")
@@ -492,6 +504,7 @@ def execute(filters=None):
                         first_charge+= str(Other_Charge[char])
                 other_charge_value+=int(first_charge) if first_charge else 0
             Sales_Amt = Sale_Rate + float(LabourAmt) + float(OtherChargeSale) - float(Discount)
+            new_diamond_amt=0
             if UniqueLabelID in return_array:
                 NetWt += float(return_array[UniqueLabelID]['net_wt'])
                 LabourAmt = float(LabourAmt)
@@ -503,6 +516,7 @@ def execute(filters=None):
                 diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
                 diamond_in_product += return_array[UniqueLabelID]['diamond_in_product']
                 total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
+                DiamondAmt+= return_array[UniqueLabelID]['diamond_amount']
            
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
