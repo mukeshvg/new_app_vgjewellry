@@ -122,12 +122,15 @@ def execute(filters=None):
             variety[it['VarietyMstId']]=it['VarietyName']
         
         table="DiamondStyleMst"
-        columns=["StyleName","DiamondStyleMstID"]
+        columns=["StyleName","DiamondStyleMstID","EffectToTradOtChrg"]
         condition="DiamondStyleMstID >0"
         dia_size_res=get_sql_server_data(branch,table,columns,condition)
         diamond_style = {}
+        color_stone = []
         for it in dia_size_res:
             diamond_style[it['DiamondStyleMstID']]=it['StyleName']
+            if it["EffectToTradOtChrg"]== 3001 or it["EffectToTradOtChrg"]=="3001":
+                color_stone.append(it["DiamondStyleMstID"]);
         
         table="DiamondSizeMst"
         columns=["DiamondSizeMstID","SizeName"]
@@ -230,7 +233,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             LabelTransID= int(slr['LabelTransID'])
@@ -336,10 +339,14 @@ def execute(filters=None):
             for i in all_diamond_pcs:
                 total_diamond_wt+=float(i['NetWt'])
                 if i['SizeID']==0 or i["SizeID"]== 1:
-                    diamond_purchase_amount+= i["cost"]
+                    if i['StyleID'] in color_stone:
+                        diamond_purchase_amount += float(0.7) * float(i["cost"])
+                    else:    
+                        diamond_purchase_amount+= float(i["cost"])
                     dia_style_in_product= diamond_style[i['StyleID']]
                     dia_shape=shape_master.get(dia_style_in_product)
                     diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''}\n"
+                    #logger.info(f"----{diamond_purchase_amount}")
                 else:    
                     dia_size_in_product=diamond_size[i['SizeID']]
                     dia_color=diamond_size_map_master[dia_size_in_product]["color"]
@@ -408,7 +415,7 @@ def execute(filters=None):
                             diamond_purchase_amount= float(i['DiamondAmt'])*0.9
                     diamond_purchase_amount=round(diamond_purchase_amount)
                     #logger.info(f"---{rate}");
-                    #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}")
+                    #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}--{diamond_purchase_amount}")
 
             #logger.info(f"this is {diamond_purchase_amount}")
                 
@@ -526,8 +533,13 @@ def execute(filters=None):
 
             margin_percentage= round((margin / Purchase_Amt * 100),2)
             total_diamond_wt = round(total_diamond_wt,2)
+            
+            is_plain="no"
+            if total_diamond_wt == 0 or total_diamond_wt=="0":
+                is_plain="yes"
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
+
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
 
 
