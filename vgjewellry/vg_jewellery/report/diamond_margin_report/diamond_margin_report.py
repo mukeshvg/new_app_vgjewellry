@@ -345,7 +345,7 @@ def execute(filters=None):
                     total_stone_wt=float(i['NetWt'])
                 else:    
                     total_diamond_wt+=float(i['NetWt'])
-                if i['SizeID']==0 or i["SizeID"]== 1:
+                if i['SizeID']==0 or i["SizeID"]== 1 or i["SizeID"]=="1" or i["SizeID"]=="N":
                     if i['StyleID'] in color_stone:
                         stone_purchase_amount += float(0.7) * float(i["cost"])
                     else:    
