@@ -5,6 +5,8 @@ import pymysql
 from datetime import datetime
 from decimal import Decimal
 from frappe.utils.logger import get_logger
+import re
+
 
 
 value_ornsys= os.getenv('ornsysodbc')
@@ -284,6 +286,7 @@ def execute(filters=None):
             DiamondAmt =0 
             LabourAmt=0
             total_diamond_wt=0
+            total_stone_wt=0
             all_diamond_pcs =[]
             all_metal_pcs =[]
             for ltr in lts_res:
@@ -337,7 +340,10 @@ def execute(filters=None):
             diamond_purchase_amount=0
             diamond_in_product=""
             for i in all_diamond_pcs:
-                total_diamond_wt+=float(i['NetWt'])
+                if i['StyleID'] in color_stone:
+                    total_stone_wt=float(i['NetWt'])
+                else:    
+                    total_diamond_wt+=float(i['NetWt'])
                 if i['SizeID']==0 or i["SizeID"]== 1:
                     if i['StyleID'] in color_stone:
                         diamond_purchase_amount += float(0.7) * float(i["cost"])
@@ -523,6 +529,7 @@ def execute(filters=None):
                 diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
                 diamond_in_product += return_array[UniqueLabelID]['diamond_in_product']
                 total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
+                total_stone_wt += return_array[UniqueLabelID]['total_stone_wt']
                 DiamondAmt+= return_array[UniqueLabelID]['diamond_amount']
            
             # Calculate purchase rates and amounts
@@ -538,8 +545,9 @@ def execute(filters=None):
             if total_diamond_wt == 0 or total_diamond_wt=="0":
                 is_plain="yes"
 
+            new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
 
 
