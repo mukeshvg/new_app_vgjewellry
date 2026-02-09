@@ -338,6 +338,7 @@ def execute(filters=None):
 
             #logger.info(f"{all_diamond_pcs}")
             diamond_purchase_amount=0
+            stone_purchase_amount=0
             diamond_in_product=""
             for i in all_diamond_pcs:
                 if i['StyleID'] in color_stone:
@@ -346,7 +347,7 @@ def execute(filters=None):
                     total_diamond_wt+=float(i['NetWt'])
                 if i['SizeID']==0 or i["SizeID"]== 1:
                     if i['StyleID'] in color_stone:
-                        diamond_purchase_amount += float(0.7) * float(i["cost"])
+                        stone_purchase_amount += float(0.7) * float(i["cost"])
                     else:    
                         diamond_purchase_amount+= float(i["cost"])
                     dia_style_in_product= diamond_style[i['StyleID']]
@@ -528,6 +529,8 @@ def execute(filters=None):
                 diamond_purchase_amount= float(diamond_purchase_amount)
                 diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
                 diamond_in_product += return_array[UniqueLabelID]['diamond_in_product']
+                stone_purchase_amount= float(stone_purchase_amount)
+                stone_purchase_amount += float(return_array[UniqueLabelID]['stone_purchase_amount'])
                 total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
                 total_stone_wt += return_array[UniqueLabelID]['total_stone_wt']
                 DiamondAmt+= return_array[UniqueLabelID]['diamond_amount']
@@ -535,7 +538,7 @@ def execute(filters=None):
             # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
-            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)
+            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)+ float(stone_purchase_amount)
             margin = float(Sales_Amt) - Purchase_Amt
 
             margin_percentage= round((margin / Purchase_Amt * 100),2)
@@ -547,7 +550,7 @@ def execute(filters=None):
 
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
 
 
