@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:variety_id",
  "creation": "2025-11-18 14:06:32.457339",
@@ -8,7 +9,9 @@
  "field_order": [
   "variety_id",
   "variety_name",
-  "item_trade_mst_id"
+  "item_trade_mst_id",
+  "parent_variety",
+  "type"
  ],
  "fields": [
   {
@@ -26,12 +29,24 @@
    "fieldname": "item_trade_mst_id",
    "fieldtype": "Data",
    "label": "Item Trade Mst Id"
+  },
+  {
+   "fieldname": "parent_variety",
+   "fieldtype": "Link",
+   "label": "Parent Variety",
+   "options": "Ornate_Variety_Master"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "\nParent\nChild"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-08 12:42:18.499516",
+ "modified": "2026-02-06 15:21:38.951061",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Variety_Master",
