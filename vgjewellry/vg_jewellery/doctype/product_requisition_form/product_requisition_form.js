@@ -83,7 +83,7 @@ frappe.ui.form.on("Product_Requisition_Item", {
 
 		let row=locals[cdt][cdn];
 		frappe.call({
-			method: "vgjewellry.master_api.get_variety_from_item",
+			method: "vgjewellry.master_api.get_parent_variety_from_item",
 			args: { item: row.item },
 			callback(r) {
 				if (r && r.message && r.message) {

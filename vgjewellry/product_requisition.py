@@ -16,6 +16,13 @@ def get_product_details():
                 continue
             item_name=frappe.get_doc("Ornate_Item_Master",item.item)
             var_name=frappe.get_doc("Ornate_Variety_Master",item.variety)
+            varieties = frappe.get_all(
+               "Ornate_Variety_Master",
+                filters={
+                    "parent_variety": item.variety
+                },
+                fields=["name"]
+            )
             wt_name=frappe.get_doc("weight_range",item.weight_range)
             size_id= None
             size_name=""
@@ -23,14 +30,29 @@ def get_product_details():
                 sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
                 size_id =item.size
                 size_name= sz_name.size
-            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
+            variety_id_list = [v.name for v in varieties]
+
+            idea_stock = frappe.get_all(
+                        "Current_Stock_Ideal_Stock",
+                        filters={
+                            "branch_id": user_data.ornate_branch,
+                            "item_id": item.item,
+                            "variety_id": ["in", variety_id_list],  # list of varieties
+                            "weight_range": wt_name.weight_range
+                        },
+                        fields=["target_pcs", "stock_pcs"]
+                    )
+            #idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
             suggested=0;
             in_stock=0;
             if len(idea_stock)>0:
-                suggested=idea_stock[0]['target_pcs']
-                if suggested == None:
-                    suggested=0
-                in_stock=idea_stock[0]['stock_pcs']
+                for row in idea_stock:
+                    suggested += row.get("target_pcs") or 0
+                    #suggested=idea_stock[0]['target_pcs']
+                    #if suggested == None:
+                    #    suggested=0
+                    #in_stock=idea_stock[0]['stock_pcs']
+                    in_stock += row.get("stock_pcs") or 0
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
             owner=frappe.get_doc("User",req_doc.owner)
@@ -204,3 +226,75 @@ def replace_item_image(file, old_image, used_id):
 
     return new_file_url
 
+
+
+@frappe.whitelist()
+def get_product_details_new_format():
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+    user_data = frappe.get_doc("User",user)
+    all_item =[]
+    requisition= frappe.get_all("Product_Requisition_Form",filters={'branch':user_data.ornate_branch,'action_taken':['!=', 'Action Taken']})
+    for req in requisition:
+        new_req ={}
+        req_doc = frappe.get_doc("Product_Requisition_Form",req.name)
+        items = req_doc.product_details
+        item_in_req =[]
+        for item in items:
+            used_ids=[]
+            if item.manager_action!=None:
+                continue
+            item_name=frappe.get_doc("Ornate_Item_Master",item.item)
+            var_name=frappe.get_doc("Ornate_Variety_Master",item.variety)
+            wt_name=frappe.get_doc("weight_range",item.weight_range)
+            size_id= None
+            size_name=""
+            if item.size !="" and item.size !=None:
+                sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
+                size_id =item.size
+                size_name= sz_name.size
+            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
+            suggested=0;
+            in_stock=0;
+            if len(idea_stock)>0:
+                suggested=idea_stock[0]['target_pcs']
+                if suggested == None:
+                    suggested=0
+                in_stock=idea_stock[0]['stock_pcs']
+            diff = int(in_stock)- int(suggested)
+            used_ids.append({'f':req_doc.name,'p':item.name})
+            owner=frappe.get_doc("User",req_doc.owner)
+            item_data = {
+                    'id': item.name,
+                    'name': req_doc.name,
+                    'used_ids':str(used_ids),
+                    'item_id':item.item,
+                    'variety_id':item.variety,
+                    'wt_id':item.weight_range,
+                    'size_id':size_id,
+                    'branch':req_doc.branch,
+                    'item':item_name.item_name,
+                    'variety':var_name.variety_name,
+                    'weight_range':wt_name.weight_range,
+                    'size':size_name,
+                    'qty':item.qty,
+                    'pcs':item.pcs,
+                    'jota':item.jota,
+                    'suggested':suggested,
+                    'in_stock':in_stock,
+                    'diff':diff,
+                    'remark':req_doc.requester_remark,
+                    'remark_user':owner.full_name
+                    }
+            item_in_req.append(item_data)
+        new_req = {"id":req_doc.name,"requestedBy":req_doc.owner,"requestDate":req_doc.creation,"priority": 'high',"counter": 'Chain',"products":item_in_req}
+        all_item.append(new_req)
+    excess_reason=frappe.get_all("Excess_Approve_Reason")
+    excess_reason_ret =[]
+    for i in excess_reason:
+        excess_reason_ret.append({"value":i["name"],"label":i["name"]})
+    reject_reason=frappe.get_all("Reduce_Reject_Reason")
+    reject_reason_ret =[]
+    for i in reject_reason:
+        reject_reason_ret.append({"value":i["name"],"label":i["name"]})
+    return { 'all_item' :all_item , 'excess_reason':excess_reason_ret, 'reject_reason':reject_reason_ret}

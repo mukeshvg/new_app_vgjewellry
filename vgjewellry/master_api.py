@@ -51,3 +51,12 @@ def get_variety_from_item(item):
 
     return variety_ids
     
+@frappe.whitelist(allow_guest=True)
+def get_parent_variety_from_item(item):
+    query ='''
+    SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0 and type='Parent' ;
+    '''
+    data = frappe.db.sql(query, item, as_dict=True)
+    variety_ids = [row['variety_id'] for row in data]
+
+    return variety_ids
