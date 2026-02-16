@@ -70,8 +70,9 @@
   },
   {
    "fieldname": "rate",
-   "fieldtype": "Data",
-   "label": "Rate"
+   "fieldtype": "Float",
+   "label": "Rate",
+   "precision": "3"
   },
   {
    "fieldname": "min_carat_weight",
@@ -106,7 +107,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-16 14:54:10.879393",
+ "modified": "2026-02-16 15:58:21.002131",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Diamond_Purchase_Rate",
