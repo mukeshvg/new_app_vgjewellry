@@ -235,7 +235,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' and LabelNo='DTNM /   2713' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             LabelTransID= int(slr['LabelTransID'])
@@ -378,6 +378,8 @@ def execute(filters=None):
                         "rate"
                     ) or Decimal("0")
 
+                    #logger.info(f"n1---{rate}");
+
                     if rate==0 or rate=="0":
                         rate = frappe.db.get_value(
                         "Diamond_Purchase_Rate",
@@ -392,6 +394,7 @@ def execute(filters=None):
                         order_by="rate desc"
                     ) or Decimal("0")
                     
+                    #logger.info(f"n2---{rate}");
                     if rate==0:
                         rate = frappe.db.get_value(
                         "Diamond_Purchase_Rate",
@@ -404,6 +407,8 @@ def execute(filters=None):
                         "rate",
                         order_by="rate desc"
                     ) or Decimal("0")
+
+                    #logger.info(f"n3---{rate}");
                     
                     if rate==0:
                         rate = frappe.db.get_value(
@@ -415,13 +420,18 @@ def execute(filters=None):
                         "rate",
                         order_by="rate desc"
                     ) or Decimal("0")
+
+                    #logger.info(f"n4---{rate}");
                     diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''} {dia_color or ''} {dia_clarity or ''}\n"
-                    diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
-                    if rate==0 or rate=="0" :
+                    #logger.info(f"www--{dia_shape or ''} {i['NetWt'] or ''} {dia_color or ''} {dia_clarity or ''}--{rate}");
+                    if float(rate)>0:
+                        diamond_purchase_amount= float(diamond_purchase_amount)+ (float(rate) * float(i['NetWt']))
+                    elif rate==0 or rate=="0" :
                         if float(i['NetWt'])>=0.3 :
-                            diamond_purchase_amount= float(i['DiamondAmt'])*0.9
+                            diamond_purchase_amount += float(i['DiamondAmt'])*0.9
+                            #logger.info(f"nnn---{diamond_purchase_amount}--{i['DiamondAmt']}");
                     diamond_purchase_amount=round(diamond_purchase_amount)
-                    #logger.info(f"---{rate}");
+                    #logger.info(f"---{diamond_purchase_amount}");
                     #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}--{diamond_purchase_amount}")
 
             #logger.info(f"this is {diamond_purchase_amount}")
