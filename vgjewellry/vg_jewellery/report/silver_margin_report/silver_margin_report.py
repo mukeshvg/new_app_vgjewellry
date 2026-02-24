@@ -199,7 +199,7 @@ def execute(filters=None):
 
         table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID"]
-        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='LS925/   2794'"
+        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' "
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         for sur in select_user_res:
@@ -208,7 +208,6 @@ def execute(filters=None):
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','PurWastPer','PurLabourRate','PurLabourOn','PurLabourAmount','LabourRate']
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%'";    
-        condition="(VouType='SL' or VouType='SRT') and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='LS925/   2794'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         logger.info(f"{select_label_res}")
         for slr in select_label_res:
