@@ -65,8 +65,8 @@ def get_sql_server_data(branch,table,columns,condition ):
     return data
 
 def execute(filters=None):
-    logger = frappe.logger("diamond_margin")
-    logger.setLevel("INFO")
+    #logger = frappe.logger("diamond_margin")
+    #logger.setLevel("INFO")
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
@@ -235,7 +235,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             LabelTransID= int(slr['LabelTransID'])
