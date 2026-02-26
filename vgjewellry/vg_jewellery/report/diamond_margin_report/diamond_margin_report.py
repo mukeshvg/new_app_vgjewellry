@@ -341,20 +341,18 @@ def execute(filters=None):
             stone_purchase_amount=0
             diamond_in_product=""
             for i in all_diamond_pcs:
-                if i['StyleID'] in color_stone:
-                    total_stone_wt=float(i['NetWt'])
-                else:    
-                    total_diamond_wt+=float(i['NetWt'])
                 if i['SizeID']==0 or i["SizeID"]== 1 or i["SizeID"]=="1" or i["SizeID"]==11 or i["SizeID"]==10:
+                    total_stone_wt=float(i['NetWt'])
                     if i['StyleID'] in color_stone:
                         stone_purchase_amount += float(0.7) * float(i["cost"])
                     else:    
-                        diamond_purchase_amount+= float(i["cost"])
+                        stone_purchase_amount+= float(i["cost"])
                     dia_style_in_product= diamond_style[i['StyleID']]
                     dia_shape=shape_master.get(dia_style_in_product)
                     diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''}\n"
                     #logger.info(f"----{diamond_purchase_amount}")
-                else:    
+                else:   
+                    total_diamond_wt+=float(i['NetWt'])
                     dia_size_in_product=diamond_size[i['SizeID']]
                     dia_color=diamond_size_map_master[dia_size_in_product]["color"]
                     dia_clarity=diamond_size_map_master[dia_size_in_product]["clarity"]
