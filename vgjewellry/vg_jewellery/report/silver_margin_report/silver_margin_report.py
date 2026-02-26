@@ -220,7 +220,7 @@ def execute(filters=None):
             VouDate1 = slr['VouDate']
             VouDate = VouDate1.strftime("%Y-%m-%d")
             ItemTradMstId=slr['ItemTradMstId']
-            Metal_Rate=rate_master[VouDate][ItemTradMstId]
+            #Metal_Rate=rate_master[VouDate][ItemTradMstId]
             if VouDate not in rate_master or 4001 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4001) is None :
                 Base_Rate=0
             else:
