@@ -89,7 +89,7 @@ def execute(filters=None):
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    #branch_array=["valsad"]
+    branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -220,11 +220,12 @@ def execute(filters=None):
             VouDate1 = slr['VouDate']
             VouDate = VouDate1.strftime("%Y-%m-%d")
             ItemTradMstId=slr['ItemTradMstId']
-            #Metal_Rate=rate_master[VouDate][ItemTradMstId]
+            Metal_Rate=rate_master[VouDate][ItemTradMstId]
             if VouDate not in rate_master or 4001 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4001) is None :
                 Base_Rate=0
             else:
                 Base_Rate=rate_master[VouDate][4001]
+            #Metal_Rate = rate_master.get(VouDate, {}).get(ItemTradMstId, Base_Rate)    
             NetWt=float(slr['NetWt'])
             ItemMstID=slr['ItemMstID']
             item_name=items[ItemMstID]
@@ -247,15 +248,28 @@ def execute(filters=None):
             ItemTradMstId = slr['ItemTradMstId']
             Purchase_Purity = 0
             metal_name = ""
-            if(ItemTradMstId==4004):
+            if ItemTradMstId == 4004 or ItemTradMstId == 4003:
                 Purchase_Purity=81
-                metal_name="80T SILVER"
+                if ItemTradMstId == 4004:
+                    metal_name="80T SILVER"
+                elif ItemTradMstId == 4003:
+                    metal_name="TSO"
             elif ItemTradMstId==4005:
                 Purchase_Purity=92.5
                 metal_name="92.5T SILVER"
             Total_Sales_Purity=LabourPer+Purity
             LabourAmt=float(slr['LabourAmount'])
             Wastage_Rate = float(slr["PurWastPer"])
+            if Wastage_Rate == 0:
+                if SupplierCode in wastage and ItemMstID in wastage[SupplierCode] and VarietyMstId in wastage[SupplierCode][ItemMstID]:
+
+                    #Wastage exists
+                    wastage_weight_range_array=wastage[SupplierCode][ItemMstID][VarietyMstId]
+                    for wwk,wwra in wastage_weight_range_array.items():
+                        each_wastage_weight=wwk.split("-")
+                        if float(each_wastage_weight[0])<= NetWt and float(each_wastage_weight[1])>=NetWt :
+                            Wastage_Rate=float(wwra)
+                            break
             PurLabourAmount = float(slr["PurLabourAmount"])
             Purchase_Purity += Wastage_Rate 
             Location_code = ""
