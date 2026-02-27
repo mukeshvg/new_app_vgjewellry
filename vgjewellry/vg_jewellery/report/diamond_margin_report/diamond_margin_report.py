@@ -238,6 +238,10 @@ def execute(filters=None):
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
+            UniqueLabelID=slr['UniqueLabelID']
+            if slr['VouType'] == "SRT":
+                return_array.pop(UniqueLabelID, None)
+                continue
             LabelTransID= int(slr['LabelTransID'])
             if LabelTransID in all_ready_label_transaction:
                 continue
@@ -245,7 +249,6 @@ def execute(filters=None):
                 all_ready_label_transaction.append(LabelTransID);
             #logger.info(f"{slr['LabelTransID']}")    
             #logger.info(f"-----------")    
-            UniqueLabelID=slr['UniqueLabelID']
             #UniqueLabelID = slr.get('UniqueLabelID')
             #if UniqueLabelID == "":
             #    UniqueLabelID = 1
