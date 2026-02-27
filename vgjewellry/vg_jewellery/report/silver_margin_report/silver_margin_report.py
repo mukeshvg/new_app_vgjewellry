@@ -207,7 +207,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','PurWastPer','PurLabourRate','PurLabourOn','PurLabourAmount','LabourRate']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='TL925/     22'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         logger.info(f"{select_label_res}")
         for slr in select_label_res:
