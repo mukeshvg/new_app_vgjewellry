@@ -148,7 +148,7 @@ def execute(filters=None):
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['PurRate']/10);
                 else:
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
-            if branch=="vapi":
+            if branch=="vapi" or branch =="surat" :
                 rate_master[rate_date]=valsad_rate_master[rate_date];
         table="ItemWiseLabour"
         columns=["ItemWiseLabourID","ItemMstID","VarietyMstId","FromWeight","ToWeight","PurWastPer","PartyID"]
