@@ -145,11 +145,12 @@ def execute(filters=None):
                 if rate_date not in valsad_rate_master:
                     valsad_rate_master[rate_date]={}
                 if rr['ItemTradMstID']==4001 :
-                    valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['PurRate']/10);
+                    valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
                 else:
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
             if branch=="vapi" or branch =="surat" :
-                rate_master[rate_date]=valsad_rate_master[rate_date];
+                valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
+                #rate_master[rate_date]=valsad_rate_master[rate_date];
         table="ItemWiseLabour"
         columns=["ItemWiseLabourID","ItemMstID","VarietyMstId","FromWeight","ToWeight","PurWastPer","PartyID"]
         #condition="ItemWiseLabourID >0 and ItemMstID>0 and PurCalcWastBasedOn='N'"
