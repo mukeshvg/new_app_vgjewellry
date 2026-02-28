@@ -89,7 +89,7 @@ def execute(filters=None):
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    #branch_array=["valsad"]
+    branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -221,10 +221,10 @@ def execute(filters=None):
             VouDate = VouDate1.strftime("%Y-%m-%d")
             ItemTradMstId=slr['ItemTradMstId']
             Metal_Rate=rate_master[VouDate][ItemTradMstId]
-            if VouDate not in rate_master or 4001 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4001) is None :
+            if VouDate not in rate_master or 4003 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4003) is None :
                 Base_Rate=0
             else:
-                Base_Rate=rate_master[VouDate][4001]
+                Base_Rate=rate_master[VouDate][4003]
             if Metal_Rate == 0:
                 for fallback_id in [4004, 4005, 4003,4001]:
                     fallback_rate = rate_master.get(VouDate, {}).get(fallback_id, 0)
