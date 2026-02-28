@@ -89,7 +89,7 @@ def execute(filters=None):
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    branch_array=["valsad"]
+    #branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
