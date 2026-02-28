@@ -208,6 +208,7 @@ def execute(filters=None):
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','PurWastPer','PurLabourRate','PurLabourOn','PurLabourAmount','LabourRate']
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' ";    
+        #condition="(VouType='SL' or VouType='SRT')  and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='SK80T/   3047'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         logger.info(f"{select_label_res}")
         for slr in select_label_res:
@@ -220,18 +221,19 @@ def execute(filters=None):
             VouDate1 = slr['VouDate']
             VouDate = VouDate1.strftime("%Y-%m-%d")
             ItemTradMstId=slr['ItemTradMstId']
-            Metal_Rate=rate_master[VouDate][ItemTradMstId]
+            Metal_Rate=valsad_rate_master[VouDate][ItemTradMstId]
             if VouDate not in rate_master or 4003 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4003) is None :
                 Base_Rate=0
             else:
                 Base_Rate=rate_master[VouDate][4003]
             if Metal_Rate == 0:
                 for fallback_id in [4004, 4005, 4003,4001]:
-                    fallback_rate = rate_master.get(VouDate, {}).get(fallback_id, 0)
+                    fallback_rate = valsad_rate_master.get(VouDate, {}).get(fallback_id, 0)
                     if fallback_rate != 0:
                         Metal_Rate = fallback_rate
                         break    
-            #Metal_Rate = rate_master.get(VouDate, {}).get(ItemTradMstId, Base_Rate)    
+            #Metal_Rate = rate_master.get(VouDate, {}).get(ItemTradMstId, Base_Rate)   
+            logger.info(f"{Metal_Rate}")
             NetWt=float(slr['NetWt'])
             ItemMstID=slr['ItemMstID']
             item_name=items[ItemMstID]
