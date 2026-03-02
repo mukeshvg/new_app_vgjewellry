@@ -89,7 +89,7 @@ def execute(filters=None):
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    #branch_array=["valsad"]
+    branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -120,7 +120,7 @@ def execute(filters=None):
         
         table="TodayRateMst"
         columns=["TDate","TodayRateMstID","ItemTradMstID","SalesRate","PurRate"]
-        condition=" TDate>='2024-04-01' and ItemTradMstID in (4006,4005,4004,4003,4001)";
+        condition=" TDate>='2024-04-01' and ItemTradMstID in (4006,4005,4004,4003,4001) ORDER BY TDate DESC";
         rate_res=get_sql_server_data(branch,table,columns,condition)
         rate_master= {}
         for rr in rate_res:
@@ -149,6 +149,7 @@ def execute(filters=None):
                 else:
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
             if branch=="vapi" or branch =="surat" :
+
                 valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
                 #rate_master[rate_date]=valsad_rate_master[rate_date];
         table="ItemWiseLabour"
@@ -200,7 +201,7 @@ def execute(filters=None):
 
         table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID"]
-        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' "
+        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' "
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         for sur in select_user_res:
@@ -208,7 +209,7 @@ def execute(filters=None):
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','PurWastPer','PurLabourRate','PurLabourOn','PurLabourAmount','LabourRate']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' ";    
         #condition="(VouType='SL' or VouType='SRT')  and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='SK80T/   3047'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         logger.info(f"{select_label_res}")
@@ -222,18 +223,18 @@ def execute(filters=None):
             VouDate1 = slr['VouDate']
             VouDate = VouDate1.strftime("%Y-%m-%d")
             ItemTradMstId=slr['ItemTradMstId']
-            Metal_Rate=valsad_rate_master[VouDate][ItemTradMstId]
+            #Metal_Rate=valsad_rate_master[VouDate][ItemTradMstId]
+            Metal_Rate = valsad_rate_master.get(VouDate, {}).get(ItemTradMstId, 0)   
             if VouDate not in rate_master or 4003 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4003) is None :
                 Base_Rate=0
             else:
                 Base_Rate=rate_master[VouDate][4003]
             if Metal_Rate == 0:
-                for fallback_id in [4004, 4005, 4003,4001]:
+                for fallback_id in [4001, 4003, 4005,4004]:
                     fallback_rate = valsad_rate_master.get(VouDate, {}).get(fallback_id, 0)
                     if fallback_rate != 0:
                         Metal_Rate = fallback_rate
                         break    
-            #Metal_Rate = rate_master.get(VouDate, {}).get(ItemTradMstId, Base_Rate)   
             logger.info(f"{Metal_Rate}")
             NetWt=float(slr['NetWt'])
             ItemMstID=slr['ItemMstID']
@@ -266,6 +267,9 @@ def execute(filters=None):
             elif ItemTradMstId==4005:
                 Purchase_Purity=92.5
                 metal_name="92.5T SILVER"
+            elif ItemTradMstId == 6005:
+                metal_name= "SSMRP"
+                Purchase_Purity=100
             Total_Sales_Purity=LabourPer+Purity
             LabourAmt=float(slr['LabourAmount'])
             Wastage_Rate = float(slr["PurWastPer"])
