@@ -255,8 +255,9 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
             for item in req_doc.product_details:
                 item_master = frappe.get_doc("Ornate_Item_Master", item.item)
                 var_master  = frappe.get_doc("Ornate_Variety_Master", item.variety)
-                if (search in item_master.item_name.lower() or
-                    search in var_master.variety_name.lower()):
+                item_name_val = (item_master.item_name or "").lower()
+                var_name_val  = (var_master.variety_name or "").lower()
+                if (search in item_name_val or search in var_name_val):
                     matched_reqs.append(req)
                     break
         all_requisitions = matched_reqs
@@ -279,8 +280,8 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
             # If searching by item/variety, skip non-matching products
             # (PR-no match shows all products of that requisition)
             if search and search not in req_doc.name.lower():
-                if (search not in item_name.item_name.lower() and
-                    search not in var_name.variety_name.lower()):
+                if (search not in (item_name.item_name or "").lower() and
+                    search not in (var_name.variety_name or "").lower()):
                     continue
             wt_name=frappe.get_doc("weight_range",item.weight_range)
             size_id= None
