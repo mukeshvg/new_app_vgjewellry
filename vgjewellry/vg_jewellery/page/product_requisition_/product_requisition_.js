@@ -2012,7 +2012,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     </div>
                     <div class="image-section">
                         <span class="image-label required">Required</span>
-                        <div class="product-image-wrapper" onclick="openSingleImageModal('required', '${reqId}', '${p.id}', '${p.item} - ${p.variety}')">
+                        <div class="product-image-wrapper" onclick="openSingleImageModal('${reqId}', '${p.id}')">
                             <img src="${p.req_img}" alt="Required">
                             <span class="image-zoom"><i class="fas fa-search-plus"></i></span>
                         </div>
@@ -2241,113 +2241,39 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 		window.filterByTab('all');
 	}
         // Opens modal showing a single image (type = 'required' or 'existing')
-        window.openSingleImageModal = function(type, reqId, productId, productName) {
+        // openSingleImageModal — shows required image only (no thumbnails)
+        window.openSingleImageModal = function(reqId, productId) {
+            const data    = window.requisitionData || [];
+            const req     = data.find(r => String(r.id) === String(reqId));
+            const product = req ? req.products.find(p => String(p.id) === String(productId)) : null;
+            const name    = product ? (product.item + ' - ' + product.variety) : '';
+
             const modalEl    = document.getElementById('imageModal');
             const iconEl     = document.getElementById('modalImageTypeIcon');
             const imgEl      = document.getElementById('modalSingleImage');
             const matchEl    = document.getElementById('modalMatchInfo');
             const thumbStrip = document.getElementById('modalThumbStrip');
-            const thumbList  = document.getElementById('modalThumbList');
-            const thumbLoader= document.getElementById('modalThumbLoader');
 
+            // Read required image from DOM
             let src = '';
-            if (type === 'required') {
-                const card = document.getElementById(`product-${reqId}-${productId}`);
-                if (card) {
-                    const reqImg = card.querySelector('.image-section:last-child img');
-                    if (reqImg) src = reqImg.src;
-                }
-                if (iconEl) iconEl.innerHTML = `<i class="fas fa-shopping-cart" style="color:var(--purple);margin-right:8px;"></i> Required — ${productName || ''}`;
-                // Hide thumbnail strip for required images
-                if (thumbStrip) thumbStrip.style.display = 'none';
-            } else {
-                const domExist = document.getElementById(`existing-img-${reqId}-${productId}`);
-                if (domExist) src = domExist.src;
-                if (iconEl) iconEl.innerHTML = `<i class="fas fa-warehouse" style="color:var(--info);margin-right:8px;"></i> Existing Stock — ${productName || ''}`;
-
-                // Show thumbnail strip and fetch stock images
-                if (thumbStrip) thumbStrip.style.display = 'block';
-                if (thumbList)  thumbList.innerHTML = '';
-                if (thumbLoader) thumbLoader.style.display = 'block';
-
-                // Get product data for API call
-                const data    = window.requisitionData || [];
-                const req     = data.find(r => String(r.id) === String(reqId));
-                const product = req ? req.products.find(p => String(p.id) === String(productId)) : null;
-
-                if (product) {
-                    const branch_id  = parseInt(product.branch_id || product.branch || req.branch_id || req.branch, 10);
-                    const item_id    = parseInt(product.item_id, 10);
-                    const variety_id = parseInt(product.variety_id, 10);
-                    const wt_range   = product.weight_range;
-
-                    frappe.call({
-                        method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
-                        type: "POST",
-                        args: { branch_id, item_id, variety_id, wt_range },
-                        callback: function(r) {
-                            if (thumbLoader) thumbLoader.style.display = 'none';
-                            if (!r.message || !Object.keys(r.message).length) {
-                                if (thumbList) thumbList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">No stock images found.</span>';
-                                return;
-                            }
-
-                            let branches = Object.keys(r.message);
-                            branches.sort((a, b) => {
-                                if (a == branch_id) return -1;
-                                if (b == branch_id) return 1;
-                                return a - b;
-                            });
-
-                            let thumbHTML = '';
-                            let isFirst = true;
-                            branches.forEach(branch => {
-                                const imgs = r.message[branch];
-                                if (!imgs || !imgs.length) return;
-                                const branchCode = imgs[0].BranchCode || branch;
-
-                                thumbHTML += `<div style="display:inline-flex; flex-direction:column; align-items:center; margin-right:4px;">
-                                    <span style="font-size:9px; color:var(--gray); font-weight:600; margin-bottom:4px; white-space:nowrap;">${branchCode}${branch == branch_id ? ' ★' : ''}</span>
-                                    <div style="display:inline-flex; gap:6px;">`;
-
-                                imgs.forEach(img_obj => {
-                                    const img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-                                    const isActive = isFirst ? 'border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-light);' : 'border-color:var(--light-gray);';
-
-                                    thumbHTML += `<div onclick="switchModalImage(this, '${img_path}', '${reqId}', '${productId}')"
-                                         style="cursor:pointer; border:2px solid; ${isActive} border-radius:8px; overflow:hidden; flex-shrink:0; transition:all 0.15s;">
-                                        <img src="${img_path}" style="width:60px; height:60px; object-fit:cover; display:block;">
-                                        <div style="font-size:9px; color:var(--gray); text-align:center; padding:2px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;">${img_obj.LabelNo || ''}</div>
-                                    </div>`;
-                                    isFirst = false;
-                                });
-
-                                thumbHTML += `</div></div>`;
-                            });
-
-                            if (thumbList) thumbList.innerHTML = thumbHTML;
-                        }
-                    });
-                } else {
-                    if (thumbLoader) thumbLoader.style.display = 'none';
-                }
+            const card = document.getElementById('product-' + reqId + '-' + productId);
+            if (card) {
+                const reqImg = card.querySelector('.image-section:last-child img');
+                if (reqImg) src = reqImg.src;
             }
 
-            if (imgEl) imgEl.src = src || '';
-            if (matchEl) matchEl.textContent = '';
-            if (modalEl) modalEl.classList.add('active');
+            if (iconEl) iconEl.innerHTML = '<i class="fas fa-shopping-cart" style="color:var(--purple);margin-right:8px;"></i> Required — ' + name;
+            if (imgEl)      imgEl.src = src || '';
+            if (matchEl)    matchEl.textContent = '';
+            if (thumbStrip) thumbStrip.style.display = 'none';
+            if (modalEl)    modalEl.classList.add('active');
         };
 
         // Switch the main preview image when a thumbnail is clicked
         window.switchModalImage = function(el, imgPath, reqId, productId) {
-            // Update main image
             const imgEl = document.getElementById('modalSingleImage');
             if (imgEl) imgEl.src = imgPath;
-
-            // Update card thumbnail too
             window.setExistingThumbnail(reqId, productId, imgPath);
-
-            // Highlight selected thumb, deselect others
             const strip = document.getElementById('modalThumbList');
             if (strip) {
                 strip.querySelectorAll('div[onclick]').forEach(function(t) {
@@ -2359,13 +2285,9 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             el.style.boxShadow   = '0 0 0 2px var(--primary-light)';
         };
 
-        // Keep openImageModal as alias used by Compare button (shows required image)
+        // openImageModal — alias for Compare button (shows required image)
         window.openImageModal = function(reqId, productId) {
-            const data = (window.requisitionData || []);
-            const req  = data.find(r => String(r.id) === String(reqId));
-            const product = req ? req.products.find(p => String(p.id) === String(productId)) : null;
-            const name = product ? `${product.item} - ${product.variety}` : '';
-            window.openSingleImageModal('required', reqId, productId, name);
+            window.openSingleImageModal(reqId, productId);
         };
 
         window.closeImageModal = function() {
