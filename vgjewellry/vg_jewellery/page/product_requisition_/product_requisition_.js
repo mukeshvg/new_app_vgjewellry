@@ -2001,7 +2001,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 <div class="image-comparison">
                     <div class="image-section">
                         <span class="image-label existing">Existing</span>
-                        <div class="product-image-wrapper" onclick="openSingleImageModal('existing', '${reqId}', '${p.id}', '${p.item} - ${p.variety}')">
+                        <div class="product-image-wrapper" onclick="openExistingStockImages('${reqId}', '${p.id}')">
                             <img id="existing-img-${reqId}-${p.id}" src="${getExistingImage(p.sku)}" alt="Existing">
                             <span class="image-zoom"><i class="fas fa-search-plus"></i></span>
                             <span class="stock-badge ${stockClass}">${getStockLabel(p.inStock)}</span>
@@ -2031,7 +2031,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
                     <div class="specs-grid">
                         <div class="spec-box"><label>Suggested<span class="ai-tag">AI</span></label><span class="ai">${p.suggested}</span></div>
-                        <div class="spec-box"><label>In Stock</label><span class="${p.in_stock === 0 ? 'zero' : p.in_stock < 5 ? 'low' : 'good'}" style="cursor:pointer;" onclick="openSingleImageModal('existing', '${reqId}', '${p.id}', '${p.item} - ${p.variety}')">${p.in_stock}</span></div>
+                        <div class="spec-box"><label>In Stock</label><span class="${p.in_stock === 0 ? 'zero' : p.in_stock < 5 ? 'low' : 'good'}" style="cursor:pointer;" onclick="openExistingStockImages('${reqId}', '${p.id}')">${p.in_stock}</span></div>
                         <div class="spec-box"><label>Qty Req</label><span id="qty-req-${reqId}-${p.id}">${p.qty}</span></div>
                         <div class="spec-box"><label>Excess/Short</label><span style="color:var(--primary)">${p.diff}</span></div>
                     </div>
