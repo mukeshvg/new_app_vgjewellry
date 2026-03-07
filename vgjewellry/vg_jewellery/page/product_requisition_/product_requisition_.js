@@ -2442,9 +2442,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                                    + '<span style="font-size:9px;color:var(--gray);font-weight:700;margin-bottom:4px;white-space:nowrap;">' + branchCode + ownLabel + '</span>'
                                    + '<div style="display:inline-flex;gap:6px;">';
                         imgs.forEach(function(img_obj) {
-                            var img_path = img_obj.ImagePath1.replace(/\/g, '/');
+                            var img_path = img_obj.ImagePath1.replace(/\\/g, '/');
                             var border   = isFirst ? 'border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light);' : 'border-color:var(--light-gray);';
-                            thumbHTML += '<div onclick="switchModalImage(this,'' + img_path + '','' + reqId + '','' + productId + '')"'
+                            var safeImg  = img_path.replace(/'/g, "\\'");
+                            thumbHTML += '<div onclick="switchModalImage(this,\'' + safeImg + '\',\'' + reqId + '\',\'' + productId + '\')"'
                                        + ' style="cursor:pointer;border:2px solid;' + border + 'border-radius:8px;overflow:hidden;flex-shrink:0;transition:all 0.15s;text-align:center;">'
                                        + '<img src="' + img_path + '" style="width:60px;height:60px;object-fit:cover;display:block;">'
                                        + '<div style="font-size:9px;color:var(--gray);padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;">' + (img_obj.LabelNo || '') + '</div>'
