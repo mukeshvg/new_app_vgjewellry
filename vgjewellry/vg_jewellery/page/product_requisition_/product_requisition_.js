@@ -2375,12 +2375,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             }
         };
 
-        // Track current stock modal context
-        window._stockModal = { reqId: null, productId: null, selectedImg: null };
-
+        // openExistingStockImages — opens imageModal with main image + thumbnail strip
         window.openExistingStockImages = function(reqId, productId) {
-            const data = (window.requisitionData || []);
-            const req  = data.find(r => String(r.id) === String(reqId));
+            const data    = window.requisitionData || [];
+            const req     = data.find(r => String(r.id) === String(reqId));
             if (!req || !req.products) { frappe.msgprint(__('Requisition not found')); return; }
 
             const product = req.products.find(p => String(p.id) === String(productId));
@@ -2391,121 +2389,77 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             const variety_id = parseInt(product.variety_id, 10);
             const wt_range   = product.weight_range;
 
+            const modalEl    = document.getElementById('imageModal');
+            const iconEl     = document.getElementById('modalImageTypeIcon');
+            const imgEl      = document.getElementById('modalSingleImage');
+            const thumbStrip = document.getElementById('modalThumbStrip');
+            const thumbList  = document.getElementById('modalThumbList');
+            const thumbLoader= document.getElementById('modalThumbLoader');
+            const matchEl    = document.getElementById('modalMatchInfo');
+
+            // Show current card thumbnail immediately so modal opens fast
+            const domExist = document.getElementById('existing-img-' + reqId + '-' + productId);
+            if (imgEl) imgEl.src = domExist ? domExist.src : '';
+            if (iconEl) iconEl.innerHTML = '<i class="fas fa-warehouse" style="color:var(--info);margin-right:8px;"></i> Existing Stock — ' + product.item + ' - ' + product.variety;
+            if (matchEl) matchEl.textContent = '';
+
+            // Show thumb strip with spinner
+            if (thumbStrip) thumbStrip.style.display = 'block';
+            if (thumbList)  thumbList.innerHTML = '';
+            if (thumbLoader) thumbLoader.style.display = 'block';
+            if (modalEl) modalEl.classList.add('active');
+
             if (!branch_id || !item_id || !variety_id || !wt_range) {
-                frappe.msgprint(__('Missing product identifiers for stock images.')); return;
+                if (thumbLoader) thumbLoader.style.display = 'none';
+                if (thumbList) thumbList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">Missing product info.</span>';
+                return;
             }
-
-            // Store context for "Use Selected"
-            window._stockModal.reqId     = reqId;
-            window._stockModal.productId = productId;
-            window._stockModal.selectedImg = null;
-
-            // Show modal in loading state
-            const modalEl  = document.getElementById('stockImagesModal');
-            const titleEl  = document.getElementById('stockModalTitle');
-            const gridEl   = document.getElementById('stockModalGrid');
-            const previewEl= document.getElementById('stockModalPreview');
-            const metaEl   = document.getElementById('stockModalMeta');
-
-            titleEl.textContent  = `${product.item} — ${product.variety} | ${product.weight_range}`;
-            gridEl.innerHTML     = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Loading images...</p></div>';
-            previewEl.src        = '';
-            previewEl.style.display = 'none';
-            metaEl.textContent   = '';
-            modalEl.style.display = 'flex';
 
             frappe.call({
                 method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
                 type: "POST",
-                args: { branch_id, item_id, variety_id, wt_range },
+                args: { branch_id: branch_id, item_id: item_id, variety_id: variety_id, wt_range: wt_range },
                 callback: function(r) {
+                    if (thumbLoader) thumbLoader.style.display = 'none';
                     if (!r.message || !Object.keys(r.message).length) {
-                        gridEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-image fa-2x"></i><p style="margin-top:10px;">No images found.</p></div>';
+                        if (thumbList) thumbList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">No stock images found.</span>';
                         return;
                     }
-
-                    let branches = Object.keys(r.message);
-                    // Own branch first
-                    branches.sort((a, b) => {
+                    var branches = Object.keys(r.message);
+                    branches.sort(function(a, b) {
                         if (a == branch_id) return -1;
                         if (b == branch_id) return 1;
                         return a - b;
                     });
-
-                    let firstImgPath = null;
-                    let totalImgs    = 0;
-                    let gridHTML     = '';
-
-                    branches.forEach(branch => {
-                        const imgs = r.message[branch];
+                    var thumbHTML = '';
+                    var isFirst   = true;
+                    branches.forEach(function(branch) {
+                        var imgs = r.message[branch];
                         if (!imgs || !imgs.length) return;
-                        const branchCode = imgs[0].BranchCode || branch;
-
-                        gridHTML += `
-                        <div>
-                            <div style="font-size:12px; font-weight:700; color:var(--primary); margin-bottom:8px; padding:4px 8px; background:var(--primary-light); border-radius:6px; display:inline-block;">
-                                <i class="fas fa-store" style="margin-right:5px;"></i>${branchCode}
-                                ${branch == branch_id ? '<span style="margin-left:6px; font-size:10px; background:var(--primary); color:white; padding:1px 6px; border-radius:10px;">Your Branch</span>' : ''}
-                            </div>
-                            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">`;
-
-                        imgs.forEach(img_obj => {
-                            const img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-                            if (!firstImgPath) firstImgPath = img_path;
-                            totalImgs++;
-
-                            gridHTML += `
-                            <div class="stock-thumb-item" data-img="${img_path}"
-                                 onclick="selectStockThumb(this, '${img_path}')"
-                                 style="cursor:pointer; text-align:center; border:2px solid var(--light-gray); border-radius:10px; padding:8px; transition:all 0.2s; width:130px; flex-shrink:0;">
-                                <img src="${img_path}"
-                                     style="width:110px; height:110px; object-fit:cover; border-radius:7px; display:block; margin:0 auto;">
-                                <div style="margin-top:5px; font-size:10px; color:var(--gray); font-weight:600;">${img_obj.LabelNo || ''}</div>
-                                <div style="font-size:10px; color:var(--gray);">${img_obj.NetWt ? img_obj.NetWt + 'g' : ''}</div>
-                            </div>`;
+                        var branchCode = imgs[0].BranchCode || branch;
+                        var ownLabel   = branch == branch_id ? ' ★' : '';
+                        thumbHTML += '<div style="display:inline-flex;flex-direction:column;align-items:center;margin-right:6px;">'
+                                   + '<span style="font-size:9px;color:var(--gray);font-weight:700;margin-bottom:4px;white-space:nowrap;">' + branchCode + ownLabel + '</span>'
+                                   + '<div style="display:inline-flex;gap:6px;">';
+                        imgs.forEach(function(img_obj) {
+                            var img_path = img_obj.ImagePath1.replace(/\/g, '/');
+                            var border   = isFirst ? 'border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light);' : 'border-color:var(--light-gray);';
+                            thumbHTML += '<div onclick="switchModalImage(this,'' + img_path + '','' + reqId + '','' + productId + '')"'
+                                       + ' style="cursor:pointer;border:2px solid;' + border + 'border-radius:8px;overflow:hidden;flex-shrink:0;transition:all 0.15s;text-align:center;">'
+                                       + '<img src="' + img_path + '" style="width:60px;height:60px;object-fit:cover;display:block;">'
+                                       + '<div style="font-size:9px;color:var(--gray);padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;">' + (img_obj.LabelNo || '') + '</div>'
+                                       + '</div>';
+                            if (isFirst) {
+                                if (imgEl) imgEl.src = img_path;
+                                window.setExistingThumbnail(reqId, productId, img_path);
+                            }
+                            isFirst = false;
                         });
-
-                        gridHTML += `</div></div>`;
+                        thumbHTML += '</div></div>';
                     });
-
-                    gridEl.innerHTML = gridHTML;
-                    metaEl.textContent = `${totalImgs} image${totalImgs !== 1 ? 's' : ''} found`;
-
-                    // Auto-select first image
-                    if (firstImgPath) {
-                        const firstThumb = gridEl.querySelector('.stock-thumb-item');
-                        if (firstThumb) selectStockThumb(firstThumb, firstImgPath);
-                        // Also set it on the card thumbnail immediately
-                        window.setExistingThumbnail(reqId, productId, firstImgPath);
-                    }
+                    if (thumbList) thumbList.innerHTML = thumbHTML;
                 }
             });
-        };
-
-        window.selectStockThumb = function(el, imgPath) {
-            // Deselect all
-            document.querySelectorAll('.stock-thumb-item').forEach(t => {
-                t.style.borderColor = 'var(--light-gray)';
-                t.style.background  = 'white';
-            });
-            // Select clicked
-            el.style.borderColor = 'var(--primary)';
-            el.style.background  = 'var(--primary-light)';
-
-            // Show in preview
-            const previewEl = document.getElementById('stockModalPreview');
-            previewEl.src = imgPath;
-            previewEl.style.display = 'block';
-
-            window._stockModal.selectedImg = imgPath;
-        };
-
-        window.confirmStockSelection = function() {
-            const { reqId, productId, selectedImg } = window._stockModal;
-            if (selectedImg) {
-                window.setExistingThumbnail(reqId, productId, selectedImg);
-            }
-            closeStockModal();
         };
 
         window.closeStockModal = function() {
