@@ -1881,6 +1881,51 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             return card;
         }
 
+        // After cards are in the DOM, auto-fetch first stock image for each product with in_stock > 0
+        function autoLoadExistingImages(reqs) {
+            (reqs || []).forEach(req => {
+                (req.products || []).forEach(p => {
+                    if (!p.in_stock || p.in_stock <= 0) return;
+
+                    const imgEl = document.getElementById(`existing-img-${req.id}-${p.id}`);
+                    if (!imgEl) return;
+
+                    const branch_id  = parseInt(p.branch_id || p.branch || req.branch_id || req.branch, 10);
+                    const item_id    = parseInt(p.item_id, 10);
+                    const variety_id = parseInt(p.variety_id, 10);
+                    const wt_range   = p.weight_range;
+
+                    if (!branch_id || !item_id || !variety_id || !wt_range) return;
+
+                    frappe.call({
+                        method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
+                        type: "POST",
+                        args: { branch_id, item_id, variety_id, wt_range },
+                        callback: function(r) {
+                            if (!r.message || !Object.keys(r.message).length) return;
+
+                            // Find own branch first, fallback to first available
+                            const branches = Object.keys(r.message).sort((a, b) => {
+                                if (a == branch_id) return -1;
+                                if (b == branch_id) return 1;
+                                return a - b;
+                            });
+
+                            for (const branch of branches) {
+                                const imgs = r.message[branch];
+                                if (imgs && imgs.length && imgs[0].ImagePath1) {
+                                    const imgPath = imgs[0].ImagePath1.replace(/\\/g, '/');
+                                    const el = document.getElementById(`existing-img-${req.id}-${p.id}`);
+                                    if (el) el.src = imgPath;
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
         function renderCards(data) {
             const container = document.getElementById('requisitionContainer');
             container.innerHTML = '';
@@ -1892,6 +1937,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 const card = buildReqCard(req);
                 if (card) container.appendChild(card);
             });
+            autoLoadExistingImages(data);
         }
 
         function appendCards(newData) {
@@ -1903,6 +1949,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 const card = buildReqCard(req);
                 if (card) container.appendChild(card);
             });
+            autoLoadExistingImages(newData);
         }
 
         function renderLoadMoreBtn() {
@@ -2869,80 +2916,77 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 	}
 	$(document).on("click", ".in_stock_img", function () {
 		var row = $(this).closest('tr');
-		var branch_id = parseInt(row.find('.req_branch_id').val());  // Branch
-		var item_id = parseInt(row.find('.req_item_id').val());  // Item
-		var variety_id = parseInt(row.find('.req_variety_id').val());  // Variety
-		var wt_range = row.find('.req_wt_range').val();
+		var branch_id  = parseInt(row.find('.req_branch_id').val());
+		var item_id    = parseInt(row.find('.req_item_id').val());
+		var variety_id = parseInt(row.find('.req_variety_id').val());
+		var wt_range   = row.find('.req_wt_range').val();
+
+		var modalEl   = document.getElementById('stockImagesModal');
+		var titleEl   = document.getElementById('stockModalTitle');
+		var gridEl    = document.getElementById('stockModalGrid');
+		var previewEl = document.getElementById('stockModalPreview');
+		var metaEl    = document.getElementById('stockModalMeta');
+
+		window._stockModal = window._stockModal || {};
+		window._stockModal.reqId       = null;
+		window._stockModal.productId   = null;
+		window._stockModal.selectedImg = null;
+
+		titleEl.textContent     = 'Stock Images';
+		gridEl.innerHTML        = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Loading images...</p></div>';
+		previewEl.src           = '';
+		previewEl.style.display = 'none';
+		metaEl.textContent      = '';
+		modalEl.style.display   = 'flex';
+
 		frappe.call({
 			method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
 			type: "POST",
-			args: {
-				branch_id: branch_id,
-				item_id: item_id,
-				variety_id: variety_id,
-				wt_range: wt_range,
-			},callback: function (r) {
-				if (r.message && Object.keys(r.message).length > 0) {
-					let html = '';
-					let branches = Object.keys(r.message);
+			args: { branch_id: branch_id, item_id: item_id, variety_id: variety_id, wt_range: wt_range },
+			callback: function(r) {
+				if (!r.message || !Object.keys(r.message).length) {
+					gridEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-image fa-2x"></i><p style="margin-top:10px;">No images found.</p></div>';
+					return;
+				}
+				var branches = Object.keys(r.message);
+				branches.sort((a, b) => { if (a == branch_id) return -1; if (b == branch_id) return 1; return a - b; });
 
-					// Move clicked branch to first
-					branches.sort((a,b) => {
-						if (a == branch_id) return -1;
-						if (b == branch_id) return 1;
-						return a - b; // sort remaining numerically
+				var firstImgPath = null, totalImgs = 0, gridHTML = '';
+				branches.forEach(branch => {
+					var imgs = r.message[branch];
+					if (!imgs || !imgs.length) return;
+					var branchCode = imgs[0].BranchCode || branch;
+					gridHTML += \`<div>
+						<div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px;padding:4px 8px;background:var(--primary-light);border-radius:6px;display:inline-block;">
+							<i class="fas fa-store" style="margin-right:5px;"></i>\${branchCode}
+							\${branch == branch_id ? '<span style="margin-left:6px;font-size:10px;background:var(--primary);color:white;padding:1px 6px;border-radius:10px;">Your Branch</span>' : ''}
+						</div>
+						<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">\`;
+
+					imgs.forEach(img_obj => {
+						var img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+						if (!firstImgPath) firstImgPath = img_path;
+						totalImgs++;
+						gridHTML += \`<div class="stock-thumb-item" data-img="\${img_path}"
+							onclick="selectStockThumb(this, \'\${img_path}\')"
+							style="cursor:pointer;text-align:center;border:2px solid var(--light-gray);border-radius:10px;padding:8px;transition:all 0.2s;width:130px;flex-shrink:0;">
+							<img src="\${img_path}" style="width:110px;height:110px;object-fit:cover;border-radius:7px;display:block;margin:0 auto;">
+							<div style="margin-top:5px;font-size:10px;color:var(--gray);font-weight:600;">\${img_obj.LabelNo || ''}</div>
+							<div style="font-size:10px;color:var(--gray);">\${img_obj.NetWt ? img_obj.NetWt + 'g' : ''}</div>
+						</div>\`;
 					});
+					gridHTML += \`</div></div>\`;
+				});
 
-					let branch_code={};			 
-					branches.forEach(branch => {
-						r.message[branch].forEach(img_obj => {
-							branch_code[branch]=img_obj["BranchCode"]
-						})
-					})			 
-
-					branches.forEach(branch => {
-						html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
-
-						r.message[branch].forEach(img_obj => {
-							let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-							// if already full URL, use as is
-							html += `<div style="display:inline-block; margin:5px; text-align:center;">
-				    <img src="${img_path}" style="max-width:150px; max-height:150px; display:block;" />
-				    <div>Label: ${img_obj.LabelNo}</div>
-				    <div>Wt: ${img_obj.NetWt}</div>
-				 </div>`;
-						});
-
-						html += '</div><hr>';
-					});
-
-					let d = new frappe.ui.Dialog({
-						title: 'Product Images by Branch',
-						size: 'large',
-						fields: [
-							{ fieldname: 'images_html', fieldtype: 'HTML', options: html }
-						]
-					});
-					d.show();
-
-					// Center and set width ~80% of screen
-					const $wrapper = d.$wrapper || d.wrapper;
-					if ($wrapper && $wrapper.find) {
-						$wrapper.find('.modal-dialog')
-							.addClass('modal-dialog-centered')
-							.css({
-								maxWidth: '80vw',
-								width: '80vw',
-								margin: '0 auto'
-							});
-					}
-				} else {
-					frappe.msgprint("No images found.");
+				gridEl.innerHTML   = gridHTML;
+				metaEl.textContent = totalImgs + ' image' + (totalImgs !== 1 ? 's' : '') + ' found';
+				if (firstImgPath) {
+					var firstThumb = gridEl.querySelector('.stock-thumb-item');
+					if (firstThumb) selectStockThumb(firstThumb, firstImgPath);
 				}
 			}
-
 		});
-	});
+	})
 	$(document).on("click", ".user-add-img", function () {
 		var row = $(this).closest('tr');
 		var used_id = row.find('.req_used_ids').val()
