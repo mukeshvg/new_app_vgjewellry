@@ -47,12 +47,12 @@ def get_product_details():
             in_stock=0;
             if len(idea_stock)>0:
                 for row in idea_stock:
-                    suggested += row.get("target_pcs") or 0
+                    suggested += int(row.get("target_pcs")) or 0
                     #suggested=idea_stock[0]['target_pcs']
                     #if suggested == None:
                     #    suggested=0
                     #in_stock=idea_stock[0]['stock_pcs']
-                    in_stock += row.get("stock_pcs") or 0
+                    in_stock += int(row.get("stock_pcs")) or 0
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
             owner=frappe.get_doc("User",req_doc.owner)
@@ -229,23 +229,59 @@ def replace_item_image(file, old_image, used_id):
 
 
 @frappe.whitelist()
-def get_product_details_new_format():
+def get_product_details_new_format(page=1, page_size=10, search=""):
+    page = int(page)
+    page_size = int(page_size)
+    search = (search or "").strip().lower()
     user = frappe.session.user
-    roles = frappe.get_roles(user)
-    user_data = frappe.get_doc("User",user)
-    all_item =[]
-    requisition= frappe.get_all("Product_Requisition_Form",filters={'branch':user_data.ornate_branch,'action_taken':['!=', 'Action Taken']})
-    for req in requisition:
-        new_req ={}
-        req_doc = frappe.get_doc("Product_Requisition_Form",req.name)
-        items = req_doc.product_details
-        item_in_req =[]
-        for item in items:
-            used_ids=[]
-            if item.manager_action!=None:
+    user_data = frappe.get_doc("User", user)
+    all_item = []
+
+    all_requisitions = frappe.get_all(
+        "Product_Requisition_Form",
+        filters={"branch": user_data.ornate_branch, "action_taken": ["!=", "Action Taken"]},
+    )
+
+    # --- Server-side search: filter requisitions/items by PR no, item name, or variety name ---
+    if search:
+        matched_reqs = []
+        for req in all_requisitions:
+            # Match by PR number
+            if search in req.name.lower():
+                matched_reqs.append(req)
                 continue
+            # Match by item name or variety name inside child rows
+            req_doc = frappe.get_doc("Product_Requisition_Form", req.name)
+            for item in req_doc.product_details:
+                item_master = frappe.get_doc("Ornate_Item_Master", item.item)
+                var_master  = frappe.get_doc("Ornate_Variety_Master", item.variety)
+                if (search in item_master.item_name.lower() or
+                    search in var_master.variety_name.lower()):
+                    matched_reqs.append(req)
+                    break
+        all_requisitions = matched_reqs
+
+    total_count = len(all_requisitions)
+    start = (page - 1) * page_size
+    end = start + page_size
+    requisition = all_requisitions[start:end]
+
+    for req in requisition:
+        new_req = {}
+        req_doc = frappe.get_doc("Product_Requisition_Form", req.name)
+        items = req_doc.product_details
+        item_in_req = []
+
+        for item in items:
+            used_ids = []
             item_name=frappe.get_doc("Ornate_Item_Master",item.item)
             var_name=frappe.get_doc("Ornate_Variety_Master",item.variety)
+            # If searching by item/variety, skip non-matching products
+            # (PR-no match shows all products of that requisition)
+            if search and search not in req_doc.name.lower():
+                if (search not in item_name.item_name.lower() and
+                    search not in var_name.variety_name.lower()):
+                    continue
             wt_name=frappe.get_doc("weight_range",item.weight_range)
             size_id= None
             size_name=""
@@ -264,6 +300,17 @@ def get_product_details_new_format():
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
             owner=frappe.get_doc("User",req_doc.owner)
+            # derive status for frontend (pending/approved/rejected/delivered)
+            status = "pending"
+            if item.manager_action:
+                action = (item.manager_action or "").strip().lower()
+                if action == "approve":
+                    status = "approved"
+                elif action == "reject":
+                    status = "rejected"
+                elif action == "delivered":
+                    status = "delivered"
+
             item_data = {
                     'id': item.name,
                     'name': req_doc.name,
@@ -280,14 +327,23 @@ def get_product_details_new_format():
                     'qty':item.qty,
                     'pcs':item.pcs,
                     'jota':item.jota,
-                    'suggested':suggested,
-                    'in_stock':in_stock,
-                    'diff':diff,
+                    'suggested': suggested,
+                    'in_stock': in_stock,
+                    'diff': diff,
+                    'status': status,
                     'remark':req_doc.requester_remark,
-                    'remark_user':owner.full_name
+                    'remark_user':owner.full_name,
+                    'req_img':item.image_1
                     }
             item_in_req.append(item_data)
-        new_req = {"id":req_doc.name,"requestedBy":req_doc.owner,"requestDate":req_doc.creation,"priority": 'high',"counter": 'Chain',"products":item_in_req}
+        new_req = {
+            "id": req_doc.name,
+            "requestedBy": req_doc.owner,
+            "requestDate": req_doc.creation,
+            "priority": "high",
+            "counter": "Chain",
+            "products": item_in_req,
+        }
         all_item.append(new_req)
     excess_reason=frappe.get_all("Excess_Approve_Reason")
     excess_reason_ret =[]
@@ -297,4 +353,48 @@ def get_product_details_new_format():
     reject_reason_ret =[]
     for i in reject_reason:
         reject_reason_ret.append({"value":i["name"],"label":i["name"]})
-    return { 'all_item' :all_item , 'excess_reason':excess_reason_ret, 'reject_reason':reject_reason_ret}
+    return {
+        'all_item': all_item,
+        'excess_reason': excess_reason_ret,
+        'reject_reason': reject_reason_ret,
+        'total_count': total_count,
+        'page': page,
+        'page_size': page_size,
+        'has_more': end < total_count
+    }
+
+
+@frappe.whitelist()
+def get_status_counts():
+    """Returns total counts of pending/approved/delivered/rejected across ALL requisitions, ignoring pagination."""
+    user = frappe.session.user
+    user_data = frappe.get_doc("User", user)
+
+    requisition = frappe.get_all(
+        "Product_Requisition_Form",
+        filters={"branch": user_data.ornate_branch, "action_taken": ["!=", "Action Taken"]},
+    )
+
+    total = pending = approved = delivered = rejected = 0
+
+    for req in requisition:
+        req_doc = frappe.get_doc("Product_Requisition_Form", req.name)
+        for item in req_doc.product_details:
+            total += 1
+            action = (item.manager_action or "").strip().lower()
+            if action == "approve":
+                approved += 1
+            elif action == "reject":
+                rejected += 1
+            elif action == "delivered":
+                delivered += 1
+            else:
+                pending += 1
+
+    return {
+        "total":     total,
+        "pending":   pending,
+        "approved":  approved,
+        "delivered": delivered,
+        "rejected":  rejected,
+    }

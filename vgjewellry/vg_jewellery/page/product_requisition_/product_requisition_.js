@@ -1,7 +1,13 @@
 frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
-	frappe.require([
-		'/assets/vgjewellry/css/fontawesome.min.css',
-		'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css']);
+	// Load Font Awesome from CDN with absolute webfont URLs (avoids local 404s)
+	if (!document.getElementById('fa-cdn-link')) {
+		var faLink = document.createElement('link');
+		faLink.id = 'fa-cdn-link';
+		faLink.rel = 'stylesheet';
+		faLink.crossOrigin = 'anonymous';
+		faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+		document.head.appendChild(faLink);
+	}
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'Product Requisition New',
@@ -1134,10 +1140,11 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         .image-modal-content {
             background: white;
             border-radius: 16px;
-            max-width: 900px;
-            width: 100%;
+            max-width: 80vw;
+            width: 80vw;
             max-height: 85vh;
             overflow: hidden;
+            margin: 0 auto;
             animation: modalZoom 0.3s ease;
         }
 
@@ -1601,10 +1608,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
         <!-- Status Tabs -->
         <div class="status-tabs">
-            <button class="status-tab active" data-tab="all" onclick="filterByTab('all')">
+            <button class="status-tab" data-tab="all" onclick="filterByTab('all')">
                 <i class="fas fa-th-large"></i> All <span class="count" id="tabAll">22</span>
             </button>
-            <button class="status-tab" data-tab="pending" onclick="filterByTab('pending')">
+            <button class="status-tab active" data-tab="pending" onclick="filterByTab('pending')">
                 <i class="fas fa-clock"></i> Pending <span class="count" id="tabPending">8</span>
             </button>
             <button class="status-tab" data-tab="approved" onclick="filterByTab('approved')">
@@ -1622,9 +1629,9 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         <div class="toolbar">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search PR No, Item, Variety..." onkeyup="applyFilters()">
+                <input type="text" id="searchInput" placeholder="Search PR No, Item, Variety..." oninput="debounceSearch()">
             </div>
-            <select class="filter-select" id="itemFilter" onchange="applyFilters()">
+            <!--<select class="filter-select" id="itemFilter" onchange="applyFilters()">
                 <option value="">All Items</option>
                 <option value="RING">Ring</option>
                 <option value="BALI">Bali</option>
@@ -1635,13 +1642,13 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 <option value="">All Match</option>
                 <option value="match">Matching</option>
                 <option value="mismatch">Mismatch</option>
-            </select>
+            </select>-->
             <button class="btn btn-outline" onclick="resetFilters()">
                 <i class="fas fa-redo"></i> Reset
             </button>
-            <button class="btn btn-success" onclick="approveAllMatching()">
+            <!--<button class="btn btn-success" onclick="approveAllMatching()">
                 <i class="fas fa-check-double"></i> Approve Matching
-            </button>
+            </button>-->
         </div>
 
         <!-- Requisitions Container -->
@@ -1651,31 +1658,19 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
     </main>
 
     <!-- Image Modal -->
-    <div class="image-modal" id="imageModal">
-        <div class="image-modal-content">
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <div class="image-modal-content" onclick="event.stopPropagation()">
             <div class="image-modal-header">
-                <h3><i class="fas fa-images" style="color:var(--gold)"></i> <span id="modalProductName"></span></h3>
+                <h3 id="modalImageTypeIcon"></h3>
                 <button class="image-modal-close" onclick="closeImageModal()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="image-comparison-full">
-                <div class="image-full-section">
-                    <h4><i class="fas fa-warehouse" style="color:var(--info)"></i> Existing Stock</h4>
-                    <div class="image-full-wrapper">
-                        <img id="modalExistingImage" src="" alt="Existing">
-                    </div>
-                </div>
-                <div class="image-full-section">
-                    <h4><i class="fas fa-shopping-cart" style="color:var(--purple)"></i> Required</h4>
-                    <div class="image-full-wrapper">
-                        <img id="modalRequiredImage" src="" alt="Required">
-                    </div>
-                </div>
+            <div style="display:flex; align-items:center; justify-content:center; padding:20px; background:#f8fafc;">
+                <img id="modalSingleImage" src="" alt="Product Image"
+                     style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
             </div>
             <div class="image-modal-footer">
-                <div id="modalMatchInfo"></div>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn btn-outline" onclick="closeImageModal()">Close</button>
-                </div>
+                <div id="modalMatchInfo" style="font-size:12px; color:var(--gray);"></div>
+                <button class="btn btn-outline" onclick="closeImageModal()"><i class="fas fa-times"></i> Close</button>
             </div>
         </div>
     </div>
@@ -1728,97 +1723,201 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
     </div>
 		`);
 
-	var approvalReasons = [];
+        window.requisitionData = [];
+        window.currentPage = 1;
+        window.pageSize = 10;
+        window.hasMore = false;
+        window.totalCount = 0;
+        window.loadedCount = 0;
+        var approvalReasons = [];
         var rejectionReasons = [];
-	frappe.call({
-                method:'vgjewellry.product_requisition.get_product_details_new_format',
+
+        window.loadPage = function loadPage(page, append) {
+            frappe.call({
+                method: 'vgjewellry.product_requisition.get_product_details_new_format',
+                args: { page: page, page_size: window.pageSize, search: window.currentSearch || '' },
                 callback: function(response) {
-                        if(response && response.message.all_item.length>0){
-				approvalReasons=response.message.excess_reason
-				rejectionReasons=response.message.reject_reason
-				renderCards(response.message.all_item)
-			}
-		}
-	})
+                    if (!response || !response.message) return;
+                    var msg = response.message;
+
+                    if (page === 1) {
+                        window.requisitionData = msg.all_item || [];
+                        approvalReasons = msg.excess_reason;
+                        rejectionReasons = msg.reject_reason;
+                    } else {
+                        window.requisitionData = window.requisitionData.concat(msg.all_item || []);
+                    }
+
+                    window.hasMore = msg.has_more;
+                    window.totalCount = msg.total_count || 0;
+                    window.loadedCount = window.requisitionData.length;
+                    window.currentPage = page;
+
+                    if (append) {
+                        appendCards(msg.all_item || []);
+                    } else {
+                        renderCards(window.requisitionData);
+                        // Auto-filter to pending on first load only
+                        if (page === 1 && !window.currentSearch) {
+                            window.filterByTab('pending');
+                        }
+                    }
+                    renderLoadMoreBtn();
+                }
+            });
+        }
+
+        loadPage(1, false);
+        loadStatusCounts();
+
 
         // Rejection Reasons
 
-	function renderCards(filteredData) {
+        // Called once on load with full server-side counts (ignores pagination)
+        function updateStatusTabs(counts) {
+            const byId = id => document.getElementById(id);
+            const total     = counts ? counts.total     : 0;
+            const pending   = counts ? counts.pending   : 0;
+            const approved  = counts ? counts.approved  : 0;
+            const delivered = counts ? counts.delivered : 0;
+            const rejected  = counts ? counts.rejected  : 0;
+
+            // Tab counts
+            if (byId('tabAll'))      byId('tabAll').textContent      = total;
+            if (byId('tabPending'))  byId('tabPending').textContent  = pending;
+            if (byId('tabApproved')) byId('tabApproved').textContent = approved;
+            if (byId('tabDelivered'))byId('tabDelivered').textContent= delivered;
+            if (byId('tabRejected')) byId('tabRejected').textContent = rejected;
+
+            // Top stat cards
+            if (byId('statPending'))  byId('statPending').textContent  = pending;
+            if (byId('statApproved')) byId('statApproved').textContent = approved;
+            if (byId('statDelivered'))byId('statDelivered').textContent= delivered;
+            if (byId('statRejected')) byId('statRejected').textContent = rejected;
+
+            // Sidebar badges
+            if (byId('navPending'))  byId('navPending').textContent  = pending;
+            if (byId('navApproved')) byId('navApproved').textContent = approved;
+            if (byId('navDelivered'))byId('navDelivered').textContent= delivered;
+        }
+
+        // Fetch full counts from server once, independently of pagination
+        function loadStatusCounts() {
+            frappe.call({
+                method: 'vgjewellry.product_requisition.get_status_counts',
+                callback: function(r) {
+                    if (r && r.message) updateStatusTabs(r.message);
+                }
+            });
+        }
+
+        function buildReqCard(req) {
+            const activeProducts = req.products || [];
+            if (activeProducts.length === 0) return null;
+            const pending   = activeProducts.filter(p => p.status === 'pending').length;
+            const approved  = activeProducts.filter(p => p.status === 'approved').length;
+            const delivered = activeProducts.filter(p => p.status === 'delivered').length;
+            const rejected  = activeProducts.filter(p => p.status === 'rejected').length;
+            const card = document.createElement('div');
+            card.className = 'requisition-card';
+            card.innerHTML = `
+                <div class="req-header">
+                    <div class="req-header-left">
+                        <div class="req-checkbox" onclick="toggleReqSelect('${req.id}')"></div>
+                        <div class="req-info">
+                            <h3>${req.id}</h3>
+                            <div class="req-meta">
+                                <span><i class="fas fa-user"></i> ${req.requestedBy}</span>
+                                <span><i class="fas fa-store"></i> ${req.counter}</span>
+                                <span><i class="fas fa-calendar"></i> ${formatDate(req.requestDate)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="req-badges">
+                        <span class="badge badge-${req.priority}">${req.priority}</span>
+                    </div>
+                </div>
+                <div class="products-grid">
+                    ${activeProducts.map(p => renderProductCard(req.id, p)).join('')}
+                </div>
+                <div class="req-footer">
+                    <div class="req-summary">
+                        <div class="summary-item"><label>Total</label><span>${activeProducts.length}</span></div>
+                        <div class="summary-item"><label><i class="fas fa-clock" style="color:var(--warning)"></i> Pending</label><span class="warning">${pending}</span></div>
+                        <div class="summary-item"><label><i class="fas fa-check-circle" style="color:var(--success)"></i> Approved</label><span class="success">${approved}</span></div>
+                        <div class="summary-item"><label><i class="fas fa-truck" style="color:var(--teal)"></i> Delivered</label><span class="teal">${delivered}</span></div>
+                        <div class="summary-item"><label><i class="fas fa-times-circle" style="color:var(--danger)"></i> Rejected</label><span class="danger">${rejected}</span></div>
+                    </div>
+                    <div class="req-actions">
+                        ${pending > 0 ? `<button class="btn btn-success btn-sm" onclick="approveAllPending('${req.id}')"><i class="fas fa-check-double"></i> Approve All</button>` : ''}
+                        ${approved > 0 ? `<button class="btn btn-teal btn-sm" onclick="deliverAllApproved('${req.id}')"><i class="fas fa-truck"></i> Deliver All</button>` : ''}
+                    </div>
+                </div>`;
+            return card;
+        }
+
+        function renderCards(data) {
             const container = document.getElementById('requisitionContainer');
             container.innerHTML = '';
-
-            let displayData = filteredData;
-            /*if (currentTab !== 'all') {
-                displayData = filteredData.filter(req => {
-                    return req.products.some(p => {
-                        if (currentTab === 'mismatch') return p.imageMatch === 'mismatch' && p.status === 'pending' && !p.removed;
-                        return p.status === currentTab && !p.removed;
-                    });
-                });
-            }*/
-
-            if (displayData.length === 0) {
+            if (!data || data.length === 0) {
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><h3>No Requisitions Found</h3><p>Try changing filters</p></div>`;
                 return;
             }
-
-            displayData.forEach(req => {
-                //const activeProducts = req.products.filter(p => !p.removed);
-                const activeProducts = req.products;
-                if (activeProducts.length === 0) return;
-
-                let productsToShow = activeProducts;
-                /*if (currentTab !== 'all') {
-                    productsToShow = activeProducts.filter(p => {
-                        if (currentTab === 'mismatch') return p.imageMatch === 'mismatch' && p.status === 'pending';
-                        return p.status === currentTab;
-                    });
-                }*/
-                if (productsToShow.length === 0) return;
-
-                const pending = activeProducts.filter(p => p.status === 'pending').length;
-                const approved = activeProducts.filter(p => p.status === 'approved').length;
-                const delivered = activeProducts.filter(p => p.status === 'delivered').length;
-                const rejected = activeProducts.filter(p => p.status === 'rejected').length;
-
-                const card = document.createElement('div');
-                card.className = 'requisition-card';
-                card.innerHTML = `
-                    <div class="req-header">
-                        <div class="req-header-left">
-                            <div class="req-checkbox" onclick="toggleReqSelect('${req.id}')"></div>
-                            <div class="req-info">
-                                <h3>${req.id}</h3>
-                                <div class="req-meta">
-                                    <span><i class="fas fa-user"></i> ${req.requestedBy}</span>
-                                    <span><i class="fas fa-store"></i> ${req.counter}</span>
-                                    <span><i class="fas fa-calendar"></i> ${formatDate(req.requestDate)}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="req-badges">
-                            <span class="badge badge-${req.priority}">${req.priority}</span>
-                        </div>
-                    </div>
-                    <div class="products-grid">
-                        ${productsToShow.map(p => renderProductCard(req.id, p)).join('')}
-                    </div>
-                    <div class="req-footer">
-                        <div class="req-summary">
-                            <div class="summary-item"><label>Total</label><span>${activeProducts.length}</span></div>
-                            <div class="summary-item"><label>Pending</label><span class="warning">${pending}</span></div>
-                            <div class="summary-item"><label>Approved</label><span class="success">${approved}</span></div>
-                            <div class="summary-item"><label>Delivered</label><span class="teal">${delivered}</span></div>
-                            <div class="summary-item"><label>Rejected</label><span class="danger">${rejected}</span></div>
-                        </div>
-                        <div class="req-actions">
-                            ${pending > 0 ? `<button class="btn btn-success btn-sm" onclick="approveAllPending('${req.id}')"><i class="fas fa-check-double"></i> Approve All</button>` : ''}
-                            ${approved > 0 ? `<button class="btn btn-teal btn-sm" onclick="deliverAllApproved('${req.id}')"><i class="fas fa-truck"></i> Deliver All</button>` : ''}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
+            data.forEach(req => {
+                const card = buildReqCard(req);
+                if (card) container.appendChild(card);
             });
+        }
+
+        function appendCards(newData) {
+            const container = document.getElementById('requisitionContainer');
+            // Remove load more btn if exists before appending
+            const oldBtn = document.getElementById('loadMoreBtn');
+            if (oldBtn) oldBtn.remove();
+            (newData || []).forEach(req => {
+                const card = buildReqCard(req);
+                if (card) container.appendChild(card);
+            });
+        }
+
+        function renderLoadMoreBtn() {
+            const container = document.getElementById('requisitionContainer');
+            const oldBtn = document.getElementById('loadMoreBtn');
+            if (oldBtn) oldBtn.remove();
+
+            const loaded  = window.loadedCount  || 0;
+            const total   = window.totalCount   || 0;
+            const pct     = total > 0 ? Math.round((loaded / total) * 100) : 100;
+            const remaining = Math.max(total - loaded, 0);
+
+            const wrapper = document.createElement('div');
+            wrapper.id = 'loadMoreBtn';
+            wrapper.style.cssText = 'padding: 18px 0 8px; text-align:center;';
+            wrapper.innerHTML = `
+                <div style="max-width:420px; margin:0 auto;">
+                    <!-- Progress bar -->
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--gray); margin-bottom:6px;">
+                        <span><i class="fas fa-layer-group" style="margin-right:4px; color:var(--primary);"></i>
+                            <b style="color:var(--dark);">${loaded}</b> of <b style="color:var(--dark);">${total}</b> requisitions loaded
+                        </span>
+                        <span style="color:var(--primary); font-weight:600;">${pct}%</span>
+                    </div>
+                    <div style="background:var(--light-gray); border-radius:99px; height:6px; overflow:hidden; margin-bottom:12px;">
+                        <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--primary), var(--purple)); border-radius:99px; transition:width 0.4s ease;"></div>
+                    </div>
+                    ${window.hasMore ? `
+                    <button class="btn btn-outline"
+                        style="padding:9px 28px; font-size:12px; border-radius:10px; border:2px solid var(--primary); color:var(--primary); font-weight:600;"
+                        onclick="loadPage(window.currentPage + 1, true)">
+                        <i class="fas fa-chevron-down" style="margin-right:6px;"></i>
+                        Load More
+                        <span style="margin-left:6px; font-size:11px; color:var(--gray);">(${remaining} remaining)</span>
+                    </button>` : `
+                    <div style="font-size:12px; color:var(--success); font-weight:600;">
+                        <i class="fas fa-check-circle" style="margin-right:5px;"></i>All requisitions loaded
+                    </div>`}
+                </div>`;
+            container.appendChild(wrapper);
         }
 	function renderProductCard(reqId, p) {
             const match = getMatchInfo(p.imageMatch);
@@ -1831,8 +1930,8 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 <div class="image-comparison">
                     <div class="image-section">
                         <span class="image-label existing">Existing</span>
-                        <div class="product-image-wrapper" onclick="openImageModal('${reqId}', '${p.id}')">
-                            <img src="${getExistingImage(p.sku)}" alt="Existing">
+                        <div class="product-image-wrapper" onclick="openSingleImageModal('existing', '${reqId}', '${p.id}', '${p.item} - ${p.variety}')">
+                            <img id="existing-img-${reqId}-${p.id}" src="${getExistingImage(p.sku)}" alt="Existing">
                             <span class="image-zoom"><i class="fas fa-search-plus"></i></span>
                             <span class="stock-badge ${stockClass}">${getStockLabel(p.inStock)}</span>
                             ${p.status === 'approved' ? '<div class="status-overlay approved"><i class="fas fa-check"></i> Approved</div>' : ''}
@@ -1842,7 +1941,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     </div>
                     <div class="image-section">
                         <span class="image-label required">Required</span>
-                        <div class="product-image-wrapper" onclick="openImageModal('${reqId}', '${p.id}')">
+                        <div class="product-image-wrapper" onclick="openSingleImageModal('required', '${reqId}', '${p.id}', '${p.item} - ${p.variety}')">
                             <img src="${p.req_img}" alt="Required">
                             <span class="image-zoom"><i class="fas fa-search-plus"></i></span>
                         </div>
@@ -1857,20 +1956,20 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                             <h4>${p.item} - ${p.variety}</h4>
                             <span>${p.description} | WT: ${p.weight_range} | Size: ${p.size}</span>
                         </div>
-                        <span class="product-status-badge ${getStatusBadgeClass(p.status)}">${p.status}</span>
+                        <span class="product-status-badge ${getStatusBadgeClass(p.status)}">${getStatusIcon(p.status)} ${p.status}</span>
                     </div>
 
                     <div class="specs-grid">
                         <div class="spec-box"><label>Suggested<span class="ai-tag">AI</span></label><span class="ai">${p.suggested}</span></div>
-                        <div class="spec-box"><label>In Stock</label><span class="${p.in_stock === 0 ? 'zero' : p.in_stock < 5 ? 'low' : 'good'}">${p.in_stock}</span></div>
+                        <div class="spec-box"><label>In Stock</label><span class="${p.in_stock === 0 ? 'zero' : p.in_stock < 5 ? 'low' : 'good'}" onclick="openExistingStockImages('${reqId}', '${p.id}')">${p.in_stock}</span></div>
                         <div class="spec-box"><label>Qty Req</label><span id="qty-req-${reqId}-${p.id}">${p.qty}</span></div>
                         <div class="spec-box"><label>Excess/Short</label><span style="color:var(--primary)">${p.diff}</span></div>
                     </div>
 
                     ${true || p.status === 'pending' ? renderPendingActions(reqId, p) : ''}
-                    ${p.status === 'approved' ? renderApprovedInfo(reqId, p) : ''}
-                    ${p.status === 'delivered' ? renderDeliveredInfo(p) : ''}
-                    ${p.status === 'rejected' ? renderRejectedInfo(reqId, p) : ''}
+                    ${false && p.status === 'approved' ? renderApprovedInfo(reqId, p) : ''}
+                    ${false && p.status === 'delivered' ? renderDeliveredInfo(p) : ''}
+                    ${false && p.status === 'rejected' ? renderRejectedInfo(reqId, p) : ''}
                 </div>
             </div>`;
         }
@@ -1989,6 +2088,16 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             return classes[status] || 'badge-pending';
         }
 
+        function getStatusIcon(status) {
+            const icons = {
+                pending:   '<i class="fas fa-clock"></i>',
+                approved:  '<i class="fas fa-check-circle"></i>',
+                delivered: '<i class="fas fa-truck"></i>',
+                rejected:  '<i class="fas fa-times-circle"></i>'
+            };
+            return icons[status] || '<i class="fas fa-circle"></i>';
+        }
+
 }
 	function handleActionChange(reqId, productId) {
             const actionSelect = document.getElementById(`action-${reqId}-${productId}`);
@@ -2012,6 +2121,313 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 rejectSection.classList.add('show');
             }
         }
+
+        var _searchTimer = null;
+        window.currentSearch = '';
+
+        window.debounceSearch = function() {
+            clearTimeout(_searchTimer);
+            _searchTimer = setTimeout(function() {
+                var q = $("#searchInput").val().trim();
+                if (q === window.currentSearch) return;
+                window.currentSearch = q;
+                window.currentPage = 1;
+                window.requisitionData = [];
+                loadPage(1, false);
+            }, 400);
+        };
+
+        // kept for compatibility but no longer used for DOM filtering
+        window.applyFilters = function() { window.debounceSearch(); };
+	window.currentTab = 'pending';
+
+	window.filterByTab = function(tab) {
+		window.currentTab = tab;
+
+		// Update active tab highlight
+		document.querySelectorAll('.status-tab').forEach(function(btn) {
+			btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+		});
+
+		// Show/hide product cards by status
+		document.querySelectorAll('.requisition-card').forEach(function(card) {
+			var productCards = card.querySelectorAll('.product-card');
+			var visibleCount = 0;
+
+			productCards.forEach(function(pc) {
+				if (tab === 'all') {
+					pc.style.display = '';
+					visibleCount++;
+				} else {
+					var show = pc.classList.contains('status-' + tab);
+					pc.style.display = show ? '' : 'none';
+					if (show) visibleCount++;
+				}
+			});
+
+			// Hide the whole requisition-card if none of its products match
+			card.style.display = visibleCount > 0 ? '' : 'none';
+		});
+	}
+
+	window.resetFilters = function(){
+		$("#searchInput").val("");
+		window.currentSearch = '';
+		window.currentPage = 1;
+		window.requisitionData = [];
+		loadPage(1, false);
+		window.filterByTab('all');
+	}
+        // Opens modal showing a single image (type = 'required' or 'existing')
+        window.openSingleImageModal = function(type, reqId, productId, productName) {
+            const modalEl = document.getElementById('imageModal');
+            const iconEl  = document.getElementById('modalImageTypeIcon');
+            const imgEl   = document.getElementById('modalSingleImage');
+            const matchEl = document.getElementById('modalMatchInfo');
+
+            let src = '';
+            if (type === 'required') {
+                // Read from the required image DOM element
+                const card = document.getElementById(`product-${reqId}-${productId}`);
+                if (card) {
+                    const reqImg = card.querySelector('.image-section:last-child img');
+                    if (reqImg) src = reqImg.src;
+                }
+                if (iconEl) iconEl.innerHTML = `<i class="fas fa-shopping-cart" style="color:var(--purple);margin-right:8px;"></i> Required — ${productName || ''}`;
+            } else {
+                // Read from the existing image DOM element
+                const domExist = document.getElementById(`existing-img-${reqId}-${productId}`);
+                if (domExist) src = domExist.src;
+                if (iconEl) iconEl.innerHTML = `<i class="fas fa-warehouse" style="color:var(--info);margin-right:8px;"></i> Existing Stock — ${productName || ''}`;
+            }
+
+            if (imgEl) imgEl.src = src || '';
+            if (matchEl) matchEl.textContent = '';
+            if (modalEl) modalEl.classList.add('active');
+        };
+
+        // Keep openImageModal as alias used by Compare button (shows required image)
+        window.openImageModal = function(reqId, productId) {
+            const data = (window.requisitionData || []);
+            const req  = data.find(r => String(r.id) === String(reqId));
+            const product = req ? req.products.find(p => String(p.id) === String(productId)) : null;
+            const name = product ? `${product.item} - ${product.variety}` : '';
+            window.openSingleImageModal('required', reqId, productId, name);
+        };
+
+        window.closeImageModal = function() {
+            const modalEl = document.getElementById('imageModal');
+            if (modalEl) {
+                modalEl.classList.remove('active');
+            }
+        };
+
+        window.openExistingStockImages = function(reqId, productId) {
+            const data = (window.requisitionData || []);
+            const req = data.find(r => String(r.id) === String(reqId));
+            if (!req || !req.products) {
+                frappe.msgprint(__('Requisition not found'));
+                return;
+            }
+
+            const product = req.products.find(p => String(p.id) === String(productId));
+            if (!product) {
+                frappe.msgprint(__('Product not found'));
+                return;
+            }
+
+            const branch_id = parseInt(product.branch_id || product.branch || req.branch_id || req.branch, 10);
+            const item_id = parseInt(product.item_id, 10);
+            const variety_id = parseInt(product.variety_id, 10);
+            const wt_range = product.weight_range;
+
+            if (!branch_id || !item_id || !variety_id || !wt_range) {
+                frappe.msgprint(__('Missing product identifiers for stock images.'));
+                return;
+            }
+
+            frappe.call({
+                method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
+                type: "POST",
+                args: {
+                    branch_id: branch_id,
+                    item_id: item_id,
+                    variety_id: variety_id,
+                    wt_range: wt_range,
+                },
+                callback: function (r) {
+                    if (r.message && Object.keys(r.message).length > 0) {
+                        let html = '';
+                        let firstImgPath = null;
+                        let branches = Object.keys(r.message);
+
+                        // Move clicked branch to first
+                        branches.sort((a,b) => {
+                            if (a == branch_id) return -1;
+                            if (b == branch_id) return 1;
+                            return a - b; // sort remaining numerically
+                        });
+
+                        let branch_code = {};
+                        branches.forEach(branch => {
+                            r.message[branch].forEach(img_obj => {
+                                branch_code[branch] = img_obj["BranchCode"];
+                            });
+                        });
+
+                        branches.forEach(branch => {
+                            html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
+
+                            r.message[branch].forEach(img_obj => {
+                                let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+
+                                if (!firstImgPath) {
+                                    firstImgPath = img_path;
+                                }
+
+                                html += `<div style="display:inline-block; margin:5px; text-align:center; cursor:pointer;">
+                                    <img src="${img_path}"
+                                         style="max-width:150px; max-height:150px; display:block;"
+                                         onclick="setExistingThumbnail('${reqId}', '${productId}', '${img_path}')" />
+                                    <div>Label: ${img_obj.LabelNo}</div>
+                                    <div>Wt: ${img_obj.NetWt}</div>
+                                 </div>`;
+                            });
+
+                            html += '</div><hr>';
+                        });
+
+                        let d = new frappe.ui.Dialog({
+                            title: 'Product Images by Branch',
+                            size: 'large',
+                            fields: [
+                                { fieldname: 'images_html', fieldtype: 'HTML', options: html }
+                            ]
+                        });
+                        d.show();
+
+                        // Center and set width ~80% of screen
+                        const $wrapper = d.$wrapper || d.wrapper;
+                        if ($wrapper && $wrapper.find) {
+                            $wrapper.find('.modal-dialog')
+                                .addClass('modal-dialog-centered')
+                                .css({
+                                    maxWidth: '80vw',
+                                    width: '80vw',
+                                    margin: '0 auto'
+                                });
+                        }
+                    } else {
+                        frappe.msgprint("No images found.");
+                    }
+                }
+            });
+        };
+
+        window.setExistingThumbnail = function(reqId, productId, imgPath) {
+            const thumb = document.getElementById(`existing-img-${reqId}-${productId}`);
+            if (thumb) {
+                thumb.src = imgPath;
+            }
+        };
+
+        window.saveProduct = function(reqId, productId) {
+            const data = (window.requisitionData || []);
+            const req = data.find(r => String(r.id) === String(reqId));
+            if (!req || !req.products) {
+                frappe.msgprint(__('Requisition not found'));
+                return;
+            }
+
+            const product = req.products.find(p => String(p.id) === String(productId));
+            if (!product) {
+                frappe.msgprint(__('Product not found'));
+                return;
+            }
+
+            const qtyReqEl = document.getElementById(`qty-req-${reqId}-${productId}`);
+            const qtyGivenEl = document.getElementById(`qty-${reqId}-${productId}`);
+            const actionEl = document.getElementById(`action-${reqId}-${productId}`);
+            const approveEl = document.getElementById(`approvalReason-${reqId}-${productId}`);
+            const rejectEl = document.getElementById(`rejectionReason-${reqId}-${productId}`);
+            const remarksEl = document.getElementById(`remarks-${reqId}-${productId}`);
+            const dateEl = document.getElementById(`date-${reqId}-${productId}`);
+
+            const qtyReq = qtyReqEl ? parseInt(qtyReqEl.textContent || qtyReqEl.innerText || '0', 10) || 0 : 0;
+            const qtyGiven = qtyGivenEl ? parseInt(qtyGivenEl.value || '0', 10) || 0 : 0;
+            const action = actionEl ? actionEl.value : '';
+
+            const approveReason = approveEl ? approveEl.value : '';
+            const rejectReason = rejectEl ? rejectEl.value : '';
+            const remarks = remarksEl ? remarksEl.value : '';
+            const deliveryDate = dateEl ? dateEl.value : '';
+
+            const selected_images = product.req_img || '';
+
+            if (!selected_images) {
+                frappe.msgprint(__('Product Images For Forwarding To Purchase Department'));
+                return;
+            }
+
+            if (!action || action === 'pending') {
+                frappe.msgprint(__('Please Select Action.'));
+                return;
+            }
+
+            if (action === 'approved' && qtyReq < qtyGiven && !approveReason) {
+                frappe.msgprint(__('Please select a reason for the action.'));
+                return;
+            }
+
+            if ((action === 'approved' && qtyReq > qtyGiven && !rejectReason) ||
+                (action === 'rejected' && !rejectReason)) {
+                frappe.msgprint(__('Please select a reason for the action.'));
+                return;
+            }
+
+            if (action === 'approved' && !deliveryDate) {
+                frappe.msgprint(__('Please select a delivery date.'));
+                return;
+            }
+
+            const status =
+                action === 'approved' ? 'Approve' :
+                action === 'rejected' ? 'Reject' : '';
+
+            frappe.call({
+                method: "vgjewellry.product_requisition.save_product_details",
+                type: "POST",
+                args: {
+                    used_ids: product.used_ids,
+                    branch_id: product.branch,
+                    item_id: product.item_id,
+                    variety_id: product.variety_id,
+                    wt_id: product.wt_id,
+                    size_id: product.size_id,
+                    jota: product.jota,
+                    suggested: product.suggested,
+                    in_stock: product.in_stock,
+                    diff: product.diff,
+                    qty_req: qtyReq,
+                    qty_given: qtyGiven,
+                    status: status,
+                    approve_reason: approveReason,
+                    reject_reason: rejectReason,
+                    remarks: remarks,
+                    delivery_date: deliveryDate,
+                    selected_images: selected_images
+                },
+                callback: function (r) {
+                    if (!r.exc) {
+                        const card = document.getElementById(`product-${reqId}-${productId}`);
+                        if (card && card.parentNode) {
+                            card.parentNode.removeChild(card);
+                        }
+                        frappe.msgprint(__('Saved Successfully!'));
+                    }
+                }
+            });
+        };
 
 // Legacy Product Requisition page functions copied from product_requistion.js
 frappe.pages['product-requistion'].on_page_load = function(wrapper) {
@@ -2369,6 +2785,18 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 						]
 					});
 					d.show();
+
+					// Center and set width ~80% of screen
+					const $wrapper = d.$wrapper || d.wrapper;
+					if ($wrapper && $wrapper.find) {
+						$wrapper.find('.modal-dialog')
+							.addClass('modal-dialog-centered')
+							.css({
+								maxWidth: '80vw',
+								width: '80vw',
+								margin: '0 auto'
+							});
+					}
 				} else {
 					frappe.msgprint("No images found.");
 				}
