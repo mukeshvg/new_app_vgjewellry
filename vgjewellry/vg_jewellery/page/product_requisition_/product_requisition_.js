@@ -1665,6 +1665,34 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         </div>
     </div>
 
+    <!-- Stock Images Modal -->
+    <div class="modal-overlay" id="stockImagesModal" onclick="closeStockModal()" style="z-index:4000;">
+        <div class="modal" style="max-width:780px; width:95vw; max-height:90vh; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+            <div class="modal-header" style="flex-shrink:0;">
+                <h3><i class="fas fa-warehouse" style="color:var(--info)"></i> <span id="stockModalTitle">Existing Stock Images</span></h3>
+                <button class="modal-close" onclick="closeStockModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Selected / preview image -->
+            <div style="flex-shrink:0; background:#f8fafc; padding:14px 20px; border-bottom:1px solid var(--light-gray); text-align:center;">
+                <img id="stockModalPreview" src="" alt="Preview"
+                     style="max-height:220px; max-width:100%; object-fit:contain; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.12);">
+            </div>
+            <!-- Thumbnail grid -->
+            <div id="stockModalGrid" style="overflow-y:auto; padding:16px 20px; flex:1; display:flex; flex-direction:column; gap:16px;"></div>
+            <div class="modal-footer" style="flex-shrink:0;">
+                <span id="stockModalMeta" style="font-size:11px; color:var(--gray);"></span>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-primary btn-sm" onclick="confirmStockSelection()">
+                        <i class="fas fa-check"></i> Use Selected
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="closeStockModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Remove Modal -->
     <div class="modal-overlay" id="removeModal">
         <div class="modal">
@@ -2202,113 +2230,146 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             }
         };
 
+        // Track current stock modal context
+        window._stockModal = { reqId: null, productId: null, selectedImg: null };
+
         window.openExistingStockImages = function(reqId, productId) {
             const data = (window.requisitionData || []);
-            const req = data.find(r => String(r.id) === String(reqId));
-            if (!req || !req.products) {
-                frappe.msgprint(__('Requisition not found'));
-                return;
-            }
+            const req  = data.find(r => String(r.id) === String(reqId));
+            if (!req || !req.products) { frappe.msgprint(__('Requisition not found')); return; }
 
             const product = req.products.find(p => String(p.id) === String(productId));
-            if (!product) {
-                frappe.msgprint(__('Product not found'));
-                return;
-            }
+            if (!product) { frappe.msgprint(__('Product not found')); return; }
 
-            const branch_id = parseInt(product.branch_id || product.branch || req.branch_id || req.branch, 10);
-            const item_id = parseInt(product.item_id, 10);
+            const branch_id  = parseInt(product.branch_id || product.branch || req.branch_id || req.branch, 10);
+            const item_id    = parseInt(product.item_id, 10);
             const variety_id = parseInt(product.variety_id, 10);
-            const wt_range = product.weight_range;
+            const wt_range   = product.weight_range;
 
             if (!branch_id || !item_id || !variety_id || !wt_range) {
-                frappe.msgprint(__('Missing product identifiers for stock images.'));
-                return;
+                frappe.msgprint(__('Missing product identifiers for stock images.')); return;
             }
+
+            // Store context for "Use Selected"
+            window._stockModal.reqId     = reqId;
+            window._stockModal.productId = productId;
+            window._stockModal.selectedImg = null;
+
+            // Show modal in loading state
+            const modalEl  = document.getElementById('stockImagesModal');
+            const titleEl  = document.getElementById('stockModalTitle');
+            const gridEl   = document.getElementById('stockModalGrid');
+            const previewEl= document.getElementById('stockModalPreview');
+            const metaEl   = document.getElementById('stockModalMeta');
+
+            titleEl.textContent  = `${product.item} — ${product.variety} | ${product.weight_range}`;
+            gridEl.innerHTML     = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Loading images...</p></div>';
+            previewEl.src        = '';
+            previewEl.style.display = 'none';
+            metaEl.textContent   = '';
+            modalEl.style.display = 'flex';
 
             frappe.call({
                 method: "vgjewellry.product_requisition_for_po.get_existing_product_image_manager",
                 type: "POST",
-                args: {
-                    branch_id: branch_id,
-                    item_id: item_id,
-                    variety_id: variety_id,
-                    wt_range: wt_range,
-                },
-                callback: function (r) {
-                    if (r.message && Object.keys(r.message).length > 0) {
-                        let html = '';
-                        let firstImgPath = null;
-                        let branches = Object.keys(r.message);
+                args: { branch_id, item_id, variety_id, wt_range },
+                callback: function(r) {
+                    if (!r.message || !Object.keys(r.message).length) {
+                        gridEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray);"><i class="fas fa-image fa-2x"></i><p style="margin-top:10px;">No images found.</p></div>';
+                        return;
+                    }
 
-                        // Move clicked branch to first
-                        branches.sort((a,b) => {
-                            if (a == branch_id) return -1;
-                            if (b == branch_id) return 1;
-                            return a - b; // sort remaining numerically
+                    let branches = Object.keys(r.message);
+                    // Own branch first
+                    branches.sort((a, b) => {
+                        if (a == branch_id) return -1;
+                        if (b == branch_id) return 1;
+                        return a - b;
+                    });
+
+                    let firstImgPath = null;
+                    let totalImgs    = 0;
+                    let gridHTML     = '';
+
+                    branches.forEach(branch => {
+                        const imgs = r.message[branch];
+                        if (!imgs || !imgs.length) return;
+                        const branchCode = imgs[0].BranchCode || branch;
+
+                        gridHTML += `
+                        <div>
+                            <div style="font-size:12px; font-weight:700; color:var(--primary); margin-bottom:8px; padding:4px 8px; background:var(--primary-light); border-radius:6px; display:inline-block;">
+                                <i class="fas fa-store" style="margin-right:5px;"></i>${branchCode}
+                                ${branch == branch_id ? '<span style="margin-left:6px; font-size:10px; background:var(--primary); color:white; padding:1px 6px; border-radius:10px;">Your Branch</span>' : ''}
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">`;
+
+                        imgs.forEach(img_obj => {
+                            const img_path = img_obj.ImagePath1.replace(/\\/g, '/');
+                            if (!firstImgPath) firstImgPath = img_path;
+                            totalImgs++;
+
+                            gridHTML += `
+                            <div class="stock-thumb-item" data-img="${img_path}"
+                                 onclick="selectStockThumb(this, '${img_path}')"
+                                 style="cursor:pointer; text-align:center; border:2px solid var(--light-gray); border-radius:10px; padding:8px; transition:all 0.2s; width:130px; flex-shrink:0;">
+                                <img src="${img_path}"
+                                     style="width:110px; height:110px; object-fit:cover; border-radius:7px; display:block; margin:0 auto;">
+                                <div style="margin-top:5px; font-size:10px; color:var(--gray); font-weight:600;">${img_obj.LabelNo || ''}</div>
+                                <div style="font-size:10px; color:var(--gray);">${img_obj.NetWt ? img_obj.NetWt + 'g' : ''}</div>
+                            </div>`;
                         });
 
-                        let branch_code = {};
-                        branches.forEach(branch => {
-                            r.message[branch].forEach(img_obj => {
-                                branch_code[branch] = img_obj["BranchCode"];
-                            });
-                        });
+                        gridHTML += `</div></div>`;
+                    });
 
-                        branches.forEach(branch => {
-                            html += `<h4>Branch: ${branch_code[branch]}</h4><div style="margin-bottom:15px;">`;
+                    gridEl.innerHTML = gridHTML;
+                    metaEl.textContent = `${totalImgs} image${totalImgs !== 1 ? 's' : ''} found`;
 
-                            r.message[branch].forEach(img_obj => {
-                                let img_path = img_obj.ImagePath1.replace(/\\/g, '/');
-
-                                if (!firstImgPath) {
-                                    firstImgPath = img_path;
-                                }
-
-                                html += `<div style="display:inline-block; margin:5px; text-align:center; cursor:pointer;">
-                                    <img src="${img_path}"
-                                         style="max-width:150px; max-height:150px; display:block;"
-                                         onclick="setExistingThumbnail('${reqId}', '${productId}', '${img_path}')" />
-                                    <div>Label: ${img_obj.LabelNo}</div>
-                                    <div>Wt: ${img_obj.NetWt}</div>
-                                 </div>`;
-                            });
-
-                            html += '</div><hr>';
-                        });
-
-                        let d = new frappe.ui.Dialog({
-                            title: 'Product Images by Branch',
-                            size: 'large',
-                            fields: [
-                                { fieldname: 'images_html', fieldtype: 'HTML', options: html }
-                            ]
-                        });
-                        d.show();
-
-                        // Center and set width ~80% of screen
-                        const $wrapper = d.$wrapper || d.wrapper;
-                        if ($wrapper && $wrapper.find) {
-                            $wrapper.find('.modal-dialog')
-                                .addClass('modal-dialog-centered')
-                                .css({
-                                    maxWidth: '80vw',
-                                    width: '80vw',
-                                    margin: '0 auto'
-                                });
-                        }
-                    } else {
-                        frappe.msgprint("No images found.");
+                    // Auto-select first image
+                    if (firstImgPath) {
+                        const firstThumb = gridEl.querySelector('.stock-thumb-item');
+                        if (firstThumb) selectStockThumb(firstThumb, firstImgPath);
+                        // Also set it on the card thumbnail immediately
+                        window.setExistingThumbnail(reqId, productId, firstImgPath);
                     }
                 }
             });
         };
 
+        window.selectStockThumb = function(el, imgPath) {
+            // Deselect all
+            document.querySelectorAll('.stock-thumb-item').forEach(t => {
+                t.style.borderColor = 'var(--light-gray)';
+                t.style.background  = 'white';
+            });
+            // Select clicked
+            el.style.borderColor = 'var(--primary)';
+            el.style.background  = 'var(--primary-light)';
+
+            // Show in preview
+            const previewEl = document.getElementById('stockModalPreview');
+            previewEl.src = imgPath;
+            previewEl.style.display = 'block';
+
+            window._stockModal.selectedImg = imgPath;
+        };
+
+        window.confirmStockSelection = function() {
+            const { reqId, productId, selectedImg } = window._stockModal;
+            if (selectedImg) {
+                window.setExistingThumbnail(reqId, productId, selectedImg);
+            }
+            closeStockModal();
+        };
+
+        window.closeStockModal = function() {
+            document.getElementById('stockImagesModal').style.display = 'none';
+        };
+
         window.setExistingThumbnail = function(reqId, productId, imgPath) {
             const thumb = document.getElementById(`existing-img-${reqId}-${productId}`);
-            if (thumb) {
-                thumb.src = imgPath;
-            }
+            if (thumb) thumb.src = imgPath;
         };
 
         window.saveProduct = function(reqId, productId) {
