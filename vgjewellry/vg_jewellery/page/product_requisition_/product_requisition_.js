@@ -334,7 +334,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         .stat-icon.approved { background: var(--success-light); color: var(--success); }
         .stat-icon.rejected { background: var(--danger-light); color: var(--danger); }
         .stat-icon.delivered { background: var(--teal-light); color: var(--teal); }
-        .stat-icon.mismatch { background: var(--purple-light); color: var(--purple); }
 
         .stat-info h3 {
             font-size: 20px;
@@ -771,7 +770,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
         .match-indicator.match { background: var(--success-light); color: var(--success); }
         .match-indicator.partial { background: var(--warning-light); color: var(--warning); }
-        .match-indicator.mismatch { background: var(--danger-light); color: var(--danger); }
 
         /* Product Details */
         .product-details {
@@ -1590,13 +1588,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     <p>Delivered</p>
                 </div>
             </div>
-            <div class="stat-card" onclick="filterByTab('mismatch')">
-                <div class="stat-icon mismatch"><i class="fas fa-exclamation-triangle"></i></div>
-                <div class="stat-info">
-                    <h3 id="statMismatch">4</h3>
-                    <p>Mismatch</p>
-                </div>
-            </div>
             <div class="stat-card" onclick="filterByTab('rejected')">
                 <div class="stat-icon rejected"><i class="fas fa-times-circle"></i></div>
                 <div class="stat-info">
@@ -1641,7 +1632,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             <select class="filter-select" id="matchFilter" onchange="applyFilters()">
                 <option value="">All Match</option>
                 <option value="match">Matching</option>
-                <option value="mismatch">Mismatch</option>
             </select>-->
             <button class="btn btn-outline" onclick="resetFilters()">
                 <i class="fas fa-redo"></i> Reset
@@ -1920,7 +1910,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             container.appendChild(wrapper);
         }
 	function renderProductCard(reqId, p) {
-            const match = getMatchInfo(p.imageMatch);
             const stockClass = getStockClass(p.in_stock, p.suggested);
 
             return `
@@ -1948,7 +1937,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     </div>
                 </div>
 
-                <div class="match-indicator ${match.class}"><i class="fas fa-${match.icon}"></i> ${match.text}</div>
 
                 <div class="product-details">
                     <div class="product-header">
@@ -2060,14 +2048,6 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         }
 
 
-	function getMatchInfo(match) {
-            const info = {
-                match: { class: 'match', icon: 'check-circle', text: 'Match' },
-                partial: { class: 'partial', icon: 'exclamation-circle', text: 'Partial' },
-                mismatch: { class: 'mismatch', icon: 'times-circle', text: 'Mismatch' }
-            };
-            return info[match] || info.mismatch;
-        }
 	 function getStockClass(stock, suggested) {
             if (stock === 0) return 'no-stock';
             if (stock < suggested * 0.5) return 'low-stock';
