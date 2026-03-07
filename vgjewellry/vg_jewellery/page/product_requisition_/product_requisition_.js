@@ -2833,26 +2833,26 @@ frappe.pages['product-requistion'].on_page_load = function(wrapper) {
 					var imgs = r.message[branch];
 					if (!imgs || !imgs.length) return;
 					var branchCode = imgs[0].BranchCode || branch;
-					gridHTML += \`<div>
+					gridHTML += `<div>
 						<div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px;padding:4px 8px;background:var(--primary-light);border-radius:6px;display:inline-block;">
 							<i class="fas fa-store" style="margin-right:5px;"></i>\${branchCode}
 							\${branch == branch_id ? '<span style="margin-left:6px;font-size:10px;background:var(--primary);color:white;padding:1px 6px;border-radius:10px;">Your Branch</span>' : ''}
 						</div>
-						<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">\`;
+						<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">`;
 
 					imgs.forEach(img_obj => {
 						var img_path = img_obj.ImagePath1.replace(/\\/g, '/');
 						if (!firstImgPath) firstImgPath = img_path;
 						totalImgs++;
-						gridHTML += \`<div class="stock-thumb-item" data-img="\${img_path}"
+						gridHTML += `<div class="stock-thumb-item" data-img="\${img_path}"
 							onclick="selectStockThumb(this, \'\${img_path}\')"
 							style="cursor:pointer;text-align:center;border:2px solid var(--light-gray);border-radius:10px;padding:8px;transition:all 0.2s;width:130px;flex-shrink:0;">
 							<img src="\${img_path}" style="width:110px;height:110px;object-fit:cover;border-radius:7px;display:block;margin:0 auto;">
 							<div style="margin-top:5px;font-size:10px;color:var(--gray);font-weight:600;">\${img_obj.LabelNo || ''}</div>
 							<div style="font-size:10px;color:var(--gray);">\${img_obj.NetWt ? img_obj.NetWt + 'g' : ''}</div>
-						</div>\`;
+						</div>`;
 					});
-					gridHTML += \`</div></div>\`;
+					gridHTML += `</div></div>`;
 				});
 
 				gridEl.innerHTML   = gridHTML;
