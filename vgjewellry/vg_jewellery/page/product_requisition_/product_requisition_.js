@@ -8,6 +8,20 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 		faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
 		document.head.appendChild(faLink);
 	}
+	// Load flatpickr CSS + JS via CDN (once)
+	if (!document.getElementById('flatpickr-css-cdn')) {
+		var fpCss = document.createElement('link');
+		fpCss.id  = 'flatpickr-css-cdn';
+		fpCss.rel = 'stylesheet';
+		fpCss.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+		document.head.appendChild(fpCss);
+	}
+	if (!document.getElementById('flatpickr-js-cdn')) {
+		var fpScript = document.createElement('script');
+		fpScript.id  = 'flatpickr-js-cdn';
+		fpScript.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+		document.head.appendChild(fpScript);
+	}
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'Product Requisition New',
@@ -918,6 +932,15 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             background: white;
         }
 
+        /* flatpickr altInput inherits full width */
+        .input-group .flatpickr-input.flatpickr-alt-input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .input-group input.flatpickr-input:not(.flatpickr-alt-input) {
+            display: none !important;
+        }
+
         /* Action Select Styling */
         .action-select {
             font-weight: 600;
@@ -1654,9 +1677,27 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 <h3 id="modalImageTypeIcon"></h3>
                 <button class="image-modal-close" onclick="closeImageModal()"><i class="fas fa-times"></i></button>
             </div>
-            <div style="display:flex; align-items:center; justify-content:center; padding:20px; background:#f8fafc; flex-shrink:0;">
+            <!-- Zoom controls -->
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 16px 0;flex-shrink:0;background:#f8fafc;">
+                <button onclick="modalZoom(0.25)" title="Zoom In"
+                    style="width:30px;height:30px;border-radius:7px;border:1px solid var(--light-gray);background:white;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--dark);">
+                    <i class="fas fa-search-plus"></i></button>
+                <button onclick="modalZoom(-0.25)" title="Zoom Out"
+                    style="width:30px;height:30px;border-radius:7px;border:1px solid var(--light-gray);background:white;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--dark);">
+                    <i class="fas fa-search-minus"></i></button>
+                <button onclick="modalZoomReset()" title="Reset"
+                    style="width:30px;height:30px;border-radius:7px;border:1px solid var(--light-gray);background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--dark);">
+                    <i class="fas fa-undo"></i></button>
+                <span id="modalZoomLabel" style="font-size:11px;color:var(--gray);margin-left:2px;min-width:36px;">100%</span>
+                <span style="font-size:10px;color:var(--gray);margin-left:4px;"><i class="fas fa-hand-paper"></i> Drag to pan &nbsp;·&nbsp; <i class="fas fa-mouse"></i> Scroll to zoom</span>
+            </div>
+            <!-- Pannable / zoomable image viewport -->
+            <div id="modalImgViewport"
+                 style="overflow:hidden;position:relative;flex-shrink:0;height:52vh;background:#f8fafc;cursor:grab;user-select:none;">
                 <img id="modalSingleImage" src="" alt="Product Image"
-                     style="max-width:100%; max-height:52vh; object-fit:contain; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                     style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transform-origin:center center;
+                            max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;
+                            box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:none;pointer-events:none;">
             </div>
             <!-- Thumbnail strip — shown only for existing stock images -->
             <div id="modalThumbStrip" style="display:none; flex-shrink:0; padding:10px 16px; background:#fff; border-top:1px solid var(--light-gray); overflow-x:auto; white-space:nowrap;">
@@ -1856,6 +1897,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                                 <span><i class="fas fa-store"></i> ${req.counter}</span>
                                 <span><i class="fas fa-calendar"></i> ${formatDate(req.requestDate)}</span>
                             </div>
+                            ${req.remark ? `<div style="margin-top:6px;display:flex;align-items:flex-start;gap:6px;">
+                                <i class="fas fa-comment-dots" style="color:var(--gold);font-size:11px;margin-top:2px;flex-shrink:0;"></i>
+                                <span style="font-size:11px;color:var(--dark);font-style:italic;">"${req.remark}"</span>
+                            </div>` : ''}
                         </div>
                     </div>
                     <div class="req-badges">
@@ -1926,6 +1971,53 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             });
         }
 
+        function initDatePickers() {
+            function attachPickers() {
+                document.querySelectorAll('input[id^="date-"]').forEach(function(el) {
+                    if (el._flatpickr) return;
+                    var fp = flatpickr(el, {
+                        dateFormat: 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'd/m/Y',
+                        minDate: 'today',
+                        allowInput: false,
+                        disableMobile: true,
+                        clickOpens: true,
+                        onReady: function(selectedDates, dateStr, instance) {
+                            // Style the altInput to match .input-group inputs
+                            var alt = instance.altInput;
+                            if (alt) {
+                                alt.style.cssText = [
+                                    'width:100%',
+                                    'padding:7px 9px',
+                                    'border:2px solid var(--light-gray)',
+                                    'border-radius:6px',
+                                    'font-size:11px',
+                                    'cursor:pointer',
+                                    'background:white',
+                                    'box-sizing:border-box'
+                                ].join(';');
+                                alt.placeholder = 'dd/mm/yyyy';
+                                // clicking altInput opens calendar
+                                alt.addEventListener('click', function() { fp.open(); });
+                            }
+                        }
+                    });
+                });
+            }
+
+            if (typeof flatpickr !== 'undefined') {
+                attachPickers();
+            } else {
+                var poll = setInterval(function() {
+                    if (typeof flatpickr !== 'undefined') {
+                        clearInterval(poll);
+                        attachPickers();
+                    }
+                }, 50);
+            }
+        }
+
         function renderCards(data) {
             const container = document.getElementById('requisitionContainer');
             container.innerHTML = '';
@@ -1938,6 +2030,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 if (card) container.appendChild(card);
             });
             autoLoadExistingImages(data);
+            initDatePickers();
         }
 
         function appendCards(newData) {
@@ -1950,6 +2043,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 if (card) container.appendChild(card);
             });
             autoLoadExistingImages(newData);
+            initDatePickers();
         }
 
         function renderLoadMoreBtn() {
@@ -2089,7 +2183,8 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-calendar-alt"></i> Delivery Date</label>
-                        <input type="date" id="date-${reqId}-${p.id}" value="${p.deliveryDate || ''}" min="${getTodayDate()}">
+                        <input type="text" id="date-${reqId}-${p.id}" placeholder="dd/mm/yyyy" autocomplete="off"
+                               style="cursor:pointer;" readonly>
                     </div>
                 </div>
 
@@ -2114,7 +2209,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 <div class="input-row">
                     <div class="input-group full-width">
                         <label><i class="fas fa-comment-alt"></i> Manager Remarks</label>
-                        <textarea id="remarks-${reqId}-${p.id}" placeholder="Add remarks...">${p.managerRemarks}</textarea>
+                        <textarea id="remarks-${reqId}-${p.id}" placeholder="Add remarks...">${p.managerRemarks || ''}</textarea>
                     </div>
                 </div>
             </div>
@@ -2240,8 +2335,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 		loadPage(1, false);
 		window.filterByTab('all');
 	}
-        // Opens modal showing a single image (type = 'required' or 'existing')
-        // openSingleImageModal — shows required image only (no thumbnails)
+        // Opens modal showing ALL required images fetched from DB for this requisition item
         window.openSingleImageModal = function(reqId, productId) {
             const data    = window.requisitionData || [];
             const req     = data.find(r => String(r.id) === String(reqId));
@@ -2253,26 +2347,91 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             const imgEl      = document.getElementById('modalSingleImage');
             const matchEl    = document.getElementById('modalMatchInfo');
             const thumbStrip = document.getElementById('modalThumbStrip');
+            const thumbList  = document.getElementById('modalThumbList');
+            const thumbLoader= document.getElementById('modalThumbLoader');
 
-            // Read required image from DOM
-            let src = '';
+            if (iconEl) iconEl.innerHTML = '<i class="fas fa-shopping-cart" style="color:var(--purple);margin-right:8px;"></i> Required Images — ' + name;
+            if (matchEl) matchEl.textContent = '';
+
+            // Show first image immediately from DOM while we load the rest
+            let firstSrc = '';
             const card = document.getElementById('product-' + reqId + '-' + productId);
             if (card) {
                 const reqImg = card.querySelector('.image-section:last-child img');
-                if (reqImg) src = reqImg.src;
+                if (reqImg) firstSrc = reqImg.src;
+            }
+            if (imgEl) imgEl.src = firstSrc || '';
+
+            // Show thumb strip with spinner
+            if (thumbStrip) thumbStrip.style.display = 'block';
+            if (thumbList)  thumbList.innerHTML = '';
+            if (thumbLoader) thumbLoader.style.display = 'block';
+            if (modalEl)    modalEl.classList.add('active');
+
+            if (!product || !product.used_ids) {
+                if (thumbLoader) thumbLoader.style.display = 'none';
+                if (thumbList)   thumbList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">No image info available.</span>';
+                return;
             }
 
-            if (iconEl) iconEl.innerHTML = '<i class="fas fa-shopping-cart" style="color:var(--purple);margin-right:8px;"></i> Required — ' + name;
-            if (imgEl)      imgEl.src = src || '';
-            if (matchEl)    matchEl.textContent = '';
-            if (thumbStrip) thumbStrip.style.display = 'none';
-            if (modalEl)    modalEl.classList.add('active');
+            // Fetch all images for this requisition item from DB
+            frappe.call({
+                method: "vgjewellry.product_requisition.get_item_image",
+                type: "POST",
+                args: { used_id: product.used_ids },
+                callback: function(r) {
+                    if (thumbLoader) thumbLoader.style.display = 'none';
+
+                    const images = r.message;
+                    if (!images || !images.length) {
+                        if (thumbList) thumbList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">No images found.</span>';
+                        return;
+                    }
+
+                    // Set main image to first result
+                    const firstPath = (images[0] || '').replace(/\\/g, '/');
+                    if (imgEl && firstPath) imgEl.src = firstPath;
+
+                    // Build thumbnail strip
+                    let thumbHTML = '';
+                    images.forEach(function(imgPath, idx) {
+                        const cleanPath = (imgPath || '').replace(/\\/g, '/');
+                        const safePath  = cleanPath.replace(/'/g, "\\'");
+                        const border    = idx === 0
+                            ? 'border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-light);'
+                            : 'border-color:var(--light-gray);';
+                        thumbHTML += '<div onclick="switchRequiredModalImage(this,\'' + safePath + '\')"'
+                            + ' style="cursor:pointer;border:2px solid;' + border + 'border-radius:8px;overflow:hidden;flex-shrink:0;transition:all 0.15s;text-align:center;">'
+                            + '<img src="' + cleanPath + '" style="width:60px;height:60px;object-fit:cover;display:block;">'
+                            + '<div style="font-size:9px;color:var(--gray);padding:2px 3px;">Image ' + (idx + 1) + '</div>'
+                            + '</div>';
+                    });
+                    if (thumbList) thumbList.innerHTML = thumbHTML;
+                }
+            });
+        };
+
+        // Switch main preview when a required-image thumbnail is clicked
+        window.switchRequiredModalImage = function(el, imgPath) {
+            const imgEl = document.getElementById('modalSingleImage');
+            if (imgEl) imgEl.src = imgPath;
+            _mzReset(false);
+            const strip = document.getElementById('modalThumbList');
+            if (strip) {
+                strip.querySelectorAll('div[onclick]').forEach(function(t) {
+                    t.style.borderColor = 'var(--light-gray)';
+                    t.style.boxShadow   = 'none';
+                });
+            }
+            el.style.borderColor = 'var(--purple)';
+            el.style.boxShadow   = '0 0 0 2px var(--purple-light)';
         };
 
         // Switch the main preview image when a thumbnail is clicked
         window.switchModalImage = function(el, imgPath, reqId, productId) {
             const imgEl = document.getElementById('modalSingleImage');
             if (imgEl) imgEl.src = imgPath;
+            _mzReset(false);
             window.setExistingThumbnail(reqId, productId, imgPath);
             const strip = document.getElementById('modalThumbList');
             if (strip) {
@@ -2290,10 +2449,92 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             window.openSingleImageModal(reqId, productId);
         };
 
+        // ── Zoom / Pan state ──────────────────────────────────────────────────
+        var _mz = {
+            scale: 1, tx: 0, ty: 0,
+            dragging: false, startX: 0, startY: 0, originTx: 0, originTy: 0,
+            MIN: 0.5, MAX: 8
+        };
+
+        function _mzApply(animate) {
+            const img = document.getElementById('modalSingleImage');
+            const lbl = document.getElementById('modalZoomLabel');
+            if (!img) return;
+            img.style.transition = animate ? 'transform 0.18s ease' : 'none';
+            img.style.transform  = 'translate(calc(-50% + ' + _mz.tx + 'px), calc(-50% + ' + _mz.ty + 'px)) scale(' + _mz.scale + ')';
+            if (lbl) lbl.textContent = Math.round(_mz.scale * 100) + '%';
+        }
+
+        function _mzReset(animate) {
+            _mz.scale = 1; _mz.tx = 0; _mz.ty = 0;
+            _mzApply(animate);
+        }
+
+        window.modalZoom = function(delta) {
+            _mz.scale = Math.min(_mz.MAX, Math.max(_mz.MIN, _mz.scale + delta));
+            _mzApply(true);
+        };
+
+        window.modalZoomReset = function() { _mzReset(true); };
+
+        // ── Mouse drag-to-pan ─────────────────────────────────────────────────
+        (function() {
+            function viewport() { return document.getElementById('modalImgViewport'); }
+
+            function onDown(e) {
+                if (e.button !== undefined && e.button !== 0) return;
+                _mz.dragging = true;
+                _mz.startX   = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                _mz.startY   = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                _mz.originTx = _mz.tx;
+                _mz.originTy = _mz.ty;
+                const vp = viewport();
+                if (vp) vp.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+
+            function onMove(e) {
+                if (!_mz.dragging) return;
+                const cx = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                const cy = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                _mz.tx = _mz.originTx + (cx - _mz.startX);
+                _mz.ty = _mz.originTy + (cy - _mz.startY);
+                _mzApply(false);
+                e.preventDefault();
+            }
+
+            function onUp(e) {
+                if (!_mz.dragging) return;
+                _mz.dragging = false;
+                const vp = viewport();
+                if (vp) vp.style.cursor = _mz.scale > 1 ? 'grab' : 'grab';
+            }
+
+            // Attach once, delegate via the live viewport element
+            document.addEventListener('mousedown',  function(e) { if (viewport() && viewport().contains(e.target)) onDown(e); });
+            document.addEventListener('mousemove',  onMove);
+            document.addEventListener('mouseup',    onUp);
+            document.addEventListener('touchstart', function(e) { if (viewport() && viewport().contains(e.target)) onDown(e); }, { passive: false });
+            document.addEventListener('touchmove',  onMove, { passive: false });
+            document.addEventListener('touchend',   onUp);
+
+            // Scroll-to-zoom on viewport
+            document.addEventListener('wheel', function(e) {
+                const vp = viewport();
+                if (!vp || !vp.contains(e.target)) return;
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                _mz.scale = Math.min(_mz.MAX, Math.max(_mz.MIN, _mz.scale + delta));
+                _mzApply(false);
+            }, { passive: false });
+        })();
+        // ─────────────────────────────────────────────────────────────────────
+
         window.closeImageModal = function() {
             const modalEl = document.getElementById('imageModal');
             if (modalEl) {
                 modalEl.classList.remove('active');
+                _mzReset(false);   // reset zoom/pan when closed
             }
         };
 

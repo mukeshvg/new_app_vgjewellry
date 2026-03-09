@@ -337,12 +337,15 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
                     'req_img':item.image_1
                     }
             item_in_req.append(item_data)
+        owner = frappe.get_doc("User", req_doc.owner)
         new_req = {
             "id": req_doc.name,
-            "requestedBy": req_doc.owner,
+            "requestedBy": owner.full_name or req_doc.owner,
             "requestDate": req_doc.creation,
             "priority": "high",
             "counter": "Chain",
+            "remark": req_doc.requester_remark or "",
+            "remark_user": owner.full_name or req_doc.owner,
             "products": item_in_req,
         }
         all_item.append(new_req)
