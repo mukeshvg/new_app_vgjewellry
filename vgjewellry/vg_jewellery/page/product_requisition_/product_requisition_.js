@@ -1622,10 +1622,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
         <!-- Status Tabs -->
         <div class="status-tabs">
-            <button class="status-tab" data-tab="all" onclick="filterByTab('all')">
+            <button class="status-tab active" data-tab="all" onclick="filterByTab('all')">
                 <i class="fas fa-th-large"></i> All <span class="count" id="tabAll">22</span>
             </button>
-            <button class="status-tab active" data-tab="pending" onclick="filterByTab('pending')">
+            <button class="status-tab" data-tab="pending" onclick="filterByTab('pending')">
                 <i class="fas fa-clock"></i> Pending <span class="count" id="tabPending">8</span>
             </button>
             <button class="status-tab" data-tab="approved" onclick="filterByTab('approved')">
@@ -1823,9 +1823,9 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                         appendCards(msg.all_item || []);
                     } else {
                         renderCards(window.requisitionData);
-                        // Auto-filter to pending on first load only
+                        // Auto-filter to 'all' on first load so everything is visible
                         if (page === 1 && !window.currentSearch) {
-                            window.filterByTab('pending');
+                            window.filterByTab('all');
                         }
                     }
                     renderLoadMoreBtn();
@@ -2118,7 +2118,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     <div class="product-header">
                         <div class="product-title">
                             <h4>${p.item} - ${p.variety}</h4>
-                            <span>${p.description} | WT: ${p.weight_range} | Size: ${p.size}</span>
+                            <span>WT: ${p.weight_range} | Size: ${p.size}</span>
                         </div>
                         <span class="product-status-badge ${getStatusBadgeClass(p.status)}">${getStatusIcon(p.status)} ${p.status}</span>
                     </div>
@@ -2214,7 +2214,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                 </div>
             </div>
             <div class="product-actions">
-                <button class="action-btn compare" onclick="openImageModal('${reqId}', '${p.id}')"><i class="fas fa-images"></i> Compare</button>
+                <!--<button class="action-btn compare" onclick="openImageModal('${reqId}', '${p.id}')"><i class="fas fa-images"></i> Compare</button>-->
                 <button class="action-btn save" onclick="saveProduct('${reqId}', '${p.id}')"><i class="fas fa-save"></i> Save</button>
             </div>`;
         }
@@ -2296,7 +2296,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
         // kept for compatibility but no longer used for DOM filtering
         window.applyFilters = function() { window.debounceSearch(); };
-	window.currentTab = 'pending';
+	window.currentTab = 'all';
 
 	window.filterByTab = function(tab) {
 		window.currentTab = tab;
@@ -2715,19 +2715,62 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     qty_req: qtyReq,
                     qty_given: qtyGiven,
                     status: status,
-                    approve_reason: approveReason,
-                    reject_reason: rejectReason,
+                    approve_reason: action === 'approved' ? approveReason : '',
+                    //reject_reason: action === 'rejected' ? rejectReason : (action === 'approved' && qtyReq > qtyGiven ? rejectReason : ''),
+                    reject_reason: action === 'rejected' ? rejectReason : '',
                     remarks: remarks,
                     delivery_date: deliveryDate,
                     selected_images: selected_images
                 },
                 callback: function (r) {
                     if (!r.exc) {
-                        const card = document.getElementById(`product-${reqId}-${productId}`);
-                        if (card && card.parentNode) {
-                            card.parentNode.removeChild(card);
+                        // 1. Update in-memory data — mark product as approved/rejected
+                        var reqData = (window.requisitionData || []).find(function(r) { return String(r.id) === String(reqId); });
+                        if (reqData) {
+                            var prodData = (reqData.products || []).find(function(p) { return String(p.id) === String(productId); });
+                            if (prodData) prodData.status = action === 'approved' ? 'approved' : 'rejected';
                         }
-                        frappe.msgprint(__('Saved Successfully!'));
+
+                        // 2. Remove the product card from DOM
+                        const card = document.getElementById('product-' + reqId + '-' + productId);
+                        if (card && card.parentNode) card.parentNode.removeChild(card);
+
+                        // 3. Update the req-card footer summary counts
+                        var reqCard = document.querySelector('.requisition-card [onclick*="' + reqId + '"]');
+                        if (reqCard) reqCard = reqCard.closest('.requisition-card');
+                        if (reqCard && reqData) {
+                            var prods = reqData.products || [];
+                            var pending   = prods.filter(function(p){ return p.status === 'pending'; }).length;
+                            var approved  = prods.filter(function(p){ return p.status === 'approved'; }).length;
+                            var delivered = prods.filter(function(p){ return p.status === 'delivered'; }).length;
+                            var rejected  = prods.filter(function(p){ return p.status === 'rejected'; }).length;
+                            var summaryItems = reqCard.querySelectorAll('.summary-item span');
+                            if (summaryItems.length >= 5) {
+                                summaryItems[0].textContent = prods.length;
+                                summaryItems[1].textContent = pending;
+                                summaryItems[2].textContent = approved;
+                                summaryItems[3].textContent = delivered;
+                                summaryItems[4].textContent = rejected;
+                            }
+                            // 4. Re-apply current tab filter — hides card if no visible products remain
+                            var tab = window.currentTab || 'all';
+                            var productCards = reqCard.querySelectorAll('.product-card');
+                            var visibleCount = 0;
+                            productCards.forEach(function(pc) {
+                                if (tab === 'all') { pc.style.display = ''; visibleCount++; }
+                                else {
+                                    var show = pc.classList.contains('status-' + tab);
+                                    pc.style.display = show ? '' : 'none';
+                                    if (show) visibleCount++;
+                                }
+                            });
+                            reqCard.style.display = visibleCount > 0 ? '' : 'none';
+                        }
+
+                        // 5. Refresh global status counts in tabs/stat cards
+                        loadStatusCounts();
+
+                        frappe.show_alert({ message: __('Saved Successfully!'), indicator: 'green' });
                     }
                 }
             });
