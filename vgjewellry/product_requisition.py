@@ -239,7 +239,7 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
 
     all_requisitions = frappe.get_all(
         "Product_Requisition_Form",
-        filters={"branch": user_data.ornate_branch, "action_taken": ["!=", "Action Taken"]},
+        filters={"branch": user_data.ornate_branch},
     )
 
     # --- Server-side search: filter requisitions/items by PR no, item name, or variety name ---
@@ -376,7 +376,7 @@ def get_status_counts():
 
     requisition = frappe.get_all(
         "Product_Requisition_Form",
-        filters={"branch": user_data.ornate_branch, "action_taken": ["!=", "Action Taken"]},
+        filters={"branch": user_data.ornate_branch},
     )
 
     total = pending = approved = delivered = rejected = 0

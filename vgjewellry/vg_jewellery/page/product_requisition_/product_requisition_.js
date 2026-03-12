@@ -2130,10 +2130,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                         <div class="spec-box"><label>Excess/Short</label><span style="color:var(--primary)">${p.diff}</span></div>
                     </div>
 
-                    ${true || p.status === 'pending' ? renderPendingActions(reqId, p) : ''}
-                    ${false && p.status === 'approved' ? renderApprovedInfo(reqId, p) : ''}
-                    ${false && p.status === 'delivered' ? renderDeliveredInfo(p) : ''}
-                    ${false && p.status === 'rejected' ? renderRejectedInfo(reqId, p) : ''}
+                    ${p.status === 'pending' ? renderPendingActions(reqId, p) : ''}
+                    ${p.status === 'approved' ? renderApprovedInfo(reqId, p) : ''}
+                    ${p.status === 'delivered' ? renderDeliveredInfo(p) : ''}
+                    ${p.status === 'rejected' ? renderRejectedInfo(reqId, p) : ''}
                 </div>
             </div>`;
         }
@@ -2216,6 +2216,99 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             <div class="product-actions">
                 <!--<button class="action-btn compare" onclick="openImageModal('${reqId}', '${p.id}')"><i class="fas fa-images"></i> Compare</button>-->
                 <button class="action-btn save" onclick="saveProduct('${reqId}', '${p.id}')"><i class="fas fa-save"></i> Save</button>
+            </div>`;
+        }
+
+        function renderApprovedInfo(reqId, p) {
+            return `
+            <div class="manager-inputs" style="background:var(--success-light);border-radius:10px;padding:12px;margin-top:8px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <i class="fas fa-check-circle" style="color:var(--success);font-size:16px;"></i>
+                    <span style="font-weight:700;color:var(--success);font-size:13px;">Approved by Manager</span>
+                </div>
+                <div class="specs-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;">
+                    <div class="spec-box" style="background:white;">
+                        <label>Qty Approved</label>
+                        <span style="color:var(--success);font-weight:700;">${p.qty_approved != null ? p.qty_approved : p.qty}</span>
+                    </div>
+                    <div class="spec-box" style="background:white;">
+                        <label>Qty Requested</label>
+                        <span>${p.qty}</span>
+                    </div>
+                    <div class="spec-box" style="background:white;">
+                        <label><i class="fas fa-calendar-check" style="color:var(--success);"></i> Delivery Date</label>
+                        <span style="color:var(--primary);font-weight:600;">${p.delivery_date ? formatDate(p.delivery_date) : '—'}</span>
+                    </div>
+                </div>
+                ${p.manager_reason ? `
+                <div style="margin-top:8px;padding:8px 10px;background:white;border-radius:8px;border-left:3px solid var(--success);">
+                    <span style="font-size:10px;color:var(--gray);text-transform:uppercase;font-weight:600;">Reason</span>
+                    <div style="font-size:12px;color:var(--dark);margin-top:2px;">${p.manager_reason}</div>
+                </div>` : ''}
+                ${p.manager_remarks ? `
+                <div style="margin-top:8px;padding:8px 10px;background:white;border-radius:8px;">
+                    <span style="font-size:10px;color:var(--gray);text-transform:uppercase;font-weight:600;"><i class="fas fa-comment-alt"></i> Remarks</span>
+                    <div style="font-size:12px;color:var(--dark);margin-top:2px;">${p.manager_remarks}</div>
+                </div>` : ''}
+            </div>`;
+        }
+
+        function renderRejectedInfo(reqId, p) {
+            return `
+            <div class="manager-inputs" style="background:var(--danger-light);border-radius:10px;padding:12px;margin-top:8px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <i class="fas fa-times-circle" style="color:var(--danger);font-size:16px;"></i>
+                    <span style="font-weight:700;color:var(--danger);font-size:13px;">Rejected by Manager</span>
+                </div>
+                <div class="specs-grid" style="grid-template-columns:repeat(2,1fr);gap:8px;">
+                    <div class="spec-box" style="background:white;">
+                        <label>Qty Requested</label>
+                        <span>${p.qty}</span>
+                    </div>
+                    <div class="spec-box" style="background:white;">
+                        <label>Status</label>
+                        <span style="color:var(--danger);font-weight:700;">Rejected</span>
+                    </div>
+                </div>
+                ${p.manager_reason ? `
+                <div style="margin-top:8px;padding:8px 10px;background:white;border-radius:8px;border-left:3px solid var(--danger);">
+                    <span style="font-size:10px;color:var(--gray);text-transform:uppercase;font-weight:600;">Rejection Reason</span>
+                    <div style="font-size:12px;color:var(--dark);margin-top:2px;">${p.manager_reason}</div>
+                </div>` : ''}
+                ${p.manager_remarks ? `
+                <div style="margin-top:8px;padding:8px 10px;background:white;border-radius:8px;">
+                    <span style="font-size:10px;color:var(--gray);text-transform:uppercase;font-weight:600;"><i class="fas fa-comment-alt"></i> Remarks</span>
+                    <div style="font-size:12px;color:var(--dark);margin-top:2px;">${p.manager_remarks}</div>
+                </div>` : ''}
+            </div>`;
+        }
+
+        function renderDeliveredInfo(p) {
+            return `
+            <div class="manager-inputs" style="background:var(--teal-light);border-radius:10px;padding:12px;margin-top:8px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <i class="fas fa-truck" style="color:var(--teal);font-size:16px;"></i>
+                    <span style="font-weight:700;color:var(--teal);font-size:13px;">Delivered</span>
+                </div>
+                <div class="specs-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;">
+                    <div class="spec-box" style="background:white;">
+                        <label>Qty Delivered</label>
+                        <span style="color:var(--teal);font-weight:700;">${p.qty_approved != null ? p.qty_approved : p.qty}</span>
+                    </div>
+                    <div class="spec-box" style="background:white;">
+                        <label>Qty Requested</label>
+                        <span>${p.qty}</span>
+                    </div>
+                    <div class="spec-box" style="background:white;">
+                        <label><i class="fas fa-calendar-check" style="color:var(--teal);"></i> Delivery Date</label>
+                        <span style="color:var(--primary);font-weight:600;">${p.delivery_date ? formatDate(p.delivery_date) : '—'}</span>
+                    </div>
+                </div>
+                ${p.manager_remarks ? `
+                <div style="margin-top:8px;padding:8px 10px;background:white;border-radius:8px;">
+                    <span style="font-size:10px;color:var(--gray);text-transform:uppercase;font-weight:600;"><i class="fas fa-comment-alt"></i> Remarks</span>
+                    <div style="font-size:12px;color:var(--dark);margin-top:2px;">${p.manager_remarks}</div>
+                </div>` : ''}
             </div>`;
         }
 
