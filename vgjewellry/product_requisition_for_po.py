@@ -522,10 +522,14 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
 
         size_id   = None
         size_name = ""
-        if item.size is not None:
-            sz_name   = frappe.get_doc("Ornate_Size_Master", item.size)
-            size_id   = item.size
-            size_name = sz_name.size
+        if item.size is not None and item.size != "":
+            try:
+                sz_name   = frappe.get_doc("Ornate_Size_Master", item.size)
+                size_id   = item.size
+                size_name = sz_name.size
+            except Exception:
+                size_id   = item.size
+                size_name = ""
 
         # ── ideal / stock data for up to 3 branches ─────────────────────────
         idea_stock_res = frappe.get_all(
