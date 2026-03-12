@@ -465,3 +465,208 @@ def get_item_image_for_pd(req_id):
     return images
 
 
+
+
+@frappe.whitelist()
+def get_product_details_new_format(page=1, page_size=10, search=""):
+    """
+    Paginated version of get_product_details for the Purchase Dept page.
+    Mirrors the structure of product_requisition.get_product_details_new_format.
+    Each record in all_item represents one Product_Requisition_Forword row
+    (manager-approved, PD not yet actioned).
+    """
+    page      = int(page)
+    page_size = int(page_size)
+    search    = (search or "").strip().lower()
+
+    # ── fetch all eligible records ──────────────────────────────────────────
+    all_requisitions = frappe.get_all(
+        "Product_Requisition_Forword",
+        fields=["name"],
+        filters={
+            "manager_status": "Approve",
+            "purchase_dept_status": ["is", "not set"],
+        },
+    )
+
+    # ── server-side search ──────────────────────────────────────────────────
+    if search:
+        matched = []
+        for rec in all_requisitions:
+            if search in rec.name.lower():
+                matched.append(rec)
+                continue
+            doc = frappe.get_doc("Product_Requisition_Forword", rec.name)
+            item_master = frappe.get_doc("Ornate_Item_Master",    doc.item)
+            var_master  = frappe.get_doc("Ornate_Variety_Master", doc.variety)
+            branch_doc  = frappe.get_doc("Ornate_Branch_Master",  doc.branch)
+            if (search in (item_master.item_name   or "").lower() or
+                search in (var_master.variety_name or "").lower() or
+                search in (branch_doc.branch_code  or "").lower()):
+                matched.append(rec)
+        all_requisitions = matched
+
+    total_count = len(all_requisitions)
+    start       = (page - 1) * page_size
+    end         = start + page_size
+    page_recs   = all_requisitions[start:end]
+
+    all_item = []
+    for rec in page_recs:
+        item = frappe.get_doc("Product_Requisition_Forword", rec.name)
+
+        branch_name = frappe.get_doc("Ornate_Branch_Master",  item.branch)
+        item_name   = frappe.get_doc("Ornate_Item_Master",    item.item)
+        var_name    = frappe.get_doc("Ornate_Variety_Master", item.variety)
+        wt_name     = frappe.get_doc("weight_range",          item.weight_range)
+
+        size_id   = None
+        size_name = ""
+        if item.size is not None:
+            sz_name   = frappe.get_doc("Ornate_Size_Master", item.size)
+            size_id   = item.size
+            size_name = sz_name.size
+
+        # ── ideal / stock data for up to 3 branches ─────────────────────────
+        idea_stock_res = frappe.get_all(
+            "Current_Stock_Ideal_Stock",
+            filters={
+                "branch_id": ["not in", [9]],
+                "item_id":   item.item,
+                "variety_id": item.variety,
+                "weight_range": wt_name.weight_range,
+            },
+            fields=["target_pcs", "stock_pcs", "branch_id"],
+            limit=3,
+        )
+
+        main_branch_code      = ""
+        main_branch_suggested = 0
+        main_branch_in_stock  = 0
+        main_branch_diff      = 0
+        other_branch1_code    = ""
+        other_branch1_suggested = 0
+        other_branch1_in_stock  = 0
+        other_branch1_diff      = 0
+        other_branch2_code    = ""
+        other_branch2_suggested = 0
+        other_branch2_in_stock  = 0
+        other_branch2_diff      = 0
+        other_counter = 1
+
+        for row in idea_stock_res:
+            if row["branch_id"] == item.branch:
+                if row["target_pcs"] is not None:
+                    main_branch_suggested = row["target_pcs"]
+                main_branch_in_stock = row["stock_pcs"]
+                main_branch_diff = int(main_branch_suggested) - int(main_branch_in_stock)
+                bc = frappe.get_doc("Ornate_Branch_Master", item.branch, "branch_code")
+                main_branch_code = bc.branch_code
+            else:
+                if other_counter == 1:
+                    if row["target_pcs"] is not None:
+                        other_branch1_suggested = row["target_pcs"]
+                    other_branch1_in_stock = row["stock_pcs"]
+                    other_branch1_diff = int(other_branch1_suggested) - int(other_branch1_in_stock)
+                    bc = frappe.get_doc("Ornate_Branch_Master", row["branch_id"], "branch_code")
+                    other_branch1_code = bc.branch_code
+                    other_counter += 1
+                else:
+                    if row["target_pcs"] is not None:
+                        other_branch2_suggested = row["target_pcs"]
+                    other_branch2_in_stock = row["stock_pcs"]
+                    other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
+                    bc = frappe.get_doc("Ornate_Branch_Master", row["branch_id"], "branch_code")
+                    other_branch2_code = bc.branch_code
+
+        # ── derive PD status for frontend ────────────────────────────────────
+        pd_raw = (item.purchase_dept_status or "").strip()
+        if pd_raw == "Approve":
+            pd_status = "approved"
+        elif pd_raw == "Reject":
+            pd_status = "rejected"
+        else:
+            pd_status = "pending"
+
+        item_data = {
+            "id":             item.name,
+            "used_ids":       item.used_ids,
+            "item_id":        item.item,
+            "variety_id":     item.variety,
+            "wt_id":          item.weight_range,
+            "size_id":        size_id,
+            "branch":         item.branch,
+            "branch_name":    branch_name.branch_code,
+            "item":           item_name.item_name,
+            "variety":        var_name.variety_name,
+            "weight_range":   wt_name.weight_range,
+            "size":           size_name,
+            "qty":            item.qty_req,
+            "qty_manager":    item.qty_given_by_manager,
+            "ms":             "" if item.manager_status          is None else item.manager_status,
+            "mar":            "" if item.manager_approve_reason  is None else item.manager_approve_reason,
+            "mrr":            "" if item.manager_reject_reason   is None else item.manager_reject_reason,
+            "mr":             "" if item.manager_remarks         is None else item.manager_remarks,
+            "mdd":            "" if item.delivery_date           is None else str(item.delivery_date),
+            "pcs":            getattr(item, "pcs",             None),
+            "jota":           getattr(item, "jota",            None),
+            "pd_status":      pd_status,
+            "pd_remarks":     getattr(item, "pd_remarks",      "") or "",
+            "pd_reason":      getattr(item, "pd_approve_reason", "") or getattr(item, "pd_reject_reason", "") or "",
+            "pd_delivery_date": str(getattr(item, "pd_delivery_date", "") or ""),
+            "qty_given_by_po": getattr(item, "qty_given_by_po", None),
+            "ideal": [
+                {"b": main_branch_code,   "s": main_branch_suggested,   "i": main_branch_in_stock,   "d": main_branch_diff},
+                {"b": other_branch1_code, "s": other_branch1_suggested, "i": other_branch1_in_stock, "d": other_branch1_diff},
+                {"b": other_branch2_code, "s": other_branch2_suggested, "i": other_branch2_in_stock, "d": other_branch2_diff},
+            ],
+        }
+        all_item.append(item_data)
+
+    excess_reason = frappe.get_all("Excess_Approve_Reason")
+    reject_reason = frappe.get_all("Reduce_Reject_Reason")
+
+    return {
+        "all_item":    all_item,
+        "excess_reason": [{"value": r["name"], "label": r["name"]} for r in excess_reason],
+        "reject_reason": [{"value": r["name"], "label": r["name"]} for r in reject_reason],
+        "total_count": total_count,
+        "page":        page,
+        "page_size":   page_size,
+        "has_more":    end < total_count,
+    }
+
+
+@frappe.whitelist()
+def get_po_status_counts():
+    """
+    Full (non-paginated) status counts for the Purchase Dept page tabs/stats.
+    """
+    requisition = frappe.get_all(
+        "Product_Requisition_Forword",
+        fields=["purchase_dept_status"],
+        filters={
+            "manager_status": "Approve",
+        },
+    )
+
+    total    = len(requisition)
+    pending  = 0
+    approved = 0
+    rejected = 0
+
+    for rec in requisition:
+        raw = (rec.purchase_dept_status or "").strip()
+        if raw == "Approve":
+            approved += 1
+        elif raw == "Reject":
+            rejected += 1
+        else:
+            pending += 1
+
+    return {
+        "total":    total,
+        "pending":  pending,
+        "approved": approved,
+        "rejected": rejected,
+    }
