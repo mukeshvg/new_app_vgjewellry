@@ -141,6 +141,8 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
             doc = frappe.get_doc("Product_Requisition_Item",pid)
             doc.manager_action ="Reject"
             doc.manager_reason = reject_reason
+            doc.manager_remarks = remarks
+            doc.delivery_date = delivery_date if delivery_date else None
             doc.save()
             frappe.db.commit()
     elif status =="Approve":
@@ -154,7 +156,9 @@ def save_product_details(used_ids,branch_id, item_id, variety_id, wt_id, size_id
             doc = frappe.get_doc("Product_Requisition_Item",pid)
             doc.manager_action ="Approve"
             doc.manager_reason = reason
+            doc.manager_remarks = remarks
             doc.qty_approved_by_manager= qty_given
+            doc.delivery_date = delivery_date if delivery_date else None
             doc.save()
             frappe.db.commit()
     
@@ -312,6 +316,19 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
                 elif action == "delivered":
                     status = "delivered"
 
+            # Fetch manager remarks, delivery_date from Product_Requisition_Forword
+            fwd_remarks = None
+            fwd_delivery_date = None
+            fwd_records = frappe.get_all(
+                'Product_Requisition_Forword',
+                filters={'used_ids': ['like', '%' + item.name + '%']},
+                fields=['manager_remarks', 'delivery_date', 'qty_given_by_manager'],
+                limit=1
+            )
+            if fwd_records:
+                fwd_remarks = fwd_records[0].get('manager_remarks')
+                fwd_delivery_date = str(fwd_records[0].get('delivery_date')) if fwd_records[0].get('delivery_date') else None
+
             item_data = {
                     'id': item.name,
                     'name': req_doc.name,
@@ -334,7 +351,11 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
                     'status': status,
                     'remark':req_doc.requester_remark,
                     'remark_user':owner.full_name,
-                    'req_img':item.image_1
+                    'req_img':item.image_1,
+                    'manager_reason': item.manager_reason if hasattr(item, 'manager_reason') and item.manager_reason else None,
+                    'manager_remarks': fwd_remarks,
+                    'delivery_date': fwd_delivery_date,
+                    'qty_approved': item.qty_approved_by_manager if hasattr(item, 'qty_approved_by_manager') and item.qty_approved_by_manager else None
                     }
             item_in_req.append(item_data)
         owner = frappe.get_doc("User", req_doc.owner)
