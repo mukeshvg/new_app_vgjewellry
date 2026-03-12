@@ -2090,7 +2090,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
 
             return `
             <div class="product-card status-${p.status}" id="product-${reqId}-${p.id}">
-                <button class="remove-btn" onclick="removeProduct('${reqId}', '${p.id}')" title="Remove"><i class="fas fa-times"></i></button>
+                ${p.status === 'pending' ? `<button class="remove-btn" onclick="removeProduct('${reqId}', '${p.id}')" title="Remove"><i class="fas fa-times"></i></button>` : ''}
 
                 <div class="image-comparison">
                     <div class="image-section">
