@@ -229,10 +229,10 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
         </div>
 
         <div class="status-tabs">
-            <button class="status-tab active" data-tab="all" onclick="filterByTab('all')">
+            <button class="status-tab" data-tab="all" onclick="filterByTab('all')">
                 <i class="fas fa-th-large"></i> All <span class="count" id="tabAll">0</span>
             </button>
-            <button class="status-tab" data-tab="pending" onclick="filterByTab('pending')">
+            <button class="status-tab active" data-tab="pending" onclick="filterByTab('pending')">
                 <i class="fas fa-clock"></i> Pending <span class="count" id="tabPending">0</span>
             </button>
             <button class="status-tab" data-tab="approved" onclick="filterByTab('approved')">
@@ -273,6 +273,11 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
             <div id="modalImgViewport" style="overflow:hidden;position:relative;flex-shrink:0;height:52vh;background:#f8fafc;cursor:grab;user-select:none;">
                 <img id="modalSingleImage" src="" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);transform-origin:center center;max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:none;pointer-events:none;">
             </div>
+            <div id="modalImgInfo" style="display:none;flex-shrink:0;padding:7px 16px;background:#fff;border-top:1px solid var(--light-gray);flex-wrap:wrap;gap:18px;align-items:center;">
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-store" style="color:var(--gold);"></i> <b id="modalInfoBranchVal">—</b></span>
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;margin-left:14px;"><i class="fas fa-weight-hanging" style="color:var(--info);"></i> <b id="modalInfoNetwtVal">—</b> g</span>
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;margin-left:14px;"><i class="fas fa-tag" style="color:var(--purple);"></i> <b id="modalInfoLabelVal">—</b></span>
+            </div>
             <div id="modalThumbStrip" style="display:none;flex-shrink:0;padding:10px 16px;background:#fff;border-top:1px solid var(--light-gray);overflow-x:auto;white-space:nowrap;">
                 <div id="modalThumbLoader" style="text-align:center;padding:8px;color:var(--gray);font-size:12px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
                 <div id="modalThumbList" style="display:inline-flex;gap:8px;align-items:flex-end;"></div>
@@ -296,7 +301,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	window.poTotalCount      = 0;
 	window.poLoadedCount     = 0;
 	window.poCurrentSearch   = '';
-	window.poCurrentTab      = 'all';
+	window.poCurrentTab      = 'pending';
 	var approvalReasons  = [];
 	var rejectionReasons = [];
 
@@ -304,7 +309,7 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	window.loadPage = function(page, append) {
 		frappe.call({
 			method: 'vgjewellry.product_requisition_for_po.get_product_details_new_format',
-			args: { page: page, page_size: window.poPageSize, search: window.poCurrentSearch || '' },
+			args: { page: page, page_size: window.poPageSize, search: window.poCurrentSearch || '', status: window.poCurrentTab || 'all' },
 			callback: function(response) {
 				if (!response || !response.message) return;
 				var msg = response.message;
@@ -326,7 +331,6 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 					appendCards(msg.all_item || []);
 				} else {
 					renderAllCards(window.poRequisitionData);
-					if (page === 1 && !window.poCurrentSearch) filterByTab('all');
 				}
 				renderLoadMoreBtn();
 			}
@@ -693,8 +697,8 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 		var cardEl        = document.getElementById('po-product-' + id);
 		var selectedImages= cardEl ? (cardEl.getAttribute('data-selected-images') || '') : '';
 
-		if (!selectedImages) { frappe.msgprint(__('Please select product images first (click "Select Images").')); return; }
 		if (!action)         { frappe.msgprint(__('Please select an action.')); return; }
+		if (action === 'Approve' && !selectedImages) { frappe.msgprint(__('Please select product images first (click "Select Images").')); return; }
 		var qtyReq = parseInt((item.qty_manager || item.qty || 0), 10);
 		if (action === 'Approve' && qtyReq < qtyGiven && !approveReason) { frappe.msgprint(__('Please select an approval reason.')); return; }
 		if ((action === 'Approve' && qtyReq > qtyGiven && !rejectReason) || (action === 'Reject' && !rejectReason)) { frappe.msgprint(__('Please select a rejection reason.')); return; }
@@ -813,9 +817,22 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	function _openModal(title, matchHTML) {
 		var m=document.getElementById('imageModal'), ic=document.getElementById('modalImageTypeIcon'), img=document.getElementById('modalSingleImage');
 		var ts=document.getElementById('modalThumbStrip'), tl=document.getElementById('modalThumbList'), tlo=document.getElementById('modalThumbLoader'), mi=document.getElementById('modalMatchInfo');
+		var infoBar=document.getElementById('modalImgInfo');
 		if (ic) ic.innerHTML = title; if (mi) mi.innerHTML = matchHTML || '';
 		if (img) img.src = ''; if (ts) ts.style.display = 'block'; if (tl) tl.innerHTML = ''; if (tlo) tlo.style.display = 'block';
+		if (infoBar) infoBar.style.display = 'none';
 		if (m) m.classList.add('active'); _mzReset(false);
+	}
+
+	function _setImgInfo(branchCode, netWt, labelNo) {
+		var bar = document.getElementById('modalImgInfo');
+		var bv  = document.getElementById('modalInfoBranchVal');
+		var nv  = document.getElementById('modalInfoNetwtVal');
+		var lv  = document.getElementById('modalInfoLabelVal');
+		if (bv) bv.textContent = branchCode || '—';
+		if (nv) nv.textContent = netWt      || '—';
+		if (lv) lv.textContent = labelNo    || '—';
+		if (bar) bar.style.display = 'flex';
 	}
 
 	function _fillBranchThumbs(msgMap, currentBId) {
@@ -823,27 +840,32 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 		if (tLoader) tLoader.style.display = 'none';
 		if (!msgMap || !Object.keys(msgMap).length) { if (tList) tList.innerHTML = '<span style="font-size:11px;color:var(--gray);padding:8px;">No stock images found.</span>'; return; }
 		var branches = Object.keys(msgMap).sort(function(a, b) { return a == currentBId ? -1 : b == currentBId ? 1 : a - b; });
-		var html = '', isFirst = true;
+		var html = '', isFirst = true, firstObj = null;
 		branches.forEach(function(br) {
 			var imgs = msgMap[br]; if (!imgs || !imgs.length) return;
 			var bc = imgs[0].BranchCode || br, own = br == currentBId ? ' ★' : '';
 			html += '<div style="display:inline-flex;flex-direction:column;align-items:center;margin-right:6px;"><span style="font-size:9px;color:var(--gray);font-weight:700;margin-bottom:4px;white-space:nowrap;">' + bc + own + '</span><div style="display:inline-flex;gap:6px;">';
 			imgs.forEach(function(obj) {
 				var p = obj.ImagePath1.replace(/\\/g, '/'), safe = p.replace(/'/g, "\\'");
+				var safeBc  = (obj.BranchCode || bc || '').replace(/'/g, "\\'");
+				var safeNwt = (String(obj.NetWt  || '')).replace(/'/g, "\\'");
+				var safeLbl = (String(obj.LabelNo || '')).replace(/'/g, "\\'");
 				var bdr = isFirst ? 'border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light);' : 'border-color:var(--light-gray);';
-				html += '<div onclick="switchImg(this,\'' + safe + '\')" style="cursor:pointer;border:2px solid;' + bdr + 'border-radius:8px;overflow:hidden;flex-shrink:0;text-align:center;"><img src="' + p + '" style="width:60px;height:60px;object-fit:cover;display:block;"><div style="font-size:9px;color:var(--gray);padding:2px 3px;max-width:60px;overflow:hidden;text-overflow:ellipsis;">' + (obj.LabelNo || '') + '</div></div>';
-				if (isFirst && imgEl) imgEl.src = p; isFirst = false;
+				html += '<div onclick="switchImg(this,\'' + safe + '\',\'' + safeBc + '\',\'' + safeNwt + '\',\'' + safeLbl + '\')" style="cursor:pointer;border:2px solid;' + bdr + 'border-radius:8px;overflow:hidden;flex-shrink:0;text-align:center;"><img src="' + p + '" style="width:60px;height:60px;object-fit:cover;display:block;"><div style="font-size:9px;color:var(--gray);padding:2px 3px;max-width:60px;overflow:hidden;text-overflow:ellipsis;">' + (obj.LabelNo || '') + '</div></div>';
+				if (isFirst) { if (imgEl) imgEl.src = p; firstObj = obj; isFirst = false; }
 			});
 			html += '</div></div>';
 		});
 		if (tList) tList.innerHTML = html;
+		if (firstObj) _setImgInfo(firstObj.BranchCode, firstObj.NetWt, firstObj.LabelNo);
 	}
 
-	window.switchImg = function(el, imgPath) {
+	window.switchImg = function(el, imgPath, branchCode, netWt, labelNo) {
 		var imgEl = document.getElementById('modalSingleImage'); if (imgEl) imgEl.src = imgPath; _mzReset(false);
 		var strip = document.getElementById('modalThumbList');
 		if (strip) strip.querySelectorAll('div[onclick^="switchImg"]').forEach(function(t) { t.style.borderColor = 'var(--light-gray)'; t.style.boxShadow = 'none'; });
 		el.style.borderColor = 'var(--primary)'; el.style.boxShadow = '0 0 0 2px var(--primary-light)';
+		if (branchCode !== undefined) _setImgInfo(branchCode, netWt, labelNo);
 	};
 
 	// ── Zoom / Pan ─────────────────────────────────────────────────────────────
@@ -877,11 +899,9 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 	window.filterByTab = function(tab) {
 		window.poCurrentTab = tab;
 		document.querySelectorAll('.status-tab').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-tab') === tab); });
-		document.querySelectorAll('.requisition-card').forEach(function(card) {
-			var pcs = card.querySelectorAll('.product-card'), vis = 0;
-			pcs.forEach(function(pc) { var show = tab === 'all' || pc.classList.contains('status-' + tab); pc.style.display = show ? '' : 'none'; if (show) vis++; });
-			card.style.display = vis > 0 ? '' : 'none';
-		});
+		window.poCurrentPage = 1;
+		window.poRequisitionData = [];
+		loadPage(1, false);
 	};
 
 	// ── Search ─────────────────────────────────────────────────────────────────
@@ -898,8 +918,9 @@ frappe.pages['product-requisition-for-po'].on_page_load = function(wrapper) {
 
 	window.resetFilters = function() {
 		document.getElementById('searchInput').value = '';
-		window.poCurrentSearch = ''; window.poCurrentPage = 1; window.poRequisitionData = [];
-		loadPage(1, false); filterByTab('all');
+		window.poCurrentSearch = ''; window.poCurrentTab = 'all'; window.poCurrentPage = 1; window.poRequisitionData = [];
+		document.querySelectorAll('.status-tab').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-tab') === 'all'); });
+		loadPage(1, false);
 	};
 
 	// ── Utils ──────────────────────────────────────────────────────────────────

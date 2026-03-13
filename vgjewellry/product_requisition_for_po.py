@@ -468,25 +468,34 @@ def get_item_image_for_pd(req_id):
 
 
 @frappe.whitelist()
-def get_product_details_new_format(page=1, page_size=10, search=""):
+def get_product_details_new_format(page=1, page_size=10, search="", status="all"):
     """
     Paginated version of get_product_details for the Purchase Dept page.
     Mirrors the structure of product_requisition.get_product_details_new_format.
     Each record in all_item represents one Product_Requisition_Forword row
-    (manager-approved, PD not yet actioned).
+    (manager-approved).
+    status: "all" | "pending" | "approved" | "rejected"
     """
     page      = int(page)
     page_size = int(page_size)
     search    = (search or "").strip().lower()
+    status    = (status or "all").strip().lower()
+
+    # ── build filters based on status tab ──────────────────────────────────
+    filters = {"manager_status": "Approve"}
+    if status == "pending":
+        filters["purchase_dept_status"] = ["is", "not set"]
+    elif status == "approved":
+        filters["purchase_dept_status"] = "Approve"
+    elif status == "rejected":
+        filters["purchase_dept_status"] = "Reject"
+    # "all" → no purchase_dept_status filter (show everything manager approved)
 
     # ── fetch all eligible records ──────────────────────────────────────────
     all_requisitions = frappe.get_all(
         "Product_Requisition_Forword",
         fields=["name"],
-        filters={
-            "manager_status": "Approve",
-            "purchase_dept_status": ["is", "not set"],
-        },
+        filters=filters,
     )
 
     # ── server-side search ──────────────────────────────────────────────────
