@@ -317,10 +317,15 @@ def get_product_details_for_assignment():
         wt_name=frappe.get_doc("weight_range",item.weight_range)
         size_id= None
         size_name=""
-        if item.size !=None:
-            sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
-            size_id =item.size
-            size_name= sz_name.size
+        if item.size and item.size != "":
+        #if item.size !=None:
+            try:
+                sz_name=frappe.get_doc("Ornate_Size_Master",item.size)
+                size_id =item.size
+                size_name= sz_name.size
+            except Exception:
+                size_id = item.size
+                size_name = ""
         idea_stock_res=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id': ["not in", [9]] ,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs','branch_id'],limit=3)
         main_branch_code =""
         main_branch_suggested =0
