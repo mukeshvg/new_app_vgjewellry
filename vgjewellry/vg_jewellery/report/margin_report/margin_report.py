@@ -7,6 +7,7 @@ import os
 import pymysql
 from datetime import datetime
 from decimal import Decimal
+from frappe.utils.logger import get_logger
 
 
 value_ornsys= os.getenv('ornsysodbc')
@@ -65,6 +66,9 @@ def get_sql_server_data(branch,table,columns,condition):
     return data
 
 def execute(filters=None):
+    #logger = frappe.logger("gold_margin")
+    #logger.setLevel("INFO")
+
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
@@ -255,17 +259,25 @@ def execute(filters=None):
             Wastage_Rate = 0
             Location_code = ""
             Location = ""
+            #logger.info(f"{SupplierCode}--{ItemMstID}---{VarietyMstId}")
+            NetWt1=float(slr['NetWt'])
+            if UniqueLabelID in return_array:
+                NetWt1 += float(return_array[UniqueLabelID]['net_wt'])
+
             if SupplierCode in wastage and ItemMstID in wastage[SupplierCode] and VarietyMstId in wastage[SupplierCode][ItemMstID]:
+                #logger.info(f"{wastage[SupplierCode][ItemMstID][VarietyMstId]}");
                 #Wastage exists
                 wastage_weight_range_array=wastage[SupplierCode][ItemMstID][VarietyMstId]
                 for wwk,wwra in wastage_weight_range_array.items():
+                    #logger.info(f"Net wet{NetWt}--- {wwk}")
                     each_wastage_weight=wwk.split("-")
-                    if float(each_wastage_weight[0])<= NetWt and float(each_wastage_weight[1])>=NetWt :
+                    if float(each_wastage_weight[0])<= NetWt1 and float(each_wastage_weight[1])>=NetWt1 :
                         Wastage_Rate=float(wwra)
                         break
             else:
                 #Wastage not exist
                 Location=slr['Location'].strip()
+                #logger.info(f"location {Location}")
                 if (Location and ('-' in Location or '/' in Location or '+' in Location or len(Location)==1)):
                     if '+' in Location:
                         each_location=Location.split('+')
@@ -290,7 +302,7 @@ def execute(filters=None):
                 global_max_variety_wastage[item_name][variety_name]=Wastage_Rate
             if int(Wastage_Rate) > int(global_max_variety_wastage[item_name][variety_name]):
                 global_max_variety_wastage[item_name][variety_name]=Wastage_Rate
-            
+            #logger.info(f"wastage rate {Wastage_Rate}") 
             #Calculate other charge
             other_charge_code=""
             multi_other_charge_code=[]
