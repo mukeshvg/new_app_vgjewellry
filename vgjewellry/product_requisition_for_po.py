@@ -486,9 +486,9 @@ def get_product_details_new_format(page=1, page_size=10, search="", status="all"
     if status == "pending":
         filters["purchase_dept_status"] = ["is", "not set"]
     elif status == "approved":
-        filters["purchase_dept_status"] = "Approve"
+        filters["purchase_dept_status"] = ["=","Approve"]
     elif status == "rejected":
-        filters["purchase_dept_status"] = "Reject"
+        filters["purchase_dept_status"] = ["=","Reject"]
     # "all" → no purchase_dept_status filter (show everything manager approved)
 
     # ── fetch all eligible records ──────────────────────────────────────────
