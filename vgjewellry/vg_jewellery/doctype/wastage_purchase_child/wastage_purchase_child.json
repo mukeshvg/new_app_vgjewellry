@@ -10,7 +10,9 @@
   "updated_pur_wast",
   "date",
   "user",
-  "total_days"
+  "total_days",
+  "delivery_days",
+  "credit_days"
  ],
  "fields": [
   {
@@ -38,13 +40,23 @@
    "fieldname": "total_days",
    "fieldtype": "Int",
    "label": "Total Days"
+  },
+  {
+   "fieldname": "delivery_days",
+   "fieldtype": "Int",
+   "label": "Delivery Days"
+  },
+  {
+   "fieldname": "credit_days",
+   "fieldtype": "Int",
+   "label": "Credit Days"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-15 18:40:56.855436",
+ "modified": "2026-03-17 13:36:05.311004",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "wastage_Purchase_child",

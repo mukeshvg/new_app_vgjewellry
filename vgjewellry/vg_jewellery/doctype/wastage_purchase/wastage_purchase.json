@@ -14,6 +14,8 @@
   "vg_variety_name",
   "metal_id",
   "purwast",
+  "delivery_days",
+  "credit_days",
   "updated_purwast"
  ],
  "fields": [
@@ -79,12 +81,22 @@
    "fieldname": "column_break_yxgs",
    "fieldtype": "Column Break",
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "delivery_days",
+   "fieldtype": "Int",
+   "label": "Delivery Days"
+  },
+  {
+   "fieldname": "credit_days",
+   "fieldtype": "Int",
+   "label": "Credit Days"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-22 12:20:13.743686",
+ "modified": "2026-03-17 13:33:38.427252",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Wastage_Purchase",
