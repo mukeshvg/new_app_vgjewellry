@@ -30,7 +30,9 @@ class Wastage_Purchase(Document):
         self.append("updated_purwast", {        # ✅ parent table fieldname
                                         "updated_pur_wast": self.purwast,   # ✅ child fieldname
                                         "date": now_datetime(),
-                                        "user": frappe.session.user
+                                        "user": frappe.session.user,
+                                        "delivery_days":self.delivery_days,
+                                        "credit_days":self.credit_days
                                         })
 
     def update_total_days(self):
