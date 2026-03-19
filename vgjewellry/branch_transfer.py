@@ -37,9 +37,6 @@ def get_all_branch_transfer_request():
         {
             "status": "Accept But Give Me Another",
             "product_sender__receiver_status": ["is", "not set"]
-        },
-        {
-            "status": "Reject"
         }
 
     ])
@@ -136,7 +133,7 @@ def get_all_branch_transfer_receive():
             item =  frappe.get_doc("Ornate_Item_Master",doc.item)
             variety = frappe.get_doc('Ornate_Variety_Master',doc.variety)
             weight_range = frappe.get_doc('weight_range',doc.weight_range)
-            item ={"req_b":req_branch.branch_code,"rec_b":rec_branch.branch_code,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"ps":product_send_on,"s":bt.status,'id':requisition_id}
+            item ={"req_b":req_branch.branch_code,"rec_b":rec_branch.branch_code,"ln":bt['label_no'],'i':item.item_name,'v':variety.variety_name,'w':weight_range.weight_range,'c':formatted_date,"rid":requisition_id,"tid":bt['name'],"ps":product_send_on,"s":bt.status,"pr":bt['product_sender__receiver_status'],'id':requisition_id}
             all_items.append(item)
 
 

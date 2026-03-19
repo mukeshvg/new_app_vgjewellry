@@ -450,13 +450,17 @@ function btr_recv_status_key(p) {
 	return 'pending';
 }
 
-// Combined status key: mgr status takes accept/reject priority; receive overrides to 'received'
-function btr_combined_status_key(mgrStatus, recvStatus) {
-	if (recvStatus && recvStatus.toLowerCase() === 'product receive') return 'received';
+function btr_mgr_key(mgrStatus) {
 	if (!mgrStatus) return 'pending';
 	var l = mgrStatus.toLowerCase();
+	if (l.includes('another')) return 'pending';
 	if (l === 'accept') return 'accept';
 	if (l === 'reject') return 'reject';
+	return 'pending';
+}
+
+function btr_recv_key(recvStatus) {
+	if (recvStatus && recvStatus.toLowerCase() === 'product receive') return 'received';
 	return 'pending';
 }
 
@@ -491,9 +495,16 @@ function btr_apply_filters() {
 	var visible = 0;
 
 	document.querySelectorAll('.bt-card').forEach(function(card) {
-		var sk     = card.dataset.statusKey || 'pending';
-		var srch   = (card.dataset.search || '').toLowerCase();
-		var tabOk  = (_btr_recv_active_tab === 'all') || (sk === _btr_recv_active_tab);
+		var mgrKey  = card.dataset.mgrKey  || 'pending';
+		var recvKey = card.dataset.recvKey || 'pending';
+		var srch    = (card.dataset.search || '').toLowerCase();
+		var tabOk;
+		if (_btr_recv_active_tab === 'all')      tabOk = true;
+		else if (_btr_recv_active_tab === 'received') tabOk = recvKey === 'received';
+		else if (_btr_recv_active_tab === 'accept')   tabOk = mgrKey === 'accept';
+		else if (_btr_recv_active_tab === 'reject')   tabOk = mgrKey === 'reject';
+		else if (_btr_recv_active_tab === 'pending')  tabOk = mgrKey === 'pending' && recvKey !== 'received';
+		else tabOk = false;
 		var srchOk = !q || srch.includes(q);
 		var show   = tabOk && srchOk;
 		card.style.display = show ? '' : 'none';
@@ -507,8 +518,12 @@ function btr_update_counts() {
 	var counts = { all: 0, pending: 0, received: 0, accept: 0, reject: 0 };
 	document.querySelectorAll('.bt-card').forEach(function(card) {
 		counts.all++;
-		var sk = card.dataset.statusKey || 'pending';
-		if (counts[sk] !== undefined) counts[sk]++;
+		var mgrKey  = card.dataset.mgrKey  || 'pending';
+		var recvKey = card.dataset.recvKey || 'pending';
+		if (recvKey === 'received') counts.received++;
+		if (mgrKey === 'accept')   counts.accept++;
+		if (mgrKey === 'reject')   counts.reject++;
+		if (mgrKey === 'pending' && recvKey !== 'received') counts.pending++;
 	});
 	['all', 'pending', 'received', 'accept', 'reject'].forEach(function(k) {
 		var el  = document.getElementById('stat-' + k);
@@ -559,18 +574,20 @@ function load_data() {
 			for (let item in bt) {
 				var items  = bt[item];
 				var sel    = item["status"] == "Accept" ? "selected" : "";
-				var recvSk = btr_combined_status_key(items['s'] || '', items['pr'] || '');
+				var mgrSk  = btr_mgr_key(items['s'] || '');
+				var recvSk = btr_recv_key(items['pr'] || '');
 				var mgrCls = btr_mgr_status_cls(items['s']);
 
 				html += `
-				<div class="bt-card status-${recvSk}"
-					data-status-key="${recvSk}"
+				<div class="bt-card status-${mgrSk} ${recvSk === 'received' ? 'status-received' : ''}"
+					data-mgr-key="${mgrSk}"
+					data-recv-key="${recvSk}"
 					data-search="${[items['id']||'', items['i']||'', items['v']||'', items['ln']||'', items['req_b']||'', items['rec_b']||''].join(' ').toLowerCase()}">
 
 					<!-- Image -->
 					<div class="bt-card-img" onclick="btr_open_lightbox('${items['im']}')">
 						<img src="${items['im']}" alt="Product" onerror="this.style.opacity=0">
-						<div class="img-status-overlay ${recvSk}">${recvSk === 'received' ? 'Received' : recvSk === 'accept' ? 'Accepted' : recvSk === 'reject' ? 'Rejected' : 'Pending'}</div>
+						<div class="img-status-overlay ${recvSk === 'received' ? 'received' : mgrSk}">${recvSk === 'received' ? 'Received' : mgrSk === 'accept' ? 'Accepted' : mgrSk === 'reject' ? 'Rejected' : 'Pending'}</div>
 						<div class="img-label-chip">${items['ln'] || '—'}</div>
 						<div class="img-zoom-hint"><i class="fa fa-search-plus"></i></div>
 					</div>
@@ -629,7 +646,7 @@ function load_data() {
 						</div>
 
 						<!-- Is Product Receive -->
-						<div class="manager-inputs" ${recvSk === 'reject' ? 'style="display:none"' : ""}>
+						<div class="manager-inputs" ${mgrSk === 'reject' ? 'style="display:none"' : ""}>
 							<div class="input-group">
 								<label><i class="fa fa-box-open"></i> Is Product Receive</label>
 								<select class="is-product-receive ${recvSk === 'received' ? 'picked-received' : ''}"
@@ -681,9 +698,9 @@ function load_data() {
 			() => {
 				update_branch_transfer_is_product_receive(rid, tid, status);
 				// update card live
-				row.attr('data-status-key', 'received');
-				row.removeClass('status-pending status-accept status-reject').addClass('status-received');
-				row.find('.img-status-overlay').removeClass('pending accept reject').addClass('received').text('Received');
+				row.attr('data-recv-key', 'received');
+				row.addClass('status-received');
+				row.find('.img-status-overlay').addClass('received').text('Received');
 				$sel.addClass('picked-received');
 				row.find('.manager-inputs').show();
 				btr_update_counts();
