@@ -34,7 +34,9 @@ def insert_silver_wastage():
             "vg_variety_name":VarietyMstId,
             "metal_id":ItemTradMstID,
             "purwast":PurWastPer,
-            "wastage_type":WastageType
+            "wastage_type":WastageType,
+            "from_weight":FromWeight,
+            "to_weight":ToWeight,
         })
 
         if exists:
