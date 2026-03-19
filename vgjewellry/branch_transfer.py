@@ -37,6 +37,9 @@ def get_all_branch_transfer_request():
         {
             "status": "Accept But Give Me Another",
             "product_sender__receiver_status": ["is", "not set"]
+        },
+        {
+            "status": "Reject"
         }
 
     ])
