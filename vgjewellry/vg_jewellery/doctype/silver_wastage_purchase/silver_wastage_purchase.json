@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2025-11-20 13:10:47.114815",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "column_break_yxgs",
+  "item_name",
+  "supplier_name",
+  "supplier_code",
+  "from_weight",
+  "to_weight",
+  "sp_variety_name",
+  "vg_variety_name",
+  "metal_id",
+  "wastage_type",
+  "purwast",
+  "delivery_days",
+  "credit_days",
+  "updated_purwast"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Item Name",
+   "options": "Ornate_Item_Master"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Name",
+   "options": "Ornate_Supplier_Master"
+  },
+  {
+   "fetch_from": "supplier_name.supplier_code",
+   "fieldname": "supplier_code",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Supplier Code"
+  },
+  {
+   "fieldname": "sp_variety_name",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "label": "SP_Variety Name"
+  },
+  {
+   "fieldname": "vg_variety_name",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "VG_Variety Name",
+   "options": "Ornate_Variety_Master"
+  },
+  {
+   "fieldname": "metal_id",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Metal ID",
+   "options": "Ornate_Item_Trade_Master"
+  },
+  {
+   "fieldname": "purwast",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Pur.Wast.%"
+  },
+  {
+   "fieldname": "updated_purwast",
+   "fieldtype": "Table",
+   "label": "updated Pur.Wast%",
+   "options": "silver_wastage_Purchase_child",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_yxgs",
+   "fieldtype": "Column Break",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "delivery_days",
+   "fieldtype": "Int",
+   "label": "Delivery Days"
+  },
+  {
+   "fieldname": "credit_days",
+   "fieldtype": "Int",
+   "label": "Credit Days"
+  },
+  {
+   "fieldname": "from_weight",
+   "fieldtype": "Float",
+   "label": "From Weight"
+  },
+  {
+   "fieldname": "to_weight",
+   "fieldtype": "Float",
+   "label": "To Weight"
+  },
+  {
+   "fieldname": "wastage_type",
+   "fieldtype": "Data",
+   "label": "Wastage Type"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-19 10:55:07.174048",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Silver_Wastage_Purchase",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Auditor",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
