@@ -297,7 +297,7 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
             query ='''
             SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE and (parent_variety =%s or variety_id=%s) and  FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
     '''
-            vdata = frappe.db.sql(query,item.variety,item.variety, item.item, as_dict=True)
+            vdata = frappe.db.sql(query,(item.variety,item.variety, item.item), as_dict=True)
             variety_ids = [vrow['variety_id'] for vrow in vdata]    
 
             #idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
