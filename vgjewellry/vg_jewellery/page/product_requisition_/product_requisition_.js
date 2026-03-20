@@ -1699,6 +1699,12 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                             max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;
                             box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:none;pointer-events:none;">
             </div>
+            <!-- Info bar: Branch / Net Wt / Label No -->
+            <div id="modalImgInfo" style="display:none; flex-shrink:0; padding:7px 16px; background:#fff; border-top:1px solid var(--light-gray); flex-wrap:wrap; gap:18px; align-items:center;">
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-store" style="color:var(--gold);"></i> <b id="modalInfoBranchVal">—</b></span>
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;margin-left:14px;"><i class="fas fa-weight-hanging" style="color:var(--info);"></i> <b id="modalInfoNetwtVal">—</b> g</span>
+                <span style="font-size:11px;color:var(--dark);display:inline-flex;align-items:center;gap:5px;margin-left:14px;"><i class="fas fa-tag" style="color:var(--purple);"></i> <b id="modalInfoLabelVal">—</b></span>
+            </div>
             <!-- Thumbnail strip — shown only for existing stock images -->
             <div id="modalThumbStrip" style="display:none; flex-shrink:0; padding:10px 16px; background:#fff; border-top:1px solid var(--light-gray); overflow-x:auto; white-space:nowrap;">
                 <div id="modalThumbLoader" style="text-align:center; padding:8px; color:var(--gray); font-size:12px;">
@@ -2521,7 +2527,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
         };
 
         // Switch the main preview image when a thumbnail is clicked
-        window.switchModalImage = function(el, imgPath, reqId, productId) {
+        window.switchModalImage = function(el, imgPath, reqId, productId, branchCode, netWt, labelNo) {
             const imgEl = document.getElementById('modalSingleImage');
             if (imgEl) imgEl.src = imgPath;
             _mzReset(false);
@@ -2535,6 +2541,15 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             }
             el.style.borderColor = 'var(--primary)';
             el.style.boxShadow   = '0 0 0 2px var(--primary-light)';
+            // Populate info bar
+            var bar = document.getElementById('modalImgInfo');
+            var bv  = document.getElementById('modalInfoBranchVal');
+            var nv  = document.getElementById('modalInfoNetwtVal');
+            var lv  = document.getElementById('modalInfoLabelVal');
+            if (bv) bv.textContent = branchCode || '—';
+            if (nv) nv.textContent = netWt      || '—';
+            if (lv) lv.textContent = labelNo    || '—';
+            if (bar) bar.style.display = 'flex';
         };
 
         // openImageModal — alias for Compare button (shows required image)
@@ -2658,6 +2673,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
             if (imgEl) imgEl.src = domExist ? domExist.src : '';
             if (iconEl) iconEl.innerHTML = '<i class="fas fa-warehouse" style="color:var(--info);margin-right:8px;"></i> Existing Stock — ' + product.item + ' - ' + product.variety;
             if (matchEl) matchEl.textContent = '';
+            var infoBar = document.getElementById('modalImgInfo'); if (infoBar) infoBar.style.display = 'none';
 
             // Show thumb strip with spinner
             if (thumbStrip) thumbStrip.style.display = 'block';
@@ -2689,6 +2705,7 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                     });
                     var thumbHTML = '';
                     var isFirst   = true;
+                    var firstObj  = null;
                     branches.forEach(function(branch) {
                         var imgs = r.message[branch];
                         if (!imgs || !imgs.length) return;
@@ -2701,7 +2718,10 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                             var img_path = img_obj.ImagePath1.replace(/\\/g, '/');
                             var border   = isFirst ? 'border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light);' : 'border-color:var(--light-gray);';
                             var safeImg  = img_path.replace(/'/g, "\\'");
-                            thumbHTML += '<div onclick="switchModalImage(this,\'' + safeImg + '\',\'' + reqId + '\',\'' + productId + '\')"'
+                            var safeBc   = (img_obj.BranchCode || branchCode || '').replace(/'/g, "\\'");
+                            var safeNwt  = String(img_obj.NetWt  || '').replace(/'/g, "\\'");
+                            var safeLbl  = String(img_obj.LabelNo || '').replace(/'/g, "\\'");
+                            thumbHTML += '<div onclick="switchModalImage(this,\'' + safeImg + '\',\'' + reqId + '\',\'' + productId + '\',\'' + safeBc + '\',\'' + safeNwt + '\',\'' + safeLbl + '\')"'
                                        + ' style="cursor:pointer;border:2px solid;' + border + 'border-radius:8px;overflow:hidden;flex-shrink:0;transition:all 0.15s;text-align:center;">'
                                        + '<img src="' + img_path + '" style="width:60px;height:60px;object-fit:cover;display:block;">'
                                        + '<div style="font-size:9px;color:var(--gray);padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;">' + (img_obj.LabelNo || '') + '</div>'
@@ -2709,12 +2729,24 @@ frappe.pages['product-requisition-'].on_page_load = function(wrapper) {
                             if (isFirst) {
                                 if (imgEl) imgEl.src = img_path;
                                 window.setExistingThumbnail(reqId, productId, img_path);
+                                firstObj = img_obj;
                             }
                             isFirst = false;
                         });
                         thumbHTML += '</div></div>';
                     });
                     if (thumbList) thumbList.innerHTML = thumbHTML;
+                    // Auto-populate info bar with the first image's data
+                    if (firstObj) {
+                        var bar = document.getElementById('modalImgInfo');
+                        var bv  = document.getElementById('modalInfoBranchVal');
+                        var nv  = document.getElementById('modalInfoNetwtVal');
+                        var lv  = document.getElementById('modalInfoLabelVal');
+                        if (bv) bv.textContent = firstObj.BranchCode || '—';
+                        if (nv) nv.textContent = firstObj.NetWt      || '—';
+                        if (lv) lv.textContent = firstObj.LabelNo    || '—';
+                        if (bar) bar.style.display = 'flex';
+                    }
                 }
             });
         };
