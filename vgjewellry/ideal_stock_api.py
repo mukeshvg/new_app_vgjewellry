@@ -1140,11 +1140,11 @@ def get_current_stock():
     );
     """)
     con.commit()
-    
-    # 4️⃣ Insert weight ranges into temp table
+    # Insert weight ranges into temp table
     for wr in weight_ranges:
         if "-" not in wr["weight_range"]:
-            return wr["weight_range"]+wr['item_id']
+            #continue
+            return wr["weight_range"]+"--"+wr['item_id']
         num1, num2 = wr["weight_range"].replace(" ", "").split("-")
         MinWt = float(Decimal(num1))
         MaxWt = float(Decimal(num2))
