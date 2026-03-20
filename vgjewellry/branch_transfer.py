@@ -21,16 +21,14 @@ def get_all_branch_transfer_request():
     user_data = frappe.get_doc("User",user)
     roles = frappe.get_roles()
     all_items=[]
-    return f"{user_data.ornate_branch}"
     if "Manager" in roles:
         user_branch= user_data.ornate_branch
         all_labels=[]
         branch_transfers= frappe.get_all("VG_Branch_Transfer_Request",fields=["*"],
         filters={
-        "request_to": 7 #user_branch
+        "request_to": user_branch
     },
     or_filters=[
-        {"status": ["=", ""]},
         {"status": ["is", "not set"]},
         {
             "status": "Accept",
