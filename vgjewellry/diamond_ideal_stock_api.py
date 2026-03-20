@@ -520,7 +520,7 @@ SELECT
     lb.NetWt,
     lb.ItemMstID,
     lb.BranchID,
-    
+    lb.DiamondWt,
     lt.LatestItemMstID,
     lt.ItemName,
     lt.BranchShortCode
@@ -597,8 +597,8 @@ SELECT
     BranchShortCode,
     WeightRange,
     COUNT(DISTINCT LabelNo) AS LabelCount,
-    SUM(NetWt) AS TotalNetWt
-    FROM #LabelDays1
+    SUM(DiamondWt) AS TotalNetWt
+    FROM #DLabelDays1
 GROUP BY
     BranchID,
     ItemMstID,
