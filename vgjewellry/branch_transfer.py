@@ -56,7 +56,7 @@ def get_all_branch_transfer_request():
             all_items.append(item)
 
 
-        placeholders = " LabelNo ='-1'"
+        placeholders = "NULL"
         if all_labels:
             placeholders = ",".join(["?"] * len(all_labels))
         
