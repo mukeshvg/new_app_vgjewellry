@@ -16,7 +16,7 @@ def insert_silver_wastage():
     con = connect()
     cursor = con.cursor()
     query = '''
-        SELECT  ItemMstID,ItemTradMstID,FromWeight,ToWeight, PurWastPer,WastageType,PartyID,VarietyMstId FROM ItemWiseLabour AS im where im.ItemTradMstID>4000 and im.ItemTradMstID<5000
+        SELECT  ItemMstID,ItemTradMstID,FromWeight,ToWeight, PurWastPer,WastageType,PartyID,VarietyMstId,PurRateType,PurLabRate FROM ItemWiseLabour AS im where im.ItemTradMstID>4000 and im.ItemTradMstID<5000
     '''
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -26,7 +26,7 @@ def insert_silver_wastage():
     con.close()
 
     for row in rows:
-        ItemMstID,ItemTradMstID,FromWeight,ToWeight, PurWastPer,WastageType,PartyID,VarietyMstId  = row
+        ItemMstID,ItemTradMstID,FromWeight,ToWeight, PurWastPer,WastageType,PartyID,VarietyMstId,PurRateType,PurLabRate  = row
 
         exists = frappe.db.exists("Silver_Wastage_Purchase", {
             "item_name": ItemMstID,
@@ -35,6 +35,8 @@ def insert_silver_wastage():
             "metal_id":ItemTradMstID,
             "purwast":PurWastPer,
             "wastage_type":WastageType,
+            "purchase_labour_rate_type":PurRateType,
+            "purchase_labour_rate":PurLabRate,
             "from_weight":FromWeight,
             "to_weight":ToWeight,
         })
@@ -51,6 +53,8 @@ def insert_silver_wastage():
                 "purwast":PurWastPer,
                 "from_weight":FromWeight,
                 "to_weight":ToWeight,
+                "purchase_labour_rate_type":PurRateType,
+                "purchase_labour_rate":PurLabRate,
                 "wastage_type":WastageType
                 }).insert(ignore_permissions=True)
             frappe.db.commit()
@@ -58,6 +62,9 @@ def insert_silver_wastage():
             frappe.get_doc({
                 "doctype": "silver_wastage_Purchase_child",
                 "updated_pur_wast":PurWastPer,
+                "wastage_type":WastageType,
+                "purchase_labour_rate":PurLabRate,
+                "purchase_labour_type":PurRateType,
                 "date" : now_datetime(),
                 "parent": name,
                 "parentfield": "updated_purwast",

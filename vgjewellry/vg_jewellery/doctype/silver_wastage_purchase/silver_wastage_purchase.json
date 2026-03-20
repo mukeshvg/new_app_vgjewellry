@@ -17,6 +17,8 @@
   "metal_id",
   "wastage_type",
   "purwast",
+  "purchase_labour_rate_type",
+  "purchase_labour_rate",
   "delivery_days",
   "credit_days",
   "updated_purwast"
@@ -109,12 +111,22 @@
    "fieldname": "wastage_type",
    "fieldtype": "Data",
    "label": "Wastage Type"
+  },
+  {
+   "fieldname": "purchase_labour_rate",
+   "fieldtype": "Float",
+   "label": "Purchase Labour Rate"
+  },
+  {
+   "fieldname": "purchase_labour_rate_type",
+   "fieldtype": "Data",
+   "label": "Purchase Labour Rate Type"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-19 10:55:07.174048",
+ "modified": "2026-03-20 10:21:21.266640",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Silver_Wastage_Purchase",
