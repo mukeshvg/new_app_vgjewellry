@@ -556,8 +556,8 @@ def get_product_details_new_format(page=1, page_size=10, search="", status="all"
             filters={
                 "branch_id": ["not in", [9]],
                 "item_id":   item.item,
-                #"variety_id": item.variety,
-                "variety_id": ['in',variety_ids],
+                "variety_id": item.variety,
+                #"variety_id": ['in',variety_ids],
                 "weight_range": wt_name.weight_range,
             },
             fields=["target_pcs", "stock_pcs", "branch_id"]
