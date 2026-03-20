@@ -326,10 +326,11 @@ def get_product_details_for_assignment():
             except Exception:
                 size_id = item.size
                 size_name = ""
+         
         query ='''
-            SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
+            SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE  (parent_variety =%s or variety_id=%s) and  FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
     '''
-        vdata = frappe.db.sql(query, item.item, as_dict=True)
+        vdata = frappe.db.sql(query,(item.variety,item.variety, item.item), as_dict=True)
         variety_ids = [vrow['variety_id'] for vrow in vdata]
         
         #idea_stock_res=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id': ["not in", [9]] ,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs','branch_id'],limit=3)
@@ -558,9 +559,9 @@ def get_product_details_new_format(page=1, page_size=10, search="", status="all"
 
         # ── ideal / stock data for up to 3 branches ─────────────────────────
         query ='''
-            SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
+            SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE  (parent_variety =%s or variety_id=%s) and  FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
     '''
-        vdata = frappe.db.sql(query, item.item, as_dict=True)
+        vdata = frappe.db.sql(query,(item.variety,item.variety, item.item), as_dict=True)
         variety_ids = [vrow['variety_id'] for vrow in vdata]
         idea_stock_res = frappe.get_all(
             "Current_Stock_Ideal_Stock",
