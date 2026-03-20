@@ -26,7 +26,7 @@ def get_all_branch_transfer_request():
         all_labels=[]
         branch_transfers= frappe.get_all("VG_Branch_Transfer_Request",fields=["*"],
         filters={
-        "request_to": user_branch
+        "request_to": 7 #user_branch
     },
     or_filters=[
         {"status": ["=", ""]},
