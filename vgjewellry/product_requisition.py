@@ -306,10 +306,12 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
             in_stock=0;
             if len(idea_stock)>0:
                 for vds in idea_stock:
-                    if vds.get('target_pcs') is not None:
-                        suggested += vds.get('target_pcs', 0)
-                    if vds.get('stock_pcs') is not None:
-                        in_stock += vds.get('stock_pcs', 0)
+                    target_v = vds.get('target_pcs')
+                    stock_v = vds.get('stock_pcs')
+                    if target_v is not None:
+                        suggested += int(target_v)
+                    if stock_v is not None:
+                        in_stock += int(stock_v)
                 #suggested=idea_stock[0]['target_pcs']
                 #if suggested == None:
                 #    suggested=0
