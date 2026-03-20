@@ -326,7 +326,14 @@ def get_product_details_for_assignment():
             except Exception:
                 size_id = item.size
                 size_name = ""
-        idea_stock_res=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id': ["not in", [9]] ,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs','branch_id'],limit=3)
+        query ='''
+            SELECT variety_id, variety_name, item_trade_mst_id FROM tabOrnate_Variety_Master AS vm WHERE FIND_IN_SET((SELECT item_trade_mst_id  FROM tabOrnate_Item_Master  WHERE item_mst_id = %s), vm.item_trade_mst_id) > 0;
+    '''
+        vdata = frappe.db.sql(query, item.item, as_dict=True)
+        variety_ids = [vrow['variety_id'] for vrow in vdata]
+        
+        #idea_stock_res=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id': ["not in", [9]] ,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs','branch_id'],limit=3)
+        idea_stock_res=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id': ["not in", [9]] ,'item_id':item.item,'variety_id':['in',variety_ids],'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs','branch_id'])
         main_branch_code =""
         main_branch_suggested =0
         main_branch_in_stock = 0
@@ -344,23 +351,27 @@ def get_product_details_for_assignment():
         for idea_stock in idea_stock_res:
             if idea_stock['branch_id']== item.branch:
                 if idea_stock['target_pcs'] != None:
-                    main_branch_suggested = idea_stock['target_pcs']
-                main_branch_in_stock = idea_stock['stock_pcs']
+                    main_branch_suggested += int(idea_stock['target_pcs'])
+                if idea_stock['stock_pcs'] != None:    
+                    main_branch_in_stock = int(idea_stock['stock_pcs'])
                 main_branch_diff = int(main_branch_suggested) - int(main_branch_in_stock)
                 main_branch_code1=frappe.get_doc("Ornate_Branch_Master",item.branch,"branch_code")
                 main_branch_code= main_branch_code1.branch_code
             else:
                 if other_branch_counter == 1:
                     if idea_stock['target_pcs']!= None:
-                        other_branch1_suggested = idea_stock['target_pcs']
-                    other_branch1_in_stock = idea_stock['stock_pcs']
+                        other_branch1_suggested = int(idea_stock['target_pcs'])
+                    if idea_stock['stock_pcs'] != None:    
+                        other_branch1_in_stock = int(idea_stock['stock_pcs'])
                     other_branch1_diff =int(other_branch1_suggested) - int(other_branch1_in_stock)
                     other_branch1_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch1_code= other_branch1_code1.branch_code
                     other_branch_counter+=1
                 else:
-                    other_branch2_suggested = idea_stock['target_pcs']
-                    other_branch2_in_stock = idea_stock['stock_pcs']
+                    if idea_stock['target_pcs']!= None:
+                        other_branch2_suggested = int(idea_stock['target_pcs'])
+                    if idea_stock['stock_pcs'] != None:
+                        other_branch2_in_stock = int(idea_stock['stock_pcs'])
                     other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
                     other_branch2_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch2_code = other_branch2_code1.branch_code
