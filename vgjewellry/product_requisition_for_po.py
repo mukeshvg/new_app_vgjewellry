@@ -556,8 +556,8 @@ def get_product_details_new_format(page=1, page_size=10, search="", status="all"
             filters={
                 "branch_id": ["not in", [9]],
                 "item_id":   item.item,
-                "variety_id": item.variety,
-                #"variety_id": ['in',variety_ids],
+                #"variety_id": item.variety,
+                "variety_id": ['in',variety_ids],
                 "weight_range": wt_name.weight_range,
             },
             fields=["target_pcs", "stock_pcs", "branch_id"]
@@ -581,24 +581,24 @@ def get_product_details_new_format(page=1, page_size=10, search="", status="all"
         for row in idea_stock_res:
             if row["branch_id"] == item.branch:
                 if row["target_pcs"] is not None:
-                    main_branch_suggested = row["target_pcs"]
-                main_branch_in_stock = row["stock_pcs"]
+                    main_branch_suggested += row["target_pcs"]
+                main_branch_in_stock += row["stock_pcs"]
                 main_branch_diff = int(main_branch_suggested) - int(main_branch_in_stock)
                 bc = frappe.get_doc("Ornate_Branch_Master", item.branch, "branch_code")
                 main_branch_code = bc.branch_code
             else:
                 if other_counter == 1:
                     if row["target_pcs"] is not None:
-                        other_branch1_suggested = row["target_pcs"]
-                    other_branch1_in_stock = row["stock_pcs"]
+                        other_branch1_suggested += row["target_pcs"]
+                    other_branch1_in_stock += row["stock_pcs"]
                     other_branch1_diff = int(other_branch1_suggested) - int(other_branch1_in_stock)
                     bc = frappe.get_doc("Ornate_Branch_Master", row["branch_id"], "branch_code")
                     other_branch1_code = bc.branch_code
                     other_counter += 1
                 else:
                     if row["target_pcs"] is not None:
-                        other_branch2_suggested = row["target_pcs"]
-                    other_branch2_in_stock = row["stock_pcs"]
+                        other_branch2_suggested += row["target_pcs"]
+                    other_branch2_in_stock += row["stock_pcs"]
                     other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
                     bc = frappe.get_doc("Ornate_Branch_Master", row["branch_id"], "branch_code")
                     other_branch2_code = bc.branch_code
