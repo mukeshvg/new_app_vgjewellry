@@ -29,6 +29,7 @@ def get_all_branch_transfer_request():
         "request_to": user_branch
     },
     or_filters=[
+        {"status": ["=", ""]},
         {"status": ["is", "not set"]},
         {
             "status": "Accept",
