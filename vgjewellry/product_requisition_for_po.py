@@ -353,25 +353,25 @@ def get_product_details_for_assignment():
                 if idea_stock['target_pcs'] != None:
                     main_branch_suggested += int(idea_stock['target_pcs'])
                 if idea_stock['stock_pcs'] != None:    
-                    main_branch_in_stock = int(idea_stock['stock_pcs'])
+                    main_branch_in_stock += int(idea_stock['stock_pcs'])
                 main_branch_diff = int(main_branch_suggested) - int(main_branch_in_stock)
                 main_branch_code1=frappe.get_doc("Ornate_Branch_Master",item.branch,"branch_code")
                 main_branch_code= main_branch_code1.branch_code
             else:
                 if other_branch_counter == 1:
                     if idea_stock['target_pcs']!= None:
-                        other_branch1_suggested = int(idea_stock['target_pcs'])
+                        other_branch1_suggested += int(idea_stock['target_pcs'])
                     if idea_stock['stock_pcs'] != None:    
-                        other_branch1_in_stock = int(idea_stock['stock_pcs'])
+                        other_branch1_in_stock += int(idea_stock['stock_pcs'])
                     other_branch1_diff =int(other_branch1_suggested) - int(other_branch1_in_stock)
                     other_branch1_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch1_code= other_branch1_code1.branch_code
                     other_branch_counter+=1
                 else:
                     if idea_stock['target_pcs']!= None:
-                        other_branch2_suggested = int(idea_stock['target_pcs'])
+                        other_branch2_suggested += int(idea_stock['target_pcs'])
                     if idea_stock['stock_pcs'] != None:
-                        other_branch2_in_stock = int(idea_stock['stock_pcs'])
+                        other_branch2_in_stock += int(idea_stock['stock_pcs'])
                     other_branch2_diff = int(other_branch2_suggested) - int(other_branch2_in_stock)
                     other_branch2_code1=frappe.get_doc("Ornate_Branch_Master",idea_stock['branch_id'],"branch_code")
                     other_branch2_code = other_branch2_code1.branch_code
