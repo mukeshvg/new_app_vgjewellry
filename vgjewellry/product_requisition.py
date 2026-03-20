@@ -301,14 +301,19 @@ def get_product_details_new_format(page=1, page_size=10, search=""):
             variety_ids = [vrow['variety_id'] for vrow in vdata]    
 
             #idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':item.variety,'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
-            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':['in',variety_ids],'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'],limit=1)
+            idea_stock=frappe.get_all("Current_Stock_Ideal_Stock",filters={'branch_id':user_data.ornate_branch,'item_id':item.item,'variety_id':['in',variety_ids],'weight_range':wt_name.weight_range},fields=['target_pcs','stock_pcs'])
             suggested=0;
             in_stock=0;
             if len(idea_stock)>0:
-                suggested=idea_stock[0]['target_pcs']
-                if suggested == None:
-                    suggested=0
-                in_stock=idea_stock[0]['stock_pcs']
+                for vds in idea_stock:
+                    if vds.get('target_pcs') is not None:
+                        suggested += vds.get('target_pcs', 0)
+                    if vds.get('stock_pcs') is not None:
+                        in_stock += vds.get('stock_pcs', 0)
+                #suggested=idea_stock[0]['target_pcs']
+                #if suggested == None:
+                #    suggested=0
+                #in_stock=idea_stock[0]['stock_pcs']
             diff = int(in_stock)- int(suggested)
             used_ids.append({'f':req_doc.name,'p':item.name})
             owner=frappe.get_doc("User",req_doc.owner)
