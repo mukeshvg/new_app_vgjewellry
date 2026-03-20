@@ -21,7 +21,7 @@ def get_all_branch_transfer_request():
     user_data = frappe.get_doc("User",user)
     roles = frappe.get_roles()
     all_items=[]
-    return f"{user}"
+    return f"{user_data}"
     if "Manager" in roles:
         user_branch= user_data.ornate_branch
         all_labels=[]
