@@ -43,6 +43,7 @@ def get_all_branch_transfer_request():
     ])
       #                                   filters={'status':['is','not set'],'request_to':user_branch})
 
+    return user_branch;
         for bt in branch_transfers:
             formatted_date = get_datetime(bt['creation']).strftime("%d-%m-%Y %H:%M:%S")
             all_labels.append(bt['label_no'])
