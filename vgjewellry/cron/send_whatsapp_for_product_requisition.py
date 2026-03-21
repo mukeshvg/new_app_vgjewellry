@@ -24,7 +24,7 @@ def send_product_requisition_whatsapp_to_manager():
         user = frappe.get_doc("User", doc.owner)
         user_full_name= user.full_name
         requistion_number= doc.name
-        remark = doc.requester_remark
+        remark = doc.requester_remark or ""
         branch = doc.branch
         users = frappe.db.sql("""
             SELECT u.name, u.full_name, u.mobile_no FROM `tabUser` u JOIN `tabHas Role` hr ON hr.parent = u.name  WHERE hr.role = %s  AND u.ornate_branch = %s AND u.enabled = 1""", ("Manager", branch), as_dict=True)
@@ -37,8 +37,8 @@ def send_product_requisition_whatsapp_to_manager():
         items_details=""
         for row in doc.product_details:
             item_doc = frappe.get_doc("Ornate_Item_Master", row.item)
-            item_name= item_doc.item_name
-            qty=row.qty
+            item_name= item_doc.item_name or ""
+            qty=row.qty or ""
             items_details+= item_name+"(Qty:"+qty+")"
        
         msg= f"""Hi {manager_name},
