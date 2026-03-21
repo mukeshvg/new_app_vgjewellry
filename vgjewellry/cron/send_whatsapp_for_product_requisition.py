@@ -27,7 +27,7 @@ def send_product_requisition_whatsapp_to_manager():
         remark = doc.requester_remark or ""
         branch = doc.branch
         users = frappe.db.sql("""
-            SELECT u.name, u.full_name, u.mobile_no FROM `tabUser` u JOIN `tabHas Role` hr ON hr.parent = u.name  WHERE hr.role = %s  AND u.ornate_branch = %s AND u.enabled = 1""", ("Manager", branch), as_dict=True)
+            SELECT u.name, u.full_name, u.mobile_no FROM `tabUser` u JOIN `tabHas Role` hr ON hr.parent = u.name  WHERE hr.role = %s  AND u.ornate_branch = %s AND u.enabled = 1""", ("Product Requisition", branch), as_dict=True)
         
         mobile_no=""
         manager_name= ""
