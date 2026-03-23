@@ -98,7 +98,7 @@ WHERE {date_query} and  vat.[Action] ='Insert'  AND  vat.VouType ='ST'  order by
     while current_date <= end_date:
         formatted_date = current_date.strftime("%d-%m-%Y")
 
-        total_label=yesterday_remaining + data2.get(formatted_date,0) or 0
+        total_label=yesterday_remaining + (data2.get(formatted_date,0) or 0)
 
         prepared_label=labels_date.get(formatted_date, 0)
 
