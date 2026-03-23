@@ -1,0 +1,228 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-03-23 19:09:54.959038",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "branch",
+  "voucher_date",
+  "item",
+  "variety",
+  "sales_person",
+  "supplier",
+  "metal",
+  "label_no",
+  "base_rate",
+  "metal_rate",
+  "net_wt",
+  "location",
+  "location_code",
+  "other_charge_code",
+  "diamond_in_product",
+  "total_diamond_wt",
+  "total_stone_wt",
+  "is_plane_jewellery",
+  "diamond_purchase_amount",
+  "stone_purchase_amount",
+  "purchase_rate",
+  "purchase_labour",
+  "purchase_amount",
+  "labout_amount",
+  "other_charge_sale",
+  "discount",
+  "metal_amount",
+  "diamond_amount",
+  "sales_amount",
+  "margin",
+  "margin_percentage"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch",
+   "fieldtype": "Data",
+   "label": "Branch"
+  },
+  {
+   "fieldname": "voucher_date",
+   "fieldtype": "Date",
+   "label": "Voucher Date"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Data",
+   "label": "Variety"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Data",
+   "label": "Sales Person"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Data",
+   "label": "Supplier"
+  },
+  {
+   "fieldname": "metal",
+   "fieldtype": "Data",
+   "label": "Metal"
+  },
+  {
+   "fieldname": "label_no",
+   "fieldtype": "Data",
+   "label": "Label No"
+  },
+  {
+   "fieldname": "base_rate",
+   "fieldtype": "Int",
+   "label": "Base Rate"
+  },
+  {
+   "fieldname": "metal_rate",
+   "fieldtype": "Int",
+   "label": "Metal Rate"
+  },
+  {
+   "fieldname": "net_wt",
+   "fieldtype": "Float",
+   "label": "Net Wt",
+   "precision": "3"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "location_code",
+   "fieldtype": "Data",
+   "label": "Location Code"
+  },
+  {
+   "fieldname": "other_charge_code",
+   "fieldtype": "Data",
+   "label": "Other Charge Code"
+  },
+  {
+   "fieldname": "diamond_in_product",
+   "fieldtype": "Data",
+   "label": "Diamond In Product"
+  },
+  {
+   "fieldname": "total_diamond_wt",
+   "fieldtype": "Float",
+   "label": "Total Diamond Wt",
+   "precision": "2"
+  },
+  {
+   "fieldname": "total_stone_wt",
+   "fieldtype": "Float",
+   "label": "Total Stone Wt",
+   "precision": "2"
+  },
+  {
+   "fieldname": "is_plane_jewellery",
+   "fieldtype": "Data",
+   "label": "Is Plane Jewellery"
+  },
+  {
+   "fieldname": "diamond_purchase_amount",
+   "fieldtype": "Int",
+   "label": "Diamond Purchase Amount"
+  },
+  {
+   "fieldname": "stone_purchase_amount",
+   "fieldtype": "Int",
+   "label": "Stone Purchase Amount"
+  },
+  {
+   "fieldname": "purchase_rate",
+   "fieldtype": "Int",
+   "label": "Purchase Rate"
+  },
+  {
+   "fieldname": "purchase_labour",
+   "fieldtype": "Int",
+   "label": "Purchase Labour"
+  },
+  {
+   "fieldname": "purchase_amount",
+   "fieldtype": "Int",
+   "label": "Purchase Amount"
+  },
+  {
+   "fieldname": "labout_amount",
+   "fieldtype": "Int",
+   "label": "Labout Amount"
+  },
+  {
+   "fieldname": "other_charge_sale",
+   "fieldtype": "Int",
+   "label": "Other Charge Sale"
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Int",
+   "label": "Discount"
+  },
+  {
+   "fieldname": "metal_amount",
+   "fieldtype": "Int",
+   "label": "Metal Amount"
+  },
+  {
+   "fieldname": "diamond_amount",
+   "fieldtype": "Int",
+   "label": "Diamond Amount"
+  },
+  {
+   "fieldname": "sales_amount",
+   "fieldtype": "Int",
+   "label": "Sales Amount"
+  },
+  {
+   "fieldname": "margin",
+   "fieldtype": "Int",
+   "label": "Margin",
+   "precision": "2"
+  },
+  {
+   "fieldname": "margin_percentage",
+   "fieldtype": "Float",
+   "label": "Margin Percentage",
+   "precision": "2"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-23 19:24:30.144983",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Diamond Margin",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
