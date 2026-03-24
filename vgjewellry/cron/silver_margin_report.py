@@ -72,8 +72,36 @@ def get_silver_margin_report_data():
     logger.setLevel("INFO")
     #from_date = filters.get("from_date")
     #to_date = filters.get("to_date")
-    from_date="2025-04-01"
-    to_date="2025-04-02"
+    #from_date="2025-04-01"
+    #to_date="2025-04-02"
+    from_date = "2025-04-01"
+    to_date   = "2026-03-31"
+
+    result = frappe.db.sql("""
+    WITH RECURSIVE date_series AS (
+        SELECT DATE(%(from_date)s) AS dt
+        UNION ALL
+        SELECT dt + INTERVAL 1 DAY
+        FROM date_series
+        WHERE dt < DATE(%(to_date)s)
+    )
+    SELECT ds.dt
+    FROM date_series ds
+    LEFT JOIN (
+        SELECT DISTINCT DATE(voucher_date) AS vdate
+        FROM `tabGold Margin`
+    ) g
+    ON ds.dt = g.vdate
+    WHERE g.vdate IS NULL
+    ORDER BY ds.dt
+    LIMIT 1
+    """, {"from_date": from_date, "to_date": to_date})
+
+    if result:
+        from_date=str(result[0][0])
+        to_date=str(result[0][0])
+    else:
+        return ("No missing dates")
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {from_date}\n")
@@ -459,5 +487,5 @@ def get_silver_margin_report_data():
             logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     logger.info(f"Silver Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    return {"inserted": inserted, "updated": updated, "errors": errors}
+    return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}
     
