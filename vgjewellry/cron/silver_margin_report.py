@@ -74,7 +74,7 @@ def get_silver_margin_report_data():
     #to_date = filters.get("to_date")
     #from_date="2025-04-01"
     #to_date="2025-04-02"
-    from_date = "2025-01-15"
+    from_date = "2026-01-15"
     to_date   = "2026-03-31"
 
     result = frappe.db.sql("""
