@@ -72,6 +72,33 @@ def get_gold_margin_report_data():
 
     #from_date = filters.get("from_date")
     #to_date = filters.get("to_date")
+    from_date = "2025-04-01"
+    to_date   = "2026-03-31"
+
+    result = frappe.db.sql("""
+    WITH RECURSIVE date_series AS (
+        SELECT DATE(%(from_date)s) AS dt
+        UNION ALL
+        SELECT dt + INTERVAL 1 DAY
+        FROM date_series
+        WHERE dt < DATE(%(to_date)s)
+    )
+    SELECT ds.dt
+    FROM date_series ds
+    LEFT JOIN (
+        SELECT DISTINCT DATE(voucher_date) AS vdate
+        FROM `tabGold Margin`
+    ) g
+    ON ds.dt = g.vdate
+    WHERE g.vdate IS NULL
+    ORDER BY ds.dt
+    LIMIT 1
+    """, {"from_date": from_date, "to_date": to_date})
+
+    if result:
+        return ("First missing date:", result[0][0])
+    else:
+        return ("No missing dates")
     from_date="2025-04-01"
     to_date="2025-04-02"
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
