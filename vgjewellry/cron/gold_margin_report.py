@@ -96,11 +96,12 @@ def get_gold_margin_report_data():
     """, {"from_date": from_date, "to_date": to_date})
 
     if result:
-        return ("First missing date:", result[0][0])
+        from_date=str(result[0][0])
+        to_date=str(result[0][0])
     else:
         return ("No missing dates")
-    from_date="2025-04-01"
-    to_date="2025-04-02"
+    #from_date="2025-04-01"
+    #to_date="2025-04-02"
     date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {from_date}\n")
@@ -487,12 +488,12 @@ def get_gold_margin_report_data():
                 doc.insert(ignore_permissions=True)
                 frappe.db.commit()
                 inserted += 1
-                logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no}")
+                logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no} from_date{from_date}")
 
         except Exception as e:
             errors += 1
             logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     logger.info(f"Gold Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    return {"inserted": inserted, "updated": updated, "errors": errors} 
+    return {"inserted": inserted, "updated": updated, "errors": errors , "from_date":from_date} 
     
