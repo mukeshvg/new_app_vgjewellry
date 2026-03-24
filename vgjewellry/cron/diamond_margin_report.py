@@ -74,8 +74,8 @@ def get_diamond_margin_report_data():
     #to_date = filters.get("to_date")
     #from_date= "2025-06-01"
     #to_date= "2025-06-30"
-    from_date = "2025-04-01"
-    to_date   = "2026-03-31"
+    from_date = "2025-12-01"
+    to_date   = "2026-02-28"
 
     result = frappe.db.sql("""
     WITH RECURSIVE date_series AS (
