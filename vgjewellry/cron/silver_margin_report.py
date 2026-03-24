@@ -5,7 +5,7 @@ import frappe
 import pyodbc
 import os
 import pymysql
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from frappe.utils.logger import get_logger
 import re
@@ -74,35 +74,48 @@ def get_silver_margin_report_data():
     #to_date = filters.get("to_date")
     #from_date="2025-04-01"
     #to_date="2025-04-02"
-    from_date = "2026-03-05"
-    to_date   = "2026-03-31"
+    #from_date = "2026-03-05"
+    #to_date   = "2026-03-31"
 
-    result = frappe.db.sql("""
-    WITH RECURSIVE date_series AS (
-        SELECT DATE(%(from_date)s) AS dt
-        UNION ALL
-        SELECT dt + INTERVAL 1 DAY
-        FROM date_series
-        WHERE dt < DATE(%(to_date)s)
-    )
-    SELECT ds.dt
-    FROM date_series ds
-    LEFT JOIN (
-        SELECT DISTINCT DATE(voucher_date) AS vdate
-        FROM `tabSilver Margin`
-    ) g
-    ON ds.dt = g.vdate
-    WHERE g.vdate IS NULL
-    ORDER BY ds.dt
-    LIMIT 1
-    """, {"from_date": from_date, "to_date": to_date})
+    #result = frappe.db.sql("""
+    #WITH RECURSIVE date_series AS (
+    #    SELECT DATE(%(from_date)s) AS dt
+    #    UNION ALL
+    #    SELECT dt + INTERVAL 1 DAY
+    #    FROM date_series
+    #    WHERE dt < DATE(%(to_date)s)
+    #)
+    #SELECT ds.dt
+    #FROM date_series ds
+    #LEFT JOIN (
+    #    SELECT DISTINCT DATE(voucher_date) AS vdate
+    #    FROM `tabSilver Margin`
+    #) g
+    #ON ds.dt = g.vdate
+    #WHERE g.vdate IS NULL
+    #ORDER BY ds.dt
+    #LIMIT 1
+    #""", {"from_date": from_date, "to_date": to_date})
 
-    if result:
-        from_date=str(result[0][0])
-        to_date=str(result[0][0])
-    else:
-        return ("No missing dates")
-    date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
+    #if result:
+    #    from_date=str(result[0][0])
+    #    to_date=str(result[0][0])
+    #else:
+    #    return ("No missing dates")
+
+    # Calculate dates
+    today = datetime.today()
+    yesterday = today # - timedelta(days=1)
+
+    # Convert to string YYYY-MM-DD
+    from_date = yesterday.strftime("%Y-%m-%d")
+    to_date   = today.strftime("%Y-%m-%d")
+
+    # Build date query string
+    date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
+
+    #print("Date Query:", date_query)
+    #date_query=" VouDate>='"+from_date+"' and VouDate<='"+to_date+"'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {from_date}\n")
     Location_decode = {"A": 2, "B": 15, "C": "3", "D": 16, "E": 4, "G": 5, "I": 6, "K": 7, "M": 8, "O": 9, "Q": 10, "S": 11, "U": 12, "W": 13, "Y": 14}
