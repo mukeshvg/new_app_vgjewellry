@@ -488,7 +488,7 @@ def get_gold_margin_report_data():
                 doc.insert(ignore_permissions=True)
                 frappe.db.commit()
                 inserted += 1
-                logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no} from_date{from_date}")
+                #logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no} from_date{from_date}")
 
         except Exception as e:
             errors += 1
