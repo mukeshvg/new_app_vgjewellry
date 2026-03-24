@@ -89,7 +89,7 @@ def get_silver_margin_report_data():
     FROM date_series ds
     LEFT JOIN (
         SELECT DISTINCT DATE(voucher_date) AS vdate
-        FROM `tabGold Margin`
+        FROM `tabSilver Margin`
     ) g
     ON ds.dt = g.vdate
     WHERE g.vdate IS NULL
