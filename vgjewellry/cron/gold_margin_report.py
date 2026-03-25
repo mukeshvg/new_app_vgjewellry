@@ -184,7 +184,7 @@ def get_gold_margin_report_data():
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['PurRate']/10);
                 else:
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
-            if branch=="vapi":
+            if False and branch=="vapi":
                 rate_master[rate_date]=valsad_rate_master[rate_date];
         table="ItemWiseLabour"
         columns=["ItemWiseLabourID","ItemMstID","VarietyMstId","FromWeight","ToWeight","PurWastPer","PartyID"]
