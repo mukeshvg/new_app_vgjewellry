@@ -108,8 +108,8 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    from_date="2026-02-18"
-    to_date="2026-02-18"
+    from_date="2026-02-24"
+    to_date="2026-02-24"
 
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
