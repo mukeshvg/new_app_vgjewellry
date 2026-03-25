@@ -108,6 +108,9 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
+    from_date="2026-02-18"
+    to_date="2026-02-18"
+
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
@@ -604,6 +607,12 @@ def get_diamond_margin_report_data():
                 is_plain="yes"
 
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
+
+            diamond_in_product = (
+                diamond_in_product[:135] + "..."
+                if diamond_in_product and len(diamond_in_product) > 140
+                else diamond_in_product
+            )
 
             return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
