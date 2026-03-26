@@ -108,6 +108,9 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
+    from_date ="2025-04-01"
+    to_date ="2026-03-26"
+
 
 
     # Build date query string
@@ -277,7 +280,7 @@ def get_diamond_margin_report_data():
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%' ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
