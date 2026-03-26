@@ -5,9 +5,10 @@ import frappe
 import pyodbc
 import os
 import pymysql
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from frappe.utils.logger import get_logger
+import re
 
 
 value_ornsys= os.getenv('ornsysodbc')
@@ -106,6 +107,17 @@ def get_gold_margin_report_data():
     yesterday = today # - timedelta(days=1)
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
+
+    first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    if first_doc:
+        doc_name1234 = first_doc[0].name
+        from_date1 = first_doc[0].from_date
+
+        if from_date1:
+            to_date1 = from_date1 + timedelta(days=7)
+
+    from_date =str(from_date1)
+    to_date = str(to_date1)
 
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -398,7 +410,9 @@ def get_gold_margin_report_data():
             margin = float(Sales_Amt) - Purchase_Amt
             margin_percentage= round((margin / Purchase_Amt * 100),2)
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":LabelNo,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,2),"location":Location,"wastage_rate":Wastage_Rate,"location_code":Location_code,"other_charge_code":other_charge_code,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
+            new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
+
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,2),"location":Location,"wastage_rate":Wastage_Rate,"location_code":Location_code,"other_charge_code":other_charge_code,"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"purity":round(Purity,2),"labour_percentage":LabourPer,"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
             one_unique_id=UniqueLabelID
 
         
@@ -501,5 +515,7 @@ def get_gold_margin_report_data():
             logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     logger.info(f"Gold Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
+    frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors , "from_date":from_date} 
     
