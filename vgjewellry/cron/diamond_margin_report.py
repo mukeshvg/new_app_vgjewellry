@@ -742,6 +742,6 @@ def get_diamond_margin_report_data():
 
     logger.info(f"Diamond Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
 
-    #frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
-    #frappe.db.commit()
+    frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}    
