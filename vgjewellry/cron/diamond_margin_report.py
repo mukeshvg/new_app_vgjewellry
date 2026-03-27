@@ -108,16 +108,16 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    #first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
-    #if first_doc:
-    #    doc_name1234 = first_doc[0].name
-    #    from_date1 = first_doc[0].from_date
+    first_doc = frappe.get_all("gl_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    if first_doc:
+        doc_name1234 = first_doc[0].name
+        from_date1 = first_doc[0].from_date
 
-    #    if from_date1:
-    #        to_date1 = from_date1 + timedelta(days=7)
+        if from_date1:
+            to_date1 = from_date1 + timedelta(days=7)
 
-    #from_date =str(from_date1)
-    #to_date = str(to_date1)
+    from_date =str(from_date1)
+    to_date = str(to_date1)
     
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -396,7 +396,8 @@ def get_diamond_margin_report_data():
             diamond_in_product=""
             for i in all_diamond_pcs:
                 if i['SizeID']==0 or i["SizeID"]== 1 or i["SizeID"]=="1" or i["SizeID"]==11 or i["SizeID"]==10:
-                    if i['StyleID']== 3:
+                    #if i['StyleID']== 3:
+                    if i['StyleID'] in [3,4,5,10,12,14,27,31,49,50,51,52,73,77,78,88,92]:
                         total_diamond_wt+=float(i['NetWt'])
                         diamond_purchase_amount += float(i["cost"])
                     else:     
@@ -741,6 +742,6 @@ def get_diamond_margin_report_data():
 
     logger.info(f"Diamond Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
 
-    #frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
-    #frappe.db.commit()
+    frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}    
