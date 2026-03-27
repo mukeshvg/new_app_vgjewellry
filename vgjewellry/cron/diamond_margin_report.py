@@ -274,7 +274,7 @@ def get_diamond_margin_report_data():
 
         table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID","DiamondPcs"]
-        condition="VouType='ST'   and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  and LabelNo not like 'O%'"
+        condition="VouType='ST'   and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)"
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         diamond_pcs_dict={}
@@ -742,6 +742,6 @@ def get_diamond_margin_report_data():
 
     logger.info(f"Diamond Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
 
-    frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
-    frappe.db.commit()
+    #frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
+    #frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}    
