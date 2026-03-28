@@ -40,7 +40,7 @@ def connect_ho():
     conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
     return conn
 
-def get_sql_server_data(branch,table,columns,condition ):
+def get_sql_server_data(branch,table,columns,condition,order_by=None, limit =None ):
     if branch=="valsad":
         conn=connect_valsad()
     elif branch=="vapi":
@@ -55,7 +55,16 @@ def get_sql_server_data(branch,table,columns,condition ):
     
     column_string=",".join(columns);
     cursor = conn.cursor()
-    cursor.execute("SELECT  "+column_string+" FROM "+table+" where "+condition)
+
+    top_clause = f"TOP {limit}" if limit else ""
+
+    query = f"SELECT {top_clause} {column_string} FROM {table} WHERE {condition}"
+
+    # Add ORDER BY only if provided
+    if order_by:
+        query += f" ORDER BY {order_by}"
+
+    cursor.execute(query)
 
     rows = cursor.fetchall()
     data = []
@@ -118,6 +127,9 @@ def get_diamond_margin_report_data():
 
     from_date =str(from_date1)
     to_date = str(to_date1)"""
+
+    from_date="2026-03-24"
+    to_date="2026-03-24"
     
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -143,7 +155,7 @@ def get_diamond_margin_report_data():
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    #branch_array=["valsad"]
+    branch_array=["valsad"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -284,20 +296,21 @@ def get_diamond_margin_report_data():
                 diamond_pcs_dict[sur['UniqueLabelID']]=0;
             diamond_pcs_dict[sur['UniqueLabelID']] += sur["DiamondPcs"]    
         check_wastage=[]
-        table="LabelTransaction"
-        columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
+        
+        table="SPTran"
+        columns=["SPTranID","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  ";    
-        select_label_res=get_sql_server_data(branch,table,columns,condition)
+        select_label_res=get_sql_server_data(branch,table,columns,condition, "SPTranID")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
+            OpVouTranId=slr['OpVouTranId']
+            SPTranID=slr['SPTranID']
             if slr['VouType'] == "SRT":
-                return_array.pop(UniqueLabelID, None)
+                return_array.pop(OpVouTranId, None)
+                frappe.db.sql("""   DELETE FROM `tabDiamond Margin`   WHERE sptranid = %s""", (OpVouTranId,))
+                frappe.db.commit()
                 continue
-            LabelTransID= int(slr['LabelTransID'])
-            if LabelTransID in all_ready_label_transaction:
-                continue
-            else:
-                all_ready_label_transaction.append(LabelTransID);
+            #LabelTransID= int(slr['LabelTransID'])
             #logger.info(f"{slr['LabelTransID']}")    
             #logger.info(f"-----------")    
             #UniqueLabelID = slr.get('UniqueLabelID')
@@ -306,7 +319,6 @@ def get_diamond_margin_report_data():
             #if slr['VouType']=="SRT":
                 #return_array.pop(UniqueLabelID)
             #    continue
-            label_user_id= user_label_res[UniqueLabelID] if UniqueLabelID in user_label_res else "no"
             #VouDate1 = datetime.strptime(slr['VouDate'],"%Y-%m-%d %H:%M:%S.%f")
             VouDate1 = slr['VouDate']
             VouDate = VouDate1.strftime("%Y-%m-%d")
@@ -321,77 +333,66 @@ def get_diamond_margin_report_data():
             item_name=items[ItemMstID]
             VarietyMstId=slr['VarietyMstId']
             variety_name=variety[VarietyMstId]
-            SupplierCode=slr['SupplierCode']
+            SupplierCode=slr['ApprovalPartyID']
             LabelTransID= int(slr['SPTranID'])
             supplier_name=supplier[SupplierCode]['n']
             LabelNo=slr['LabelNo']
             SalesManId=slr['SalesManId']
             salesman_name= salesman[SalesManId] if SalesManId in salesman else ""
-            OtherChargeSale=slr['OtherCharge']
-            LabelTransID=str(slr['SPTranID'])
+            OtherChargeSale=slr['OtherChgAmt']
 
-            Discount=slr['LabourDisAmt']+slr['AccDisAmt']+slr['MetalDisAmt']
+            #Discount=slr['LabourDisAmt']+slr['AccDisAmt']+slr['MetalDisAmt']
+            Discount=slr['DiscountAmt']
             Discount = float(Discount);
             
-            table="LabelTransactionStudded"
-            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt","PcsName","CostAmount"]
-            condition = "LabelTransID='"+LabelTransID+"'"
-            lts_res=get_sql_server_data(branch,table,columns,condition)
-            MetalAmt=0
-            DiamondAmt =0 
-            LabourAmt=0
-            total_diamond_wt=0
-            total_stone_wt=0
+            DiamondWt_db=slr["DiamondWt"]
+            DiamondAmt_db=slr["DiamondAmt"]
+            StoneAmt=slr["StoneAmt"]
+            StoneWt_db=slr["StoneWt"]
+            LabourAmt_db=slr["LabourAmt"]
+            OtherChgAmt_db=slr["OtherChgAmt"]
+            Metal_Rate=float(slr["MetalRate"])/10
+            MetalAmt=slr["MetalAmt"]
+            Location=""
+            Location_code=""
+            other_charge_code=""
+            diamond_in_product=""
+            total_diamond_wt=DiamondWt_db
+            total_stone_wt=StoneWt_db
+            LabourAmt=LabourAmt_db
+            OtherChargeSale=OtherChgAmt_db
+            DiamondAmt=DiamondAmt_db
+            is_plain="no"
+            if DiamondAmt == 0 or DiamondAmt=="0":
+                is_plain="yes"
+            diamond_purchase_amount=0
+            stone_purchase_amount=0
+            purchase_rate=0
+            Purchase_Labour=0
+            Purchase_Amt=0
+            Sales_Amt=float(slr["TaxableAmt"])- Discount
+            label_user_id=""
+            margin=0
+            margin_percentage=0
+            Purchase_Rate=0
+
             all_diamond_pcs =[]
             all_metal_pcs =[]
+            table="LabelTransactionStudded"
+            columns=["LabelStudID" ,"StyleID" ,"SizeID" , "NetWt" ,"Pcs","DiscountAmt", "MetalAmt","PcsName","CostAmount"]
+            condition = "UniqueLabelID='"+ UniqueLabelID+"' and VouDate='"+str(VouDate1)+"'"
+            lts_res=get_sql_server_data(branch,table,columns,condition)
             for ltr in lts_res:
-                Discount+= float(ltr["DiscountAmt"])
                 if ltr["StyleID"]== 1006:
-                    MetalAmt+=float(ltr["MetalAmt"])
                     all_metal_pcs.append({"Pcs":ltr["Pcs"],"NetWt":ltr["NetWt"],"PcsName":ltr["PcsName"]})
                 else:
-                    DiamondAmt+=float(ltr["MetalAmt"])
-                    pcs=ltr["Pcs"]
-                    if ltr["Pcs"]== 0 or ltr["Pcs"]=="0":
-                        if UniqueLabelID in diamond_pcs_dict:
-                            pcs= diamond_pcs_dict[UniqueLabelID]
-                    all_diamond_pcs.append({"Pcs":pcs,"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount'],"DiamondAmt":ltr["MetalAmt"]})
-            if VarietyMstId in sales_labour_dict:        
-                for sld_obj in  sales_labour_dict[VarietyMstId]:
-                    if sld_obj["from_wt"]<= NetWt and sld_obj["to_wt"] >= NetWt:
-                        if sld_obj["rate_type"]=="N":
-                            LabourAmt=sld_obj["rate"] * NetWt
-                        else:
-                            LabourAmt = sld_obj["rate"]
-            else:
-                LabourAmt = slr["LabourAmount"]
+                    all_diamond_pcs.append({"Pcs":ltr['Pcs'],"NetWt":ltr["NetWt"],"StyleID":ltr["StyleID"],"SizeID":ltr["SizeID"],'cost':ltr['CostAmount'],"DiamondAmt":ltr["MetalAmt"]})
 
-            
-            
-            #Discount Load From Table Directly
-            VouTranID=str(slr["VouTranID"])
-            table="DiscountTranNew"
-            columns=["ManualDiscountAmt","Id"]
-            condition= "VouTranId='"+VouTranID+"'"
-            discount_res=get_sql_server_data(branch,table,columns,condition)
-            for ddd in discount_res:
-                Discount= ddd["ManualDiscountAmt"]
-            
-            # Sales 22KT
-            Sale_Rate = MetalAmt + DiamondAmt
             LabourPer = slr['LabourPer']
             Purity = slr['Purity']
-            
-            # Item type
-            ItemTradMstId = slr['ItemTradMstId']
-            Purchase_Purity = "0"
-            metal_name = ""
-            if ItemTradMstId==1006:
-                Purchase_Purity=76
-                metal_name="18DI"
+            Purchase_Purity=76
+            metal_name="18DI"
             Total_Sales_Purity=LabourPer+Purity
-
-            #logger.info(f"{all_diamond_pcs}")
             diamond_purchase_amount=0
             stone_purchase_amount=0
             diamond_in_product=""
@@ -399,20 +400,17 @@ def get_diamond_margin_report_data():
                 if i['SizeID']==0 or i["SizeID"]== 1 or i["SizeID"]=="1" or i["SizeID"]==11 or i["SizeID"]==10:
                     #if i['StyleID']== 3:
                     if i['StyleID'] in [3,4,5,10,12,14,27,31,49,50,51,52,73,77,78,88,92]:
-                        total_diamond_wt+=float(i['NetWt'])
                         diamond_purchase_amount += float(i["cost"])
-                    else:     
-                        total_stone_wt+=float(i['NetWt'])
+                    else:
                         if i['StyleID'] in color_stone:
                             stone_purchase_amount += float(0.7) * float(i["cost"])
-                        else:    
+                        else:
                             stone_purchase_amount+= float(i["cost"])
                         dia_style_in_product= diamond_style[i['StyleID']]
                         dia_shape=shape_master.get(dia_style_in_product)
                         diamond_in_product += f"{dia_shape or ''} {i['NetWt'] or ''}\n"
                         #logger.info(f"----{diamond_purchase_amount}")
-                else:   
-                    total_diamond_wt+=float(i['NetWt'])
+                else:
                     dia_size_in_product=diamond_size[i['SizeID']]
                     dia_color=diamond_size_map_master[dia_size_in_product]["color"]
                     dia_clarity=diamond_size_map_master[dia_size_in_product]["clarity"]
@@ -421,8 +419,8 @@ def get_diamond_margin_report_data():
                     #logger.info(f"diamond {dia_size_in_product}---{dia_style_in_product}")
                     one_diamond_wt= round(i['NetWt']/i['Pcs'],4) if i['Pcs'] != 0 else 0
                     #logger.info(f"--one diamond wt{one_diamond_wt}")
-                    dia_supplier= slr['SupplierCode']
-                    rate = Decimal("0")
+                    dia_supplier= slr['ApprovalPartyID']
+                    ate = Decimal("0")
                     rate = frappe.db.get_value(
                        "Diamond_Purchase_Rate",
                         {
@@ -435,8 +433,6 @@ def get_diamond_margin_report_data():
                         },
                         "rate"
                     ) or Decimal("0")
-
-                    #logger.info(f"n1---{rate}");
 
                     if rate==0 or rate=="0":
                         rate = frappe.db.get_value(
@@ -451,8 +447,8 @@ def get_diamond_margin_report_data():
                         "rate",
                         order_by="rate desc"
                     ) or Decimal("0")
-                    
-                    #logger.info(f"n2---{rate}");
+
+
                     if rate==0:
                         rate = frappe.db.get_value(
                         "Diamond_Purchase_Rate",
@@ -467,7 +463,7 @@ def get_diamond_margin_report_data():
                     ) or Decimal("0")
 
                     #logger.info(f"n3---{rate}");
-                    
+
                     if rate==0:
                         rate = frappe.db.get_value(
                         "Diamond_Purchase_Rate",
@@ -489,25 +485,27 @@ def get_diamond_margin_report_data():
                             diamond_purchase_amount += float(i['DiamondAmt'])*0.9
                             #logger.info(f"nnn---{diamond_purchase_amount}--{i['DiamondAmt']}");
                     diamond_purchase_amount=round(diamond_purchase_amount)
-                    #logger.info(f"---{diamond_purchase_amount}");
-                    #logger.info(f"{dia_supplier}---{dia_clarity}---{dia_color}---{dia_shape}----{one_diamond_wt}--{rate}---{i['NetWt']}--{diamond_purchase_amount}")
 
-            #logger.info(f"this is {diamond_purchase_amount}")
-                
-            # Purchase 22KT
-            Wastage_Rate = 0
-            Location_code = ""
-            Location = ""
+
             Purchase_Labour=0
             Labour_Type=""
-            if VarietyMstId in wastage_type_dict:        
+            if VarietyMstId in wastage_type_dict:
                 for sld_obj in  wastage_type_dict[VarietyMstId]:
                     if sld_obj["from_wt"]<= NetWt and sld_obj["to_wt"] >= NetWt:
                         if sld_obj["wastage_type"]=="Per Gram":
                             Labour_Type="PerGram"
                         if sld_obj["wastage_type"]=="Fix":
                             Labour_Type = "Fix"
-            Location=slr['Location'].strip()
+           
+            table="LabelTransaction"
+            columns=["LabelTransID","Location"]
+            condition=" UniqueLabelID='"+UniqueLabelID+"' and VouDate='"+str(VouDate1)+"'"
+            select_ltran_res=get_sql_server_data(branch,table,columns,condition,None,1)
+            for mit in select_ltran_res:
+                Location= mit["Location"]
+
+            Location=Location.strip()
+
             if (Location and ('-' in Location or '/' in Location or '+' in Location or len(Location)==1)):
                 if '+' in Location:
                     each_location=Location.split('+')
@@ -526,7 +524,7 @@ def get_diamond_margin_report_data():
                             Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
                         else:
                             Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
-            
+
             elif(len(Location)==2):
                 for adp in all_metal_pcs:
                     if adp["PcsName"]=="DPPANDENT":
@@ -537,101 +535,44 @@ def get_diamond_margin_report_data():
                         Purchase_Labour += Lc_Chart_Per_Fix.get(Location_code, 0)
                     else:
                         Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
+            
 
-
-
-
-            #Calculate other charge
-            other_charge_code=""
-            multi_other_charge_code=[]
-            Location=slr['Location'].strip().upper()
-            if Location:
-                if "-" in Location:
-                    if "/" in Location:
-                        each_part=Location.split("/")
-                        for ep in each_part:
-                            each_other_charge1=ep.split("-")
-                            if len(each_other_charge1) > 1:
-                                multi_other_charge_code.append(each_other_charge1[1])
-                            else:
-                                multi_other_charge_code.append(each_other_charge1[0])
-
-                    else:
-                        each_other_charge = Location.split("-")
-                        if len(each_other_charge) > 1:
-                            other_charge_code = each_other_charge[1]
-                elif "/" in Location:
-                    each_other_charge=Location.split("/")
-                    if len(each_other_charge)>1:
-                        other_charge_code=each_other_charge[1]
-                elif Location.isalpha() and len(Location)>1:
-                    other_charge_code = Location
-            other_charge_value=""
-            if other_charge_code!="":
-                for char in other_charge_code:
-                    if char in Other_Charge:
-                        other_charge_value+=str(Other_Charge[char])
-                slr['other_charge_value'] = other_charge_value
-            if OtherChargeSale>0 and other_charge_value=="":
-                other_charge_value=round(float(OtherChargeSale)*0.70)
-            if other_charge_value=="":
-                other_charge_value=0
-            if len(multi_other_charge_code) > 0:
-                other_charge_code=",".join(multi_other_charge_code)
-                other_charge_value=0
-            for moc in multi_other_charge_code:
-                first_charge=""
-                for char in moc:
-                    if char in Other_Charge:
-                        first_charge+= str(Other_Charge[char])
-                other_charge_value+=int(first_charge) if first_charge else 0
-            Sales_Amt = Sale_Rate + float(LabourAmt) + float(OtherChargeSale) - float(Discount)
-            new_diamond_amt=0
-            if UniqueLabelID in return_array:
-                NetWt += float(return_array[UniqueLabelID]['net_wt'])
-                LabourAmt = float(LabourAmt)
-                LabourAmt += float(return_array[UniqueLabelID]['labour_amount'])
-                Discount= float(Discount)
-                Discount += float(return_array[UniqueLabelID]['discount'])
-                Sales_Amt += float(return_array[UniqueLabelID]['sales_amount'])
-                diamond_purchase_amount= float(diamond_purchase_amount)
-                diamond_purchase_amount += float(return_array[UniqueLabelID]['diamond_purchase_amount'])
-                diamond_in_product += return_array[UniqueLabelID]['diamond_in_product']
-                stone_purchase_amount= float(stone_purchase_amount)
-                stone_purchase_amount += float(return_array[UniqueLabelID]['stone_purchase_amount'])
-                total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
-                total_stone_wt += return_array[UniqueLabelID]['total_stone_wt']
-                DiamondAmt+= return_array[UniqueLabelID]['diamond_amount']
-           
-            # Calculate purchase rates and amounts
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
+            other_charge_value=0
             Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)+ float(stone_purchase_amount)
             margin = float(Sales_Amt) - Purchase_Amt
 
             margin_percentage= round((margin / Purchase_Amt * 100),2)
-            total_diamond_wt = round(total_diamond_wt,2)
-            
-            is_plain="no"
-            if total_diamond_wt == 0 or total_diamond_wt=="0":
-                is_plain="yes"
+       
+
+
+
+
 
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
 
+            if total_diamond_wt == 0:
+                diamond_in_product=""
             diamond_in_product = (
                 diamond_in_product[:135] + "..."
                 if diamond_in_product and len(diamond_in_product) > 140
                 else diamond_in_product
             )
 
-            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage}
+
+            
+
+            return_array[SPTranID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"stone_amount":round(StoneAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage,"s":SPTranID,"u":UniqueLabelID}
             one_unique_id=UniqueLabelID
+
+            
 
 
             #logger.info(f"this is {return_array}")
 
         
-        for uld in check_wastage:
+        """for uld in check_wastage:
             if uld not in return_array or 'net_wt' not in return_array[uld]:
                 continue
             NetWt=round(return_array[uld]['net_wt'],2)
@@ -644,8 +585,7 @@ def get_diamond_margin_report_data():
             return_array[uld]['wastage_rate']=Wastage_Rate
             return_array[uld]['purchase_labour']=round(Purchase_Labour)
             return_array[uld]['purchase_amount']=round(Purchase_Amt)
-            return_array[uld]['margin']=round(margin)
-            
+            return_array[uld]['margin']=round(margin) """
     inserted = updated = errors = 0
     for uid, row in return_array.items():
         try:
@@ -658,7 +598,7 @@ def get_diamond_margin_report_data():
                 "name"
             )
 
-            if existing_name:
+            if False and existing_name:
                 # ── UPDATE ──
                 doc = frappe.get_doc("Diamond Margin", existing_name)
                 doc.branch                   = row['branch']
@@ -728,9 +668,12 @@ def get_diamond_margin_report_data():
                     "discount":              int(row['discount'] or 0),
                     "metal_amount":          int(row['metal_amount'] or 0),
                     "diamond_amount":        int(row['diamond_amount'] or 0),
+                    "stone_amount":        int(row['stone_amount'] or 0),
                     "sales_amount":          int(row['sales_amount'] or 0),
                     "margin":                int(row['margin'] or 0),
                     "margin_percentage":     float(row['margin_percentage'] or 0),
+                    "uniquelabelid": row["u"],
+                    "sptranid":row["s"]
                 })
                 doc.insert(ignore_permissions=True)
                 frappe.db.commit()
@@ -743,6 +686,6 @@ def get_diamond_margin_report_data():
 
     logger.info(f"Diamond Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
 
-    frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
-    frappe.db.commit()
+    #frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
+    #frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}    
