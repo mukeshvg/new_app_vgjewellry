@@ -108,7 +108,7 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    first_doc = frappe.get_all("gl_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    """first_doc = frappe.get_all("gl_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
@@ -117,7 +117,7 @@ def get_diamond_margin_report_data():
             to_date1 = from_date1 + timedelta(days=7)
 
     from_date =str(from_date1)
-    to_date = str(to_date1)
+    to_date = str(to_date1)"""
     
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -285,7 +285,9 @@ def get_diamond_margin_report_data():
             diamond_pcs_dict[sur['UniqueLabelID']] += sur["DiamondPcs"]    
         check_wastage=[]
         table="LabelTransaction"
-        columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
+        table="SPTran"
+        #columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
+        columns=["SPTranID","VouType","VouDate","LabelNo","ItemMstID","ApporvalPartyID","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','VouTranID']
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
@@ -293,7 +295,8 @@ def get_diamond_margin_report_data():
             if slr['VouType'] == "SRT":
                 return_array.pop(UniqueLabelID, None)
                 continue
-            LabelTransID= int(slr['LabelTransID'])
+            #LabelTransID= int(slr['LabelTransID'])
+            LabelTransID= int(slr['SPTranID'])
             if LabelTransID in all_ready_label_transaction:
                 continue
             else:
@@ -321,13 +324,15 @@ def get_diamond_margin_report_data():
             item_name=items[ItemMstID]
             VarietyMstId=slr['VarietyMstId']
             variety_name=variety[VarietyMstId]
-            SupplierCode=slr['SupplierCode']
+            #SupplierCode=slr['SupplierCode']
+            SupplierCode=slr['ApporvalPartyID']
+            LabelTransID= int(slr['SPTranID'])
             supplier_name=supplier[SupplierCode]['n']
             LabelNo=slr['LabelNo']
             SalesManId=slr['SalesManId']
             salesman_name= salesman[SalesManId] if SalesManId in salesman else ""
             OtherChargeSale=slr['OtherCharge']
-            LabelTransID=str(slr['LabelTransID'])
+            LabelTransID=str(slr['SPTranID'])
 
             Discount=slr['LabourDisAmt']+slr['AccDisAmt']+slr['MetalDisAmt']
             Discount = float(Discount);
@@ -401,7 +406,7 @@ def get_diamond_margin_report_data():
                         total_diamond_wt+=float(i['NetWt'])
                         diamond_purchase_amount += float(i["cost"])
                     else:     
-                        total_stone_wt=float(i['NetWt'])
+                        total_stone_wt+=float(i['NetWt'])
                         if i['StyleID'] in color_stone:
                             stone_purchase_amount += float(0.7) * float(i["cost"])
                         else:    
