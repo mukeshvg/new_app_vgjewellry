@@ -449,7 +449,7 @@ def get_gold_margin_report_data():
         for uld in check_wastage:
             if uld not in return_array or 'net_wt' not in return_array[uld]:
                 continue
-            NetWt=round(return_array[uld]['net_wt'],2)
+            NetWt=round(return_array[uld]['net_wt'],3)
             Wastage_Rate=global_max_variety_wastage[return_array[uld]['item']][return_array[uld]['variety']]
             Base_Rate=return_array[uld]['base_rate']
             Purchase_Rate=return_array[uld]['purchase_rate']
@@ -473,7 +473,7 @@ def get_gold_margin_report_data():
                 "name"
             )
 
-            if False and existing_name:
+            if existing_name:
                 # ── UPDATE ──
                 doc = frappe.get_doc("Gold Margin", existing_name)
                 doc.branch                   = row['branch']
