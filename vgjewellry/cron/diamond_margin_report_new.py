@@ -560,11 +560,11 @@ def get_diamond_margin_report_data():
                 # For Diamond Ornaments:
                 manual_margin=0.9
                 if diamond_purchase_amount==0:
-                    diamond_purchase_amount= DiamondAmt * manual_margin
+                    diamond_purchase_amount= float(DiamondAmt) * manual_margin
                 if stone_purchase_amount==0:
-                    stone_purchase_amount= StoneAmt * manual_margin
+                    stone_purchase_amount= float(StoneAmt) * manual_margin
                 if Purchase_Labour==0:
-                    Purchase_Labour = LabourAmt * manual_margin 
+                    Purchase_Labour = float(LabourAmt) * manual_margin 
 
 
             Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
