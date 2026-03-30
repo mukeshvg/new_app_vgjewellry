@@ -272,7 +272,7 @@ def get_gold_margin_report_data():
         columns=["SPTranID","Purity","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
 
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)  and LabelNo not like 'O%'";    
-        select_label_res=get_sql_server_data(branch,table,columns,condition)
+        select_label_res=get_sql_server_data(branch,table,columns,condition,"SPTranID")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
             OpVouTranId=slr['OpVouTranId']
