@@ -118,7 +118,7 @@ def get_gold_margin_report_data():
     to_date   = today.strftime("%Y-%m-%d")
 
     from_date="2025-04-01"
-    to_date="2025-09-30"
+    to_date="2025-04-30"
 
     """first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
