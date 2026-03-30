@@ -537,13 +537,12 @@ def get_diamond_margin_report_data():
                         Purchase_Labour += (Lc_Chart_Per_Gram.get(Location_code,0) * adp["NetWt"])
             
 
-            Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
             other_charge_value=0
-            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)+ float(stone_purchase_amount)
        
 
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
+
             
             if UniqueLabelID in return_array:
                 NetWt += return_array[UniqueLabelID]['net_wt']
@@ -556,6 +555,20 @@ def get_diamond_margin_report_data():
                 OtherChargeSale += return_array[UniqueLabelID]['other_charge_sale']
                 Sales_Amt += return_array[UniqueLabelID]['sales_amount']
                 diamond_in_product +=return_array[UniqueLabelID]['diamond_in_product']
+            
+            if int(ItemMstID) == 85:
+                # For Diamond Ornaments:
+                manual_margin=0.9
+                if diamond_purchase_amount==0:
+                    diamond_purchase_amount= DiamondAmt * manual_margin
+                if stone_purchase_amount==0:
+                    stone_purchase_amount= StoneAmt * manual_margin
+                if Purchase_Labour==0:
+                    Purchase_Labour = LabourAmt * manual_margin 
+
+
+            Purchase_Rate = NetWt * Purchase_Purity * Base_Rate / 100
+            Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)+ float(stone_purchase_amount)
             
             if total_diamond_wt == 0:
                 diamond_in_product=""
