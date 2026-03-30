@@ -128,8 +128,8 @@ def get_diamond_margin_report_data():
     from_date =str(from_date1)
     to_date = str(to_date1)"""
 
-    from_date="2026-03-24"
-    to_date="2026-03-24"
+    from_date="2025-04-01"
+    to_date="2026-03-30"
     
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -541,17 +541,22 @@ def get_diamond_margin_report_data():
             #Purchase_Labour = NetWt * float(Wastage_Rate) * Base_Rate / 100
             other_charge_value=0
             Purchase_Amt = float(Purchase_Rate) + float(Purchase_Labour) + float(other_charge_value)+ float(diamond_purchase_amount)+ float(stone_purchase_amount)
-            margin = float(Sales_Amt) - Purchase_Amt
-
-            margin_percentage= round((margin / Purchase_Amt * 100),2)
        
 
-
-
-
-
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
-
+            
+            if UniqueLabelID in return_array:
+                NetWt += return_array[UniqueLabelID]['NetWt']
+                total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
+                total_stone_wt += return_array[UniqueLabelID]['total_stone_wt']
+                Discount += return_array[UniqueLabelID]['discount']
+                MetalAmt += return_array[UniqueLabelID]['metal_amount']
+                DiamondAmt += return_array[UniqueLabelID]['diamond_amount']
+                StoneAmt += return_array[UniqueLabelID]['stone_amount']
+                OtherChargeSale += return_array[UniqueLabelID]['other_charge_sale']
+                Sales_Amt += return_array[UniqueLabelID]['sales_amount']
+                diamond_in_product+ =return_array[UniqueLabelID]['diamond_in_product']
+            
             if total_diamond_wt == 0:
                 diamond_in_product=""
             diamond_in_product = (
@@ -559,11 +564,10 @@ def get_diamond_margin_report_data():
                 if diamond_in_product and len(diamond_in_product) > 140
                 else diamond_in_product
             )
-
-
-            
-
-            return_array[SPTranID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"stone_amount":round(StoneAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage,"s":SPTranID,"u":UniqueLabelID}
+            margin = float(Sales_Amt) - Purchase_Amt
+            margin_percentage= round((margin / Purchase_Amt * 100),2)
+                
+            return_array[UniqueLabelID]={'branch':branch,'voucher_date':datetime.strptime(VouDate, "%Y-%m-%d").strftime("%d-%m-%Y"),"item":item_name,"variety":variety_name,"salesman":salesman_name,"supplier":supplier_name,"metal":metal_name,"label_no":new_label_no,"base_rate":Base_Rate,"metal_rate":Metal_Rate,"net_wt":round(NetWt,3),"location":Location,"location_code":Location_code,"other_charge_code":other_charge_code,"diamond_in_product":diamond_in_product,"total_diamond_wt":total_diamond_wt,"total_stone_wt":total_stone_wt,"is_plain_jewellry":is_plain,"diamond_purchase_amount":diamond_purchase_amount,"stone_purchase_amount":round(stone_purchase_amount),"purchase_rate":round(Purchase_Rate),"purchase_labour":round(Purchase_Labour),"purchase_amount":round(Purchase_Amt),"labour_amount":round(LabourAmt),"other_charge_sale":OtherChargeSale,"discount":round(Discount),"metal_amount":round(MetalAmt),"diamond_amount":round(DiamondAmt),"stone_amount":round(StoneAmt),"sales_amount":round(Sales_Amt),"other_charge_sale":OtherChargeSale,"label_user_id":label_user_id,"margin":round(margin),"margin_percentage":margin_percentage,"s":SPTranID,"u":UniqueLabelID}
             one_unique_id=UniqueLabelID
 
             
