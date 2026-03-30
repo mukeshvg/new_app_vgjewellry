@@ -260,7 +260,7 @@ def get_gold_margin_report_data():
 
         table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID"]
-        condition="VouType='ST'   and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)  and LabelNo not like 'O%'"
+        condition="VouType='ST'   and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)"
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         for sur in select_user_res:
@@ -271,7 +271,7 @@ def get_gold_margin_report_data():
         table="SPTran"
         columns=["SPTranID","Purity","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
 
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)  and LabelNo not like 'O%'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196) ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition,"SPTranID")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
@@ -281,7 +281,7 @@ def get_gold_margin_report_data():
             if slr['VouType'] == "SRT":
                 pop_uniq= Tran_Unique.get(OpVouTranId,-1)
                 return_array.pop(pop_uniq, None)
-                frappe.db.sql("""   DELETE FROM `tabDiamond Margin`   WHERE sptranid = %s""", (OpVouTranId,))
+                frappe.db.sql("""   DELETE FROM `tabGold Margin`   WHERE sptranid = %s""", (OpVouTranId,))
                 frappe.db.commit()
                 continue
 
