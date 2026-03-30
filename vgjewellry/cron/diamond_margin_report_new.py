@@ -546,7 +546,7 @@ def get_diamond_margin_report_data():
             new_label_no = re.sub(r"\s*/\s*", "/", LabelNo)
             
             if UniqueLabelID in return_array:
-                NetWt += return_array[UniqueLabelID]['NetWt']
+                NetWt += return_array[UniqueLabelID]['net_wt']
                 total_diamond_wt += return_array[UniqueLabelID]['total_diamond_wt']
                 total_stone_wt += return_array[UniqueLabelID]['total_stone_wt']
                 Discount += return_array[UniqueLabelID]['discount']
