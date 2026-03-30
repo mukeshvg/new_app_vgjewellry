@@ -128,8 +128,6 @@ def get_diamond_margin_report_data():
     from_date =str(from_date1)
     to_date = str(to_date1)"""
 
-    from_date="2025-04-01"
-    to_date="2026-03-30"
     
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
@@ -155,7 +153,7 @@ def get_diamond_margin_report_data():
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    branch_array=["valsad"]
+    #branch_array=["surat"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -338,7 +336,8 @@ def get_diamond_margin_report_data():
             variety_name=variety[VarietyMstId]
             SupplierCode=slr['ApprovalPartyID']
             LabelTransID= int(slr['SPTranID'])
-            supplier_name=supplier[SupplierCode]['n']
+            #supplier_name=supplier[SupplierCode]['n']
+            supplier_name = supplier.get(SupplierCode,{}).get('n')
             LabelNo=slr['LabelNo']
             SalesManId=slr['SalesManId']
             salesman_name= salesman[SalesManId] if SalesManId in salesman else ""
@@ -618,7 +617,7 @@ def get_diamond_margin_report_data():
                 "name"
             )
 
-            if False and existing_name:
+            if existing_name:
                 # ── UPDATE ──
                 doc = frappe.get_doc("Diamond Margin", existing_name)
                 doc.branch                   = row['branch']
