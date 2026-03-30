@@ -120,16 +120,16 @@ def get_gold_margin_report_data():
     from_date="2025-04-01"
     to_date="2025-04-30"
 
-    """first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
 
         if from_date1:
-            to_date1 = from_date1 + timedelta(days=7)
+            to_date1 = from_date1 + timedelta(days=30)
 
     from_date =str(from_date1)
-    to_date = str(to_date1)"""
+    to_date = str(to_date1)
 
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
