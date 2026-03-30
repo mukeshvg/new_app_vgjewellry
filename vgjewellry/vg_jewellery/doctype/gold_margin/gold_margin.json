@@ -29,7 +29,9 @@
   "discount",
   "sales_amount",
   "margin",
-  "margin_percentage"
+  "margin_percentage",
+  "uniquelabelid",
+  "sptranid"
  ],
  "fields": [
   {
@@ -161,12 +163,22 @@
    "fieldtype": "Float",
    "label": "Wastage Rate",
    "precision": "2"
+  },
+  {
+   "fieldname": "uniquelabelid",
+   "fieldtype": "Data",
+   "label": "UniqueLabelID"
+  },
+  {
+   "fieldname": "sptranid",
+   "fieldtype": "Data",
+   "label": "SPTranID"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-24 09:18:26.184912",
+ "modified": "2026-03-30 16:08:04.736575",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Gold Margin",
