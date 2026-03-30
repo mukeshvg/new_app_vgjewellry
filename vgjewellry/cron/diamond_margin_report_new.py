@@ -555,7 +555,7 @@ def get_diamond_margin_report_data():
                 StoneAmt += return_array[UniqueLabelID]['stone_amount']
                 OtherChargeSale += return_array[UniqueLabelID]['other_charge_sale']
                 Sales_Amt += return_array[UniqueLabelID]['sales_amount']
-                diamond_in_product+ =return_array[UniqueLabelID]['diamond_in_product']
+                diamond_in_product +=return_array[UniqueLabelID]['diamond_in_product']
             
             if total_diamond_wt == 0:
                 diamond_in_product=""
