@@ -132,7 +132,7 @@ def get_gold_margin_report_data():
     to_date = str(to_date1)
 
     # Build date query string
-    date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
+    date_query = f"VouDate >= '{from_date}' AND VouDate < '{to_date}'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {from_date}\n")
     Location_decode = {"A": 2, "B": 15, "C": "3", "D": 16, "E": 4, "G": 5, "I": 6, "K": 7, "M": 8, "O": 9, "Q": 10, "S": 11, "U": 12, "W": 13, "Y": 14}
@@ -547,7 +547,7 @@ def get_gold_margin_report_data():
             logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     logger.info(f"Gold Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    #frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
-    #frappe.db.commit()
+    frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors , "from_date":from_date} 
     
