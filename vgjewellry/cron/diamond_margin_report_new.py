@@ -296,7 +296,8 @@ def get_diamond_margin_report_data():
                 diamond_pcs_dict[sur['UniqueLabelID']]=0;
             diamond_pcs_dict[sur['UniqueLabelID']] += sur["DiamondPcs"]    
         check_wastage=[]
-        
+       
+        Tran_Unique = {}
         table="SPTran"
         columns=["SPTranID","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
         condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1006)  and ItemMstID not in (264,263,237,10000037,10000009)  ";    
@@ -305,8 +306,10 @@ def get_diamond_margin_report_data():
             UniqueLabelID=slr['UniqueLabelID']
             OpVouTranId=slr['OpVouTranId']
             SPTranID=slr['SPTranID']
+            Tran_Unique[SPTranID]=UniqueLabelID
             if slr['VouType'] == "SRT":
-                return_array.pop(OpVouTranId, None)
+                pop_uniq= Tran_Unique.get(OpVouTranId,-1)
+                return_array.pop(pop_uniq, None)
                 frappe.db.sql("""   DELETE FROM `tabDiamond Margin`   WHERE sptranid = %s""", (OpVouTranId,))
                 frappe.db.commit()
                 continue
