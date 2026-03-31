@@ -118,9 +118,9 @@ def get_gold_margin_report_data():
     to_date   = today.strftime("%Y-%m-%d")
 
     from_date="2025-04-01"
-    to_date="2025-04-30"
+    to_date="2026-05-31"
 
-    first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    """first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
@@ -129,10 +129,10 @@ def get_gold_margin_report_data():
             to_date1 = from_date1 + timedelta(days=30)
 
     from_date =str(from_date1)
-    to_date = str(to_date1)
+    to_date = str(to_date1)"""
 
     # Build date query string
-    date_query = f"VouDate >= '{from_date}' AND VouDate < '{to_date}'"
+    date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
     #with open(frappe.get_site_path("logs", "error.log"), "a") as f:
     #    f.write(f"Manual log: {from_date}\n")
     Location_decode = {"A": 2, "B": 15, "C": "3", "D": 16, "E": 4, "G": 5, "I": 6, "K": 7, "M": 8, "O": 9, "Q": 10, "S": 11, "U": 12, "W": 13, "Y": 14}
@@ -258,25 +258,27 @@ def get_gold_margin_report_data():
         for it in supplier_res:
             supplier[it['SupplierID']]={"n":it['SupplierName'],"c":it["SupplierCode"]}
 
-        table="LabelTransaction"
+        """table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID"]
         condition="VouType='ST'   and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)"
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         for sur in select_user_res:
             user_label_res[sur['UniqueLabelID']]=user_res[sur['UserID']]['UserName'] if sur['UserID'] in user_res else ""
-        check_wastage=[]
+        check_wastage=[]"""
 
         Tran_Unique = {}
         table="SPTran"
         columns=["SPTranID","Purity","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
 
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196) ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)";    
         select_label_res=get_sql_server_data(branch,table,columns,condition,"SPTranID")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
-            OpVouTranId=slr['OpVouTranId']
             SPTranID=slr['SPTranID']
+            if UniqueLabelID =="":
+                UniqueLabelID=str(SPTranID)
+            OpVouTranId=slr['OpVouTranId']
             Tran_Unique[SPTranID]=UniqueLabelID
             if slr['VouType'] == "SRT":
                 pop_uniq= Tran_Unique.get(OpVouTranId,-1)
@@ -371,7 +373,7 @@ def get_gold_margin_report_data():
                     if ItemMstID in max_wastage_variety_wise and VarietyMstId in max_wastage_variety_wise[ItemMstID]:
                         Wastage_Rate=max_wastage_variety_wise[ItemMstID][VarietyMstId]
                     else:
-                        check_wastage.append(UniqueLabelID)
+                        #check_wastage.append(UniqueLabelID)
                         Wastage_Rate=0
             if item_name not in global_max_variety_wastage:
                 global_max_variety_wastage[item_name]={}
@@ -446,7 +448,7 @@ def get_gold_margin_report_data():
             one_unique_id=UniqueLabelID
 
         
-        for uld in check_wastage:
+        """for uld in check_wastage:
             if uld not in return_array or 'net_wt' not in return_array[uld]:
                 continue
             NetWt=round(return_array[uld]['net_wt'],3)
@@ -459,7 +461,7 @@ def get_gold_margin_report_data():
             return_array[uld]['wastage_rate']=Wastage_Rate
             return_array[uld]['purchase_labour']=round(Purchase_Labour)
             return_array[uld]['purchase_amount']=round(Purchase_Amt)
-            return_array[uld]['margin']=round(margin)
+            return_array[uld]['margin']=round(margin)"""
 	
     inserted = updated = errors = 0
     for uid, row in return_array.items():
@@ -473,7 +475,7 @@ def get_gold_margin_report_data():
                 "name"
             )
 
-            if existing_name:
+            if False and existing_name:
                 # ── UPDATE ──
                 doc = frappe.get_doc("Gold Margin", existing_name)
                 doc.branch                   = row['branch']
@@ -547,7 +549,7 @@ def get_gold_margin_report_data():
             logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     logger.info(f"Gold Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
-    frappe.db.commit()
+    #frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
+    #frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors , "from_date":from_date} 
     
