@@ -310,7 +310,7 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 			${card("Net Sale", data.net || {})}
 		</div>
 
-		<div class="stats-row">
+		<div class="stats-row" style="display:none">
 			<div class="stat-box">
 				<div class="stat-value">₹ 48.25L</div>
 				<div class="stat-label">Today's Sales</div>
