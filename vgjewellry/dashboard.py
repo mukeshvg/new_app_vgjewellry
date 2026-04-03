@@ -56,6 +56,26 @@ and trm.TDate = ? """
             gold_rate= format_indian_number_no_decimal(d["PurRate"]/10)
         elif d["ItemTradMstID"]==4001:
             silver_rate= format_indian_number_no_decimal(d["PurRate"] * 100)
+
+    cursor_val.close()
+        
+    all_rate_qry=""" select  trm.TDate,trm.PurRate   from dbo.TodayRateMst trm where trm.ItemTradMstID=1001 and trm.TDate>=? and trm.TDate <=? """
+    val_values_all = (from_date,to_date)
+    cursor_val_all= con_val.cursor()
+    cursor_val_all.execute(all_rate_qry,(val_values_all))
+    res_val_all = cursor_val_all.fetchall()
+    all_date_rate =[]
+    columnNames_val_all = [column[0] for column in cursor_val_all.description]
+    for record_all in res_val_all:
+        all_date_rate.append( dict( zip( columnNames_val_all , record_all ) ) )
+    all_rates={} 
+    for d in all_date_rate:
+        all_rates[d["TDate"]]=d["PurRate"]/10
+        
+    cursor_val_all.close()
+    con_val.close()
+
+
     con = connect()
     cursor=con.cursor()
     qry= '''
@@ -89,6 +109,7 @@ SELECT
     SUM(CASE WHEN sp.VouType = 'PUR' THEN (sp.TaxableAmt - sp.DiscountAmt) ELSE 0 END) AS PurAmount,
 
     CASE sp.YearID
+        WHEN '16' THEN '26-27'
         WHEN '15' THEN '25-26'
         WHEN '14' THEN '24-25'
         WHEN '13' THEN '23-24'
@@ -117,40 +138,52 @@ GROUP BY
         data.append( dict( zip( columnNames , record ) ) )
 
     all_data={
-        "22kt": {
-            "today": {"weight": 0, "amount": 0},
-            "old": {"weight": 0, "amount": 0},
-            "net": {"weight": 0, "amount": 0}
-        },
-        "18kt": {
-            "today": {"weight": 0, "amount": 0},
-            "old": {"weight": 0, "amount": 0},
-            "net": {"weight": 0, "amount": 0}
-        },
-        "di": {
-            "today": {"weight": 0, "amount": 0},
-            "old": {"weight": 0, "amount": 0},
-            "net": {"weight": 0, "amount": 0}
-        },
-        "24kt": {
-            "today": {"weight": 0, "amount": 0},
-            "old": {"weight": 0, "amount": 0},
-            "net": {"weight": 0, "amount": 0}
-        },
+                "22kt": {
+                    "today": {"weight": 0, "amount": 0},
+                    "old": {"weight": 0, "amount": 0},
+                    "net": {"weight": 0, "amount": 0}
+                },
+                "18kt": {
+                    "today": {"weight": 0, "amount": 0},
+                    "old": {"weight": 0, "amount": 0},
+                    "net": {"weight": 0, "amount": 0}
+                },
+                "di": {
+                    "today": {"weight": 0, "amount": 0},
+                    "old": {"weight": 0, "amount": 0},
+                    "net": {"weight": 0, "amount": 0}
+                },
+                "24kt": {
+                    "today": {"weight": 0, "amount": 0},
+                    "old": {"weight": 0, "amount": 0},
+                    "net": {"weight": 0, "amount": 0}
+                },
             }
+    fine_data={
+            "today": {"weight": 0, "amount": 0},
+             "old": {"weight": 0, "amount": 0},
+             "net": {"weight": 0, "amount": 0}
+    }
     for d in data:
         if d["TradName"]=="22 KT GOLD":
             all_data["22kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["22kt"]["today"]["amount"]+=d["SlAmount"]
+            fine_data["today"]["weight"]+= round(d["SLNetwt"]*22/24,3)
+            fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="24 KT GOLD":
             all_data["24kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["24kt"]["today"]["amount"]+=d["SlAmount"]
+            fine_data["today"]["weight"]+=d["SLNetwt"]
+            fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="18 KT GOLD":
             all_data["18kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["18kt"]["today"]["amount"]+=d["SlAmount"]
+            fine_data["today"]["weight"]+= round(d["SLNetwt"]*18/24,3)
+            fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="18KT DIAMOND JEWELLERY":
             all_data["di"]["today"]["weight"]+=d["SLNetwt"]
             all_data["di"]["today"]["amount"]+=d["SlAmount"]
+            
             
     
     qry_old= '''
@@ -170,18 +203,12 @@ SELECT
     END AS BranchName,
 
     im.ItemMstID,
-
+    sp.VouDate,
 
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.NetWt ELSE 0 END) AS PurNetwt,
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.DiamondWt ELSE 0 END) AS PurDiawt,
-    SUM(CASE WHEN sp.VouType = 'PUR' THEN (sp.TotalAmt - sp.DiscountAmt) ELSE 0 END) AS PurAmount,
+    SUM(CASE WHEN sp.VouType = 'PUR' THEN (sp.TotalAmt - sp.DiscountAmt) ELSE 0 END) AS PurAmount
 
-    CASE sp.YearID
-        WHEN '15' THEN '25-26'
-        WHEN '14' THEN '24-25'
-        WHEN '13' THEN '23-24'
-        ELSE '0'
-    END AS Financial_Year
 
 FROM sptran sp 
 LEFT JOIN itemmst im ON im.itemmstid = sp.itemmstid
@@ -195,7 +222,7 @@ WHERE sp.VouDate BETWEEN @F AND @T
 GROUP BY 
     bm.BranchName,
     im.ItemMstID,
-    sp.YearID;
+    sp.VouDate
     '''
     values = (from_date,to_date)
     cursor.execute(qry_old,(values))
@@ -204,17 +231,25 @@ GROUP BY
     columnNames = [column[0] for column in cursor.description]
     for record in res1:
         old_data.append( dict( zip( columnNames , record ) ) )
-    #return old_data
+    
     for d in old_data:
         if d["ItemMstID"]==209 or d["ItemMstID"]==195:
             all_data["22kt"]["old"]["weight"]+=d.get("PurNetwt",0)
             all_data["22kt"]["old"]["amount"]+=d["PurAmount"]
+            fine_rate = all_rates[d["VouDate"]]
+            fine_data["old"]["weight"]+= round(d["PurAmount"]/fine_rate,3)
+            fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==210:
             all_data["24kt"]["old"]["weight"]+=d.get("PurNetwt",0)
             all_data["24kt"]["old"]["amount"]+=d["PurAmount"]
+            fine_data["old"]["weight"]+= d.get("PurNetwt",0)
+            fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==12:
             all_data["18kt"]["old"]["weight"]+=d.get("PurNetwt",0)
             all_data["18kt"]["old"]["amount"]+=d["PurAmount"]
+            fine_rate = all_rates[d["VouDate"]]
+            fine_data["old"]["weight"]+= round(d["PurAmount"]/fine_rate,3)
+            fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==237:
             all_data["di"]["old"]["weight"]+=d.get('PurNetwt',0)
             all_data["di"]["old"]["amount"]+=d["PurAmount"]
@@ -237,11 +272,23 @@ GROUP BY
             "amount":format_indian_number_no_decimal(old.get("amount",0))
         }
 
-        
 
-    return {"data":all_data,"rate":{"g":gold_rate,"s":silver_rate}}
+    fine_data["net"]["weight"]=fine_data["today"]["weight"]-fine_data["old"]["weight"]
+    fine_data["net"]["amount"]=format_indian_number_no_decimal(fine_data["today"]["amount"]-fine_data["old"]["amount"])
+    fine_data["today"]["amount"]=format_indian_number_no_decimal(fine_data["today"]["amount"])
+    fine_data["today"]["weight"]=format_indian_number(fine_data["today"]["weight"])
+    fine_data["old"]["amount"]=format_indian_number_no_decimal(fine_data["old"]["amount"])
+    fine_data["old"]["weight"]=format_indian_number(fine_data["old"]["weight"])
 
-    try:
+
+    payment_query="""
+        select m.spmstid ,m.Amount,m.BankAmt ,m.CardAmt ,m.CashAmt ,m.PVouAmt ,m.GoldSchemeAmt, m.OutstandingAmt ,m.PreviousAmt
+from  spmst m  WHERE m.VouDate >='2025-04-01' and m.VouType ='SRT' 
+    """
+
+    return {"data":all_data,"fine_data":fine_data,"rate":{"g":gold_rate,"s":silver_rate}}
+
+    """try:
         response = frappe.make_get_request(
             url="https://api.example.com/data",
             params={
@@ -262,7 +309,7 @@ GROUP BY
     if response:
         print(response)
     else:
-        print("Skipping API, continuing flow...")
+        print("Skipping API, continuing flow...")"""
 
 def format_indian_number(number):
     """
