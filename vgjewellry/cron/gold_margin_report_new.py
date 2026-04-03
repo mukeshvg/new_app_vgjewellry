@@ -117,10 +117,10 @@ def get_gold_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    from_date="2025-04-01"
+    """from_date="2025-04-01"
     to_date="2026-05-31"
 
-    """first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
@@ -150,7 +150,7 @@ def get_gold_margin_report_data():
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    branch_array=["valsad"]
+    branch_array=["surat"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -182,7 +182,8 @@ def get_gold_margin_report_data():
         table="TodayRateMst"
         columns=["TDate","TodayRateMstID","ItemTradMstID","SalesRate","PurRate"]
         condition=" TDate>='2024-04-01' and ItemTradMstID in (1003,1002,1006,1008,5001,1001)";
-        rate_res=get_sql_server_data(branch,table,columns,condition)
+        rate_branch = "valsad";
+        rate_res=get_sql_server_data(rate_branch,table,columns,condition)
         rate_master= {}
         for rr in rate_res:
             #frappe.msgprint(rr['TDate']);
@@ -196,13 +197,13 @@ def get_gold_margin_report_data():
                 if rr_purate==0:
                     if rate_date in valsad_rate_master and rr['ItemTradMstID'] in valsad_rate_master[rate_date]:
                         rr_purate=valsad_rate_master[rate_date][rr['ItemTradMstID']]
-                    if branch !='valsad':
+                    if rate_branch !='valsad':
                         rr_purate=rr_purate*10;
                 rate_master[rate_date][rr['ItemTradMstID']]=round(rr_purate/10)        
             else:
                 rr_purate=rr['PurRate']
                 rate_master[rate_date][rr['ItemTradMstID']]=round(rr_purate/10)
-            if branch=="valsad":
+            if rate_branch=="valsad":
                 if rate_date not in valsad_rate_master:
                     valsad_rate_master[rate_date]={}
                 if rr['ItemTradMstID']==1001 :
@@ -271,7 +272,7 @@ def get_gold_margin_report_data():
         table="SPTran"
         columns=["SPTranID","Purity","VouType","VouDate","LabelNo","ItemMstID","ApprovalPartyID","GrossWt","NetWt","VarietyMstId","LabourPer","Purity",'ItemTradMstId','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmt','SalesManId','UniqueLabelID','UserID','OtherChgAmt','OpVouTranId','DiamondAmt','DiamondWt','StoneWt','StoneAmt',"MetalRate","TaxableAmt","MetalAmt","DiscountAmt"]
 
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196) ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition,"SPTranID")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
