@@ -304,6 +304,7 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 	// ================= STATE =================
 	let FULL_DATA = {};
 	let FINE_DATA = {};
+	let PAYMENT_DATA = {};
 
 	// ================= CARD =================
 	function card(title, d, type) {
@@ -390,7 +391,8 @@ $(document).on('click', '.clickable', function(e) {
 		return;
 	}
 
-	const data = FULL_DATA[type]?.breakdown?.[mode] || {};
+	//const data = FULL_DATA[type]?.breakdown?.[mode] || {};
+	const data = PAYMENT_DATA || {};
 
 	container.html(renderBreakdownRow(data));
 });
@@ -483,9 +485,9 @@ function renderBreakdownRow(data) {
 		${row("Bank", data.bank)}
 		${row("Old Gold", data.old_gold)}
 		${row("Scheme", data.scheme)}
-		${row("Payable", data.payable)}
+		<!--${row("Payable", data.payable)}
 		${row("Receivable", data.receivable)}
-		${row("Tax", data.tax)}
+		${row("Tax", data.tax)}->
 	</div>`;
 }
 $(document).on('click', '.kt-click', function() {
@@ -519,6 +521,7 @@ $(document).on('click', '.kt-click', function() {
 
 				FULL_DATA = r.message.data;
 				FINE_DATA = r.message.fine_data;
+				PAYMENT_DATA = r.message.payment_data;
 
 				content.html(renderSummary());
 

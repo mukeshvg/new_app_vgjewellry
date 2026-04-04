@@ -185,7 +185,8 @@ GROUP BY
             all_data["di"]["today"]["amount"]+=d["SlAmount"]
             
             
-    
+    cursor.close();
+    cursor=con.cursor()
     qry_old= '''
         SET NOCOUNT ON;
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -279,14 +280,82 @@ GROUP BY
     fine_data["today"]["weight"]=format_indian_number(fine_data["today"]["weight"])
     fine_data["old"]["amount"]=format_indian_number_no_decimal(fine_data["old"]["amount"])
     fine_data["old"]["weight"]=format_indian_number(fine_data["old"]["weight"])
-
-
+    
+    cursor.close();
+    cursor=con.cursor()
     payment_query="""
-        select m.spmstid ,m.Amount,m.BankAmt ,m.CardAmt ,m.CashAmt ,m.PVouAmt ,m.GoldSchemeAmt, m.OutstandingAmt ,m.PreviousAmt
-from  spmst m  WHERE m.VouDate >='2025-04-01' and m.VouType ='SRT' 
+            select distinct s.SPMstID ,m.Amount,m.DiscountAmount ,m.BankAmt ,m.CardAmt ,m.CashAmt ,m.PVouNo ,m.PVouAmt ,m.GoldSchemeAmt ,m.PreviousAmt,m.OutStandingAmt from dbo.SPTran s inner join dbo.SPMst m on s.SPMstID =m.SPMstID WHERE s.VouDate >=? and s.VouDate <=? and s.VouType ='SL' and s.itemtradmstid in (1001,1002,1003)
     """
+    values = (from_date,to_date)
+    cursor.execute(payment_query,(values))
+    res2 = cursor.fetchall()
+    p_data=[]
+    payment_data = {"bank":0,"card":0,"cash":0,"old_gold":0,"scheme":0,"payable":0,"receivable":0,"tax":0}
+    columnNames = [column[0] for column in cursor.description]
+    for record in res2:
+        p_data.append( dict( zip( columnNames , record ) ) )
+    for d in p_data:
+        payment_data["bank"]+=d["BankAmt"]
+        payment_data["card"]+=d["CardAmt"]
+        payment_data["cash"]+=d["CashAmt"]
+        payment_data["old_gold"]+=d["PVouAmt"]
+        payment_data["scheme"]+=d["GoldSchemeAmt"]
+        payment_data["payable"]+=d["PreviousAmt"]
+        payment_data["receivable"]+=d["OutStandingAmt"]
+    
+    srt_payment_query="""
+            select distinct s.SPMstID ,m.Amount,m.DiscountAmount ,m.BankAmt ,m.CardAmt ,m.CashAmt ,m.PVouNo ,m.PVouAmt ,m.GoldSchemeAmt ,m.PreviousAmt,m.OutStandingAmt from dbo.SPTran s inner join dbo.SPMst m on s.SPMstID =m.SPMstID   
+WHERE s.VouDate >=? and s.VouDate <=? and s.VouType ='SRT' and s.itemtradmstid in (1001,1002,1003)
+    """
+    values = (from_date,to_date)
+    cursor.execute(srt_payment_query,(values))
+    res3 = cursor.fetchall()
+    srt_p_data=[]
+    srt_payment_data = {"bank":0,"card":0,"cash":0,"old_gold":0,"scheme":0,"payable":0,"receivable":0,"tax":0}
+    columnNames = [column[0] for column in cursor.description]
+    for record in res3:
+        srt_p_data.append( dict( zip( columnNames , record ) ) )
+    for d in srt_p_data:
+        srt_payment_data["bank"]-=d["BankAmt"]
+        srt_payment_data["card"]-=d["CardAmt"]
+        srt_payment_data["cash"]-=d["CashAmt"]
+        srt_payment_data["old_gold"]-=d["PVouAmt"]
+        srt_payment_data["scheme"]-=d["GoldSchemeAmt"]
+        #srt_payment_data["payable"]-=d["OutStandingAmt"]
+        #srt_payment_data["receivable"]-=d["OutStandingAmt"]
+    
+    
+    tax_query="""
+    SELECT
+	m.VouId,
+	SUM(m.TaxAmt) AS TaxAmt
+FROM dbo.TaxTrans m
+WHERE m.VouId IN (
+	SELECT DISTINCT s.SPMstID
+	FROM dbo.SPTran s
+	WHERE
+		s.VouDate >= ?
+        And s.VouDate<=?
+		AND s.VouType = 'SL'
+		AND s.itemtradmstid IN (1002,1001,1003)
+)
+and m.VouType ='SL'
+GROUP BY m.VouId
+    """
+    values = (from_date,to_date)
+    cursor.execute(tax_query,(values))
+    res4 = cursor.fetchall()
+    t_data=[]
+    columnNames = [column[0] for column in cursor.description]
+    for record in res4:
+        t_data.append( dict( zip( columnNames , record ) ) )
+    for t in t_data:
+        payment_data["tax"]+=t["TaxAmt"]
+    
+    for key in payment_data:
+        payment_data[key] = format_indian_number_no_decimal(payment_data[key]-srt_payment_data[key])
 
-    return {"data":all_data,"fine_data":fine_data,"rate":{"g":gold_rate,"s":silver_rate}}
+    return {"data":all_data,"fine_data":fine_data,"payment_data":payment_data,"rate":{"g":gold_rate,"s":silver_rate}}
 
     """try:
         response = frappe.make_get_request(
