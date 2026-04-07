@@ -117,7 +117,7 @@ def get_diamond_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    """first_doc = frappe.get_all("gl_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    first_doc = frappe.get_all("gl_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
@@ -126,7 +126,7 @@ def get_diamond_margin_report_data():
             to_date1 = from_date1 + timedelta(days=7)
 
     from_date =str(from_date1)
-    to_date = str(to_date1)"""
+    to_date = str(to_date1)
 
     
     # Build date query string
@@ -208,8 +208,10 @@ def get_diamond_margin_report_data():
         table="TodayRateMst"
         columns=["TDate","TodayRateMstID","ItemTradMstID","SalesRate","PurRate"]
         condition=" TDate>='2024-04-01' and ItemTradMstID in (1003,1002,1006,1008,5001,1001)";
-        rate_res=get_sql_server_data(branch,table,columns,condition)
+        rate_branch = "valsad";
+        rate_res=get_sql_server_data(rate_branch,table,columns,condition)
         rate_master= {}
+
         for rr in rate_res:
             #frappe.msgprint(rr['TDate']);
             #rate_date1 = datetime.strptime(rr['TDate'],"%Y-%m-%d %H:%M:%S.%f")
@@ -222,13 +224,13 @@ def get_diamond_margin_report_data():
                 if rr_purate==0:
                     if rate_date in valsad_rate_master and rr['ItemTradMstID'] in valsad_rate_master[rate_date]:
                         rr_purate=valsad_rate_master[rate_date][rr['ItemTradMstID']]
-                    if branch !='valsad':
+                    if rate_branch !='valsad':
                         rr_purate=rr_purate*10;
                 rate_master[rate_date][rr['ItemTradMstID']]=round(rr_purate/10)        
             else:
                 rr_purate=rr['PurRate']
                 rate_master[rate_date][rr['ItemTradMstID']]=round(rr_purate/10)
-            if branch=="valsad":
+            if rate_branch=="valsad":
                 if rate_date not in valsad_rate_master:
                     valsad_rate_master[rate_date]={}
                 if rr['ItemTradMstID']==1001 :
@@ -304,6 +306,8 @@ def get_diamond_margin_report_data():
             UniqueLabelID=slr['UniqueLabelID']
             OpVouTranId=slr['OpVouTranId']
             SPTranID=slr['SPTranID']
+            if UniqueLabelID =="":
+                UniqueLabelID=str(SPTranID)
             Tran_Unique[SPTranID]=UniqueLabelID
             if slr['VouType'] == "SRT":
                 pop_uniq= Tran_Unique.get(OpVouTranId,-1)
@@ -613,7 +617,7 @@ def get_diamond_margin_report_data():
 
             existing_name = frappe.db.get_value(
                 "Diamond Margin",
-                {"voucher_date": voucher_date_norm, "label_no": label_no},
+                {"voucher_date": voucher_date_norm, "uniquelabelid": row["u"]},
                 "name"
             )
 
@@ -705,6 +709,6 @@ def get_diamond_margin_report_data():
 
     logger.info(f"Diamond Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
 
-    #frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
-    #frappe.db.commit()
+    frappe.db.set_value("gl_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}    
