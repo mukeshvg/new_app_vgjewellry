@@ -123,7 +123,7 @@ def get_diamond_margin_report_data():
         from_date1 = first_doc[0].from_date
 
         if from_date1:
-            to_date1 = from_date1 + timedelta(days=7)
+            to_date1 = from_date1 + timedelta(days=30)
 
     from_date =str(from_date1)
     to_date = str(to_date1)
