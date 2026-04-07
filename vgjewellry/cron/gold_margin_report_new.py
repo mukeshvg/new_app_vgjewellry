@@ -150,7 +150,7 @@ def get_gold_margin_report_data():
     valsad_rate_master={}
     return_array ={}
     branch_array=["valsad","vapi","surat"]
-    branch_array=["surat"]
+    #branch_array=["vapi"]
     global_max_variety_wastage={}
     one_unique_id=""
     
@@ -476,7 +476,7 @@ def get_gold_margin_report_data():
                 "name"
             )
 
-            if False and existing_name:
+            if existing_name:
                 # ── UPDATE ──
                 doc = frappe.get_doc("Gold Margin", existing_name)
                 doc.branch                   = row['branch']
