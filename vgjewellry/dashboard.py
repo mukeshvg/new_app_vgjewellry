@@ -36,6 +36,8 @@ def connect():
 
 @frappe.whitelist(allow_guest=True)
 def get_data(from_date, to_date):
+    from_date="2026-04-12"
+    to_date="2026-04-12"
     con_val = connect_valsad()
     cursor_val= con_val.cursor()
     current_date_str = date.today()
@@ -59,7 +61,7 @@ and trm.TDate = ? """
 
     cursor_val.close()
         
-    all_rate_qry=""" select  trm.TDate,trm.PurRate   from dbo.TodayRateMst trm where trm.ItemTradMstID=1001 and trm.TDate>=? and trm.TDate <=? """
+    all_rate_qry=""" select  trm.TDate,trm.PurRate, trm.ItemTradMstID   from dbo.TodayRateMst trm where trm.ItemTradMstID in(1001,1002,1003,1006) and trm.TDate>=? and trm.TDate <=? """
     val_values_all = (from_date,to_date)
     cursor_val_all= con_val.cursor()
     cursor_val_all.execute(all_rate_qry,(val_values_all))
@@ -69,9 +71,18 @@ and trm.TDate = ? """
     for record_all in res_val_all:
         all_date_rate.append( dict( zip( columnNames_val_all , record_all ) ) )
     all_rates={} 
+    rates_22kt={}
+    rates_18kt={}
+    rates_18di={}
     for d in all_date_rate:
-        all_rates[d["TDate"]]=d["PurRate"]/10
-        
+        if d["ItemTradMstID"]==1001:
+            all_rates[d["TDate"]]=d["PurRate"]/10
+        if d["ItemTradMstID"]==1002:
+            rates_22kt[d["TDate"]]=d["PurRate"]/10
+        if d["ItemTradMstID"]==1003:
+            rates_18kt[d["TDate"]]=d["PurRate"]/10
+        if d["ItemTradMstID"]==1006:
+            rates_18di[d["TDate"]]=d["PurRate"]/10
     cursor_val_all.close()
     con_val.close()
 
@@ -94,6 +105,7 @@ SELECT
     END AS BranchName,
 
     im.TradName,
+    sp.VouDate,
 
     (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.NetWt ELSE 0 END)
      - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.NetWt ELSE 0 END)) AS SLNetwt,
@@ -103,6 +115,15 @@ SELECT
 
     (SUM(CASE WHEN sp.VouType = 'SL' THEN (sp.TaxableAmt - sp.DiscountAmt) ELSE 0 END)
      - SUM(CASE WHEN sp.VouType = 'SRT' THEN (sp.TaxableAmt - sp.DiscountAmt) ELSE 0 END)) AS SlAmount,
+
+     (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.MetalAmt ELSE 0 END)
+     - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.MetalAmt ELSE 0 END)) AS MetalAmt,
+
+     (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.LabourAmt ELSE 0 END)
+     - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.LabourAmt ELSE 0 END)) AS LabourAmt,
+
+     (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.DiscountAmt ELSE 0 END)
+     - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.DiscountAmt ELSE 0 END)) AS SlDiscount,
 
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.NetWt ELSE 0 END) AS PurNetwt,
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.DiamondWt ELSE 0 END) AS PurDiawt,
@@ -122,12 +143,13 @@ LEFT JOIN branchmaster bm ON sp.BranchID = bm.BranchID
 
 WHERE sp.VouDate BETWEEN @F AND @T
     AND sp.VouType IN ('SL','SRT','PUR')
-    AND  sp.BranchID in (6,7,8)
-
+    AND  sp.BranchID in (6)
 GROUP BY 
     bm.BranchName,
     im.TradName,
-    sp.YearID;
+    sp.YearID,
+    sp.VouDate
+    ;
     '''
     values = (from_date,to_date)
     cursor.execute(qry,(values))
@@ -139,22 +161,22 @@ GROUP BY
 
     all_data={
                 "22kt": {
-                    "today": {"weight": 0, "amount": 0},
+                    "today": {"weight": 0, "amount": 0 ,"metal_amount":0,"labour_amount":0,"discount":0,"cash_receipt":0,"actual_labour":0,"fine_wt":0,"fine_amt":0,"kt":0},
                     "old": {"weight": 0, "amount": 0},
                     "net": {"weight": 0, "amount": 0}
                 },
                 "18kt": {
-                    "today": {"weight": 0, "amount": 0},
+                    "today": {"weight": 0, "amount": 0,"metal_amount":0,"labour_amount":0,"discount":0,"cash_receipt":0,"actual_labour":0,"fine_wt":0,"fine_amt":0,"kt":0},
                     "old": {"weight": 0, "amount": 0},
                     "net": {"weight": 0, "amount": 0}
                 },
                 "di": {
-                    "today": {"weight": 0, "amount": 0},
+                    "today": {"weight": 0, "amount": 0,"metal_amount":0,"labour_amount":0,"discount":0 ,"cash_receipt":0,"actual_labour":0,"fine_wt":0,"fine_amt":0,"kt":0},
                     "old": {"weight": 0, "amount": 0},
                     "net": {"weight": 0, "amount": 0}
                 },
                 "24kt": {
-                    "today": {"weight": 0, "amount": 0},
+                    "today": {"weight": 0, "amount": 0,"metal_amount":0,"labour_amount":0,"discount":0,"cash_receipt":0,"actual_labour":0,"fine_wt":0,"fine_amt":0,"kt":0},
                     "old": {"weight": 0, "amount": 0},
                     "net": {"weight": 0, "amount": 0}
                 },
@@ -164,26 +186,81 @@ GROUP BY
              "old": {"weight": 0, "amount": 0},
              "net": {"weight": 0, "amount": 0}
     }
+    a=0
     for d in data:
         if d["TradName"]=="22 KT GOLD":
             all_data["22kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["22kt"]["today"]["amount"]+=d["SlAmount"]
+            all_data["22kt"]["today"]["metal_amount"]+=d["MetalAmt"]
+            all_data["22kt"]["today"]["labour_amount"]+=d["LabourAmt"]
+            all_data["22kt"]["today"]["discount"]+=d["SlDiscount"]
+            all_data["22kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
+            all_data["22kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
+            actual_labour_per=round(((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]),3)
+            Rate_22 = rates_22kt[d["VouDate"]]
+            Rate_24 = all_rates[d["VouDate"]]
+            net_wt_to_24kt=round((d["SLNetwt"]*Rate_22/Rate_24),3)
+            labour_weight=round(((d["SLNetwt"]*Rate_22/Rate_24)*actual_labour_per),3)
+            fine_wt_new=round((net_wt_to_24kt+labour_weight),3)
+            all_data["22kt"]["today"]["fine_wt"]+=fine_wt_new
+            all_data["22kt"]["today"]["fine_amt"]+=round((fine_wt_new*Rate_24),2)
+            all_data["22kt"]["today"]["kt"]+=((d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])/Rate_24)
             fine_data["today"]["weight"]+= round(d["SLNetwt"]*22/24,3)
             fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="24 KT GOLD":
             all_data["24kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["24kt"]["today"]["amount"]+=d["SlAmount"]
+            all_data["24kt"]["today"]["metal_amount"]+=d["MetalAmt"]
+            all_data["24kt"]["today"]["labour_amount"]+=d["LabourAmt"]
+            all_data["24kt"]["today"]["discount"]+=d["SlDiscount"]
+            all_data["24kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
+            all_data["24kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
+            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            net_wt_to_24kt=(d["SLNetwt"])
+            labour_weight= d["SLNetwt"]*actual_labour_per
+            fine_wt_new=net_wt_to_24kt+labour_weight
+            all_data["24kt"]["today"]["fine_wt"]+=fine_wt_new
+            Rate_24 = all_rates[d["VouDate"]]
+            all_data["24kt"]["today"]["fine_amt"]+=(fine_wt_new*Rate_24)
+            all_data["24kt"]["today"]["kt"]+=((d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])/Rate_24)
             fine_data["today"]["weight"]+=d["SLNetwt"]
             fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="18 KT GOLD":
             all_data["18kt"]["today"]["weight"]+=d["SLNetwt"]
             all_data["18kt"]["today"]["amount"]+=d["SlAmount"]
+            all_data["18kt"]["today"]["metal_amount"]+=d["MetalAmt"]
+            all_data["18kt"]["today"]["labour_amount"]+=d["LabourAmt"]
+            all_data["18kt"]["today"]["discount"]+=d["SlDiscount"]
+            all_data["18kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
+            all_data["18kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
+            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            Rate_18 = rates_18kt[d["VouDate"]]
+            Rate_24 = all_rates[d["VouDate"]]
+            net_wt_to_24kt=(d["SLNetwt"]*Rate_18/Rate_24)
+            labour_weight=(d["SLNetwt"]*Rate_18/Rate_24)*actual_labour_per
+            fine_wt_new=net_wt_to_24kt+labour_weight
+            all_data["18kt"]["today"]["fine_wt"]+=fine_wt_new
+            all_data["18kt"]["today"]["fine_amt"]+=(fine_wt_new*Rate_24)
+            all_data["18kt"]["today"]["kt"]+=((d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])/Rate_24)
             fine_data["today"]["weight"]+= round(d["SLNetwt"]*18/24,3)
             fine_data["today"]["amount"]+=d["SlAmount"]
         elif d["TradName"] =="18KT DIAMOND JEWELLERY":
             all_data["di"]["today"]["weight"]+=d["SLNetwt"]
             all_data["di"]["today"]["amount"]+=d["SlAmount"]
-            
+            all_data["di"]["today"]["metal_amount"]+=d["MetalAmt"]
+            all_data["di"]["today"]["labour_amount"]+=d["LabourAmt"]
+            all_data["di"]["today"]["discount"]+=d["SlDiscount"]
+            all_data["di"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
+            all_data["di"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
+            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            Rate_18di = rates_18di[d["VouDate"]]
+            Rate_24 = all_rates[d["VouDate"]]
+            net_wt_to_24kt=round((d["SLNetwt"]*Rate_18di/Rate_24),2)
+            labour_weight=round(((d["SLNetwt"]*Rate_18di/Rate_24)*actual_labour_per),2)
+            fine_wt_new=net_wt_to_24kt+labour_weight
+            all_data["di"]["today"]["fine_wt"]+=fine_wt_new
+            all_data["di"]["today"]["fine_amt"]+=(fine_wt_new*Rate_24)
+            all_data["di"]["today"]["kt"]+=((d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])/Rate_24)
             
     cursor.close();
     cursor=con.cursor()
@@ -266,7 +343,14 @@ GROUP BY
 
         values["today"]={
             "weight":format_indian_number(today.get("weight",0)),
-            "amount":format_indian_number_no_decimal(today.get("amount",0))
+            "amount":format_indian_number_no_decimal(today.get("amount",0)),
+            "discount":format_indian_number_no_decimal(today.get("discount",0)),
+            "cash_receipt":format_indian_number_no_decimal(today.get("cash_receipt",0)),
+            "actual_labour":format_indian_number_no_decimal(today.get("actual_labour",0)),
+            "fine_amt":format_indian_number_no_decimal(today.get("fine_amt",0)),
+            "kt":format_indian_number(today.get("kt",0)),
+            "fine_wt":format_indian_number(today.get("fine_wt",0)),
+
         }
         values["old"]={
             "weight":format_indian_number(old.get("weight",0)),
