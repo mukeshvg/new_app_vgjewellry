@@ -36,8 +36,6 @@ def connect():
 
 @frappe.whitelist(allow_guest=True)
 def get_data(from_date, to_date):
-    from_date="2026-04-12"
-    to_date="2026-04-12"
     con_val = connect_valsad()
     cursor_val= con_val.cursor()
     current_date_str = date.today()
