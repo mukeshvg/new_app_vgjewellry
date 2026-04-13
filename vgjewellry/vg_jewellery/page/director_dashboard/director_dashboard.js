@@ -432,8 +432,11 @@ function ktCard(name, d, type) {
 
 		<div class="kt-data-row">
 			<div class="kt-block">
-				<div class="weight">${d.today?.weight || 0}</div>
-				<div class="amount">₹ ${formatAmount(d.today?.amount)}</div>
+				<!--<div class="weight">${d.today?.weight || 0}</div>
+				<div class="amount">₹ ${formatAmount(d.today?.amount)}</div>-->
+				<div class="weight">${formatAmount(d.today?.fine_wt)}</div>
+				<div class="amount">₹ ${formatAmount(d.today?.fine_amt)}</div>
+				<div class="weight">KT-${formatAmount(d.today?.kt)}</div>
 			</div>
 
 			<div class="kt-block">
@@ -462,6 +465,7 @@ function ktCard(name, d, type) {
 			${ktCard("24 KT", FULL_DATA['24kt'])}
 			${ktCard("22 KT", FULL_DATA['22kt'])}
 			${ktCard("18 KT", FULL_DATA['18kt'])}
+			${ktCard("18 DI", FULL_DATA['di'])}
 		</div>
 
 		<button class="btn btn-secondary btn-sm back-btn">⬅ Back</button>
