@@ -140,8 +140,8 @@ LEFT JOIN itemtradmst im ON im.itemtradmstid = sp.itemtradmstid
 LEFT JOIN branchmaster bm ON sp.BranchID = bm.BranchID
 
 WHERE sp.VouDate BETWEEN @F AND @T
-    AND sp.VouType IN ('SL','SRT','PUR')
-    AND  sp.BranchID in (6)
+    AND sp.VouType IN ('SL','SRT')
+    AND  sp.BranchID in (6,7,8)
 GROUP BY 
     bm.BranchName,
     im.TradName,
