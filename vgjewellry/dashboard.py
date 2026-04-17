@@ -336,7 +336,11 @@ GROUP BY
 
         values["net"] = {
             "weight": format_indian_number(today.get("weight", 0) - old.get("weight", 0)),
-            "amount": format_indian_number_no_decimal(today.get("amount", 0) - old.get("amount", 0))
+            "amount": format_indian_number_no_decimal(today.get("amount", 0) - old.get("amount", 0)),
+            "cash_receipt":format_indian_number_no_decimal(today.get('cash_receipt',0) - old.get("amount",0)),
+            "fine_amt":format_indian_number_no_decimal(today.get('fine_amt',0)- old.get("amount",0)),
+            "fine_wt":format_indian_number(today.get('fine_wt',0) - old.get("weight",0)),
+            "kt":format_indian_number(today.get('kt',0) - old.get("weight",0)),
         }
 
         values["today"]={
@@ -354,6 +358,7 @@ GROUP BY
             "weight":format_indian_number(old.get("weight",0)),
             "amount":format_indian_number_no_decimal(old.get("amount",0))
         }
+        
 
 
     fine_data["net"]["weight"]=fine_data["today"]["weight"]-fine_data["old"]["weight"]
@@ -462,34 +467,51 @@ GROUP BY m.VouId
     else:
         print("Skipping API, continuing flow...")"""
 
-def format_indian_number(number):
-    """
-    Format number in Indian style with commas and 2 decimal places.
-    """
-    if number is None:
-        number = 0
-    number = round(float(number), 3)
-    s, *d = str(f"{number:.3f}").split(".")
-    # Extract last 3 digits
-    r = s[-3:]
-    s = s[:-3]
-    # Add commas every 2 digits
-    while len(s) > 0:
-        r = s[-2:] + "," + r
-        s = s[:-2]
-    return r + "." + d[0]
+def format_indian_number_no_decimal(n):
+    if n is None:
+        return ""
 
-def format_indian_number_no_decimal(number):
-    """
-    Format number in Indian style with commas, no decimal part.
-    """
-    if number is None:
-        number = 0
-    number = int(round(number))  # remove decimals
-    s = str(number)
-    r = s[-3:]
-    s = s[:-3]
-    while len(s) > 0:
-        r = s[-2:] + "," + r
-        s = s[:-2]
-    return r
+    is_negative = n < 0
+    n = abs(int(n))
+
+    s = str(n)
+
+    # last 3 digits
+    last3 = s[-3:]
+    rest = s[:-3]
+
+    if rest:
+        # group remaining digits in pairs
+        rest = list(rest[::-1])
+        rest = [''.join(rest[i:i+2]) for i in range(0, len(rest), 2)]
+        rest = ','.join(part[::-1] for part in rest[::-1])
+        result = rest + ',' + last3
+    else:
+        result = last3
+
+    return ('-' if is_negative else '') + result
+
+def format_indian_number(n):
+    if n is None:
+        return ""
+
+    is_negative = n < 0
+    n = abs(float(n))
+
+    # keep 2 decimal places
+    s = f"{n:.2f}"
+    integer_part, decimal_part = s.split(".")
+
+    # Indian grouping for integer part
+    last3 = integer_part[-3:]
+    rest = integer_part[:-3]
+
+    if rest:
+        rest = rest[::-1]
+        rest = [rest[i:i+2] for i in range(0, len(rest), 2)]
+        rest = ",".join(part[::-1] for part in rest)[::-1]
+        result = rest + "," + last3
+    else:
+        result = last3
+
+    return ("-" if is_negative else "") + result + "." + decimal_part
