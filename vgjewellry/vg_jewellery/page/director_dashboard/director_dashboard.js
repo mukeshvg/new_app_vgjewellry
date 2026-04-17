@@ -636,94 +636,6 @@ function build24KTOverview() {
 		</div>
 	</div>`;
 }
-	function renderSummary2() {
-	const d = FINE_DATA || {};
-
-	function rowBlock(label, wt, amt, cls = '') {
-		return `
-		<div class="sum-box ${cls}">
-			<div class="sum-left">
-
-			<div class="sum-col">
-                                        <div class="sum-title">&nbsp;</div>
-                                        <div class="sum-value">${label}</div>
-                                </div>
-
-			</div>
-
-			<div class="sum-right">
-				<div class="sum-col">
-					<div class="sum-title">Amt</div>
-					<div class="sum-value">${formatAmt(amt)}</div>
-				</div>
-				<div class="sum-col">
-					<div class="sum-title">Wt</div>
-					<div class="sum-value">${formatWt(wt)}</div>
-				</div>
-			</div>
-		</div>`;
-	}
-
-	return `
-	<div class="fade-in">
-		<div class="ov-card" id="overview-card">
-			
-			<div class="ov-card-header">
-				24 KT Overview
-				<span class="chevron">▼</span>
-			</div>
-
-			<div class="sum-wrapper">
-
-				<div class="sum-main-title">Net Wt to be Purchase</div>
-
-				${rowBlock(
-					'Ketan',
-					'222.33',
-					'555',
-					'ketan'
-				)}
-
-				${rowBlock(
-					'Other',
-					d.purchase?.wt_other,
-					d.purchase?.amt_other,
-					'other'
-				)}
-
-			</div>
-		</div>
-	</div>`;
-}
-	function renderSummary1() {
-		const d = FINE_DATA || {};
-		const m = getMethod();
-		const [h0, h1, h2, h3, h4] = colHeaders();
-
-		return `
-		<div class="fade-in">
-			<div class="ov-card" id="overview-card">
-				<div class="ov-card-header">
-					24 KT Overview
-					<span class="chevron">▼</span>
-				</div>
-				<table class="ov-table">
-					<thead>
-						<tr>
-							<th style="width:28%"></th>
-							<th>${m === 'both' ? 'Net Wt' : (m === 'ketan' ? 'Wt (K)' : 'Wt (O)')}</th>
-							<th>${m === 'both' ? 'Amt (Ketan)' : 'Amount'}</th>
-							${m === 'both' ? '<th>Wt (Ketan)</th><th>Amt (Other)</th>' : '<th></th><th></th>'}
-						</tr>
-					</thead>
-					<tbody>
-						${ovRow('Purchase', d.purchase)}
-						${ovRow('Net', d.net, true)}
-					</tbody>
-				</table>
-			</div>
-		</div>`;
-	}
 
 	// ================= DETAILED SECTION (all 4 KTs) =================
 
@@ -804,6 +716,7 @@ $(document).on('click', '.kt-toggle', function() {
 });
 
 function mapKTData(raw) {
+	console.log(raw);
 	if (!raw) return {};
 
 	function mapRow(r) {
@@ -822,10 +735,10 @@ function mapKTData(raw) {
   wt_other: raw.old?.weight
 		},
 		net: {
-			amt_ketan: raw.net?.amount,
-			wt_ketan:  raw.net?.weight,
-			amt_other: raw.net?.amount,
-			wt_other:  raw.net?.weight
+			amt_ketan: raw.net?.cash_receipt,
+			wt_ketan:  raw.net?.kt,
+			amt_other: raw.net?.fine_amt,
+			wt_other:  raw.net?.fine_wt
 		}
 	};
 }
