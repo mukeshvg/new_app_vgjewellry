@@ -194,7 +194,7 @@ GROUP BY
             all_data["22kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["22kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["22kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=round(((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]),3)
+            actual_labour_per=round((((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100),3)
             Rate_22 = rates_22kt[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=round((d["SLNetwt"]*Rate_22/Rate_24),3)
@@ -213,7 +213,7 @@ GROUP BY
             all_data["24kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["24kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["24kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100
             net_wt_to_24kt=(d["SLNetwt"])
             labour_weight= d["SLNetwt"]*actual_labour_per
             fine_wt_new=net_wt_to_24kt+labour_weight
@@ -231,7 +231,7 @@ GROUP BY
             all_data["18kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["18kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["18kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100
             Rate_18 = rates_18kt[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=(d["SLNetwt"]*Rate_18/Rate_24)
@@ -250,7 +250,7 @@ GROUP BY
             all_data["di"]["today"]["discount"]+=d["SlDiscount"]
             all_data["di"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["di"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
+            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]*100
             Rate_18di = rates_18di[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=round((d["SLNetwt"]*Rate_18di/Rate_24),2)
