@@ -441,6 +441,55 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 .kt-section.open .chevron {
 	transform: rotate(180deg);
 }
+/* =========================
+   DESKTOP ONLY LAYOUT FIX
+   ========================= */
+@media (min-width: 768px) {
+
+	/* ---- OVERVIEW: make it more compact & centered ---- */
+	/*.sum-wrapper {
+		display: flex;
+		gap: 10px;
+		justify-content: space-between;
+	}*/
+
+	.ov-card,.filter-bar,.rate-bar,.method-bar{
+		width:350px;
+	}
+	.sum-box {
+		flex: 1;
+		margin-bottom: 0;
+	}
+
+	/* ---- DETAIL SECTION: 4 KT cards in ONE ROW ---- */
+	.detail-section {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 10px;
+		align-items: start;
+	}
+
+	.kt-section {
+		margin-bottom: 0;
+		height: fit-content;
+	}
+
+	/* make header look tighter on desktop */
+	.kt-section-header {
+		font-size: 11px;
+		padding: 8px 10px;
+	}
+
+	.kt-body {
+		max-height: 320px;
+		overflow-y: auto;
+	}
+
+	/* optional: reduce spacing inside cards */
+	.kt-subsection {
+		margin-bottom: 8px;
+	}
+}
 	</style>`).appendTo(page.body);
 
 	// ================= RATE BAR (compact) =================
