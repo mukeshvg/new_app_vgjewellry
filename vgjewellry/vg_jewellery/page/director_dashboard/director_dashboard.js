@@ -882,11 +882,11 @@ function ktDetailCard(title, kd) {
 		rows += valueRow('Ketan', data?.wt_ketan, data?.amt_ketan);
 	}
 	else if (getMethod() === 'other') {
-		rows += valueRow('Other', data?.wt_other, data?.amt_other);
+		rows += valueRow('Other', data?.wt_other, data?.amt_ketan);
 	}
 	else {
 		rows += valueRow('Ketan', data?.wt_ketan, data?.amt_ketan);
-		rows += valueRow('Other', data?.wt_other, data?.amt_other);
+		rows += valueRow('Other', data?.wt_other, data?.amt_ketan);
 	}
 
 	if (name === 'Net') return ``;
