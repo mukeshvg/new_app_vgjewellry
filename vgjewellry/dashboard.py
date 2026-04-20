@@ -284,7 +284,7 @@ SELECT
 
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.NetWt ELSE 0 END) AS PurNetwt,
     SUM(CASE WHEN sp.VouType = 'PUR' THEN sp.DiamondWt ELSE 0 END) AS PurDiawt,
-    SUM(CASE WHEN sp.VouType = 'PUR' THEN (sp.TotalAmt - sp.DiscountAmt) ELSE 0 END) AS PurAmount
+    SUM(CASE WHEN sp.VouType = 'PUR' THEN (sp.MetalAmt ) ELSE 0 END) AS PurAmount
 
 
 FROM sptran sp 
