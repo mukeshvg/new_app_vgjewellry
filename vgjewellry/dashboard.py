@@ -194,7 +194,7 @@ GROUP BY
             all_data["22kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["22kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["22kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=round((((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100),3)
+            actual_labour_per=round((((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])),3)
             Rate_22 = rates_22kt[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=round((d["SLNetwt"]*Rate_22/Rate_24),3)
@@ -213,7 +213,8 @@ GROUP BY
             all_data["24kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["24kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["24kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100
+            actual_labour_per=0
+            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])
             net_wt_to_24kt=(d["SLNetwt"])
             labour_weight= d["SLNetwt"]*actual_labour_per
             fine_wt_new=net_wt_to_24kt+labour_weight
@@ -231,7 +232,7 @@ GROUP BY
             all_data["18kt"]["today"]["discount"]+=d["SlDiscount"]
             all_data["18kt"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["18kt"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])*100
+            actual_labour_per=((d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"])
             Rate_18 = rates_18kt[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=(d["SLNetwt"]*Rate_18/Rate_24)
@@ -250,7 +251,7 @@ GROUP BY
             all_data["di"]["today"]["discount"]+=d["SlDiscount"]
             all_data["di"]["today"]["cash_receipt"]+=(d["MetalAmt"]+d["LabourAmt"]-d["SlDiscount"])
             all_data["di"]["today"]["actual_labour"]+=(d["LabourAmt"]-d["SlDiscount"])
-            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]*100
+            actual_labour_per=(d["LabourAmt"]-d["SlDiscount"])/d["MetalAmt"]
             Rate_18di = rates_18di[d["VouDate"]]
             Rate_24 = all_rates[d["VouDate"]]
             net_wt_to_24kt=round((d["SLNetwt"]*Rate_18di/Rate_24),2)
@@ -310,24 +311,30 @@ GROUP BY
     
     for d in old_data:
         if d["ItemMstID"]==209 or d["ItemMstID"]==195:
-            all_data["22kt"]["old"]["weight"]+=d.get("PurNetwt",0)
-            all_data["22kt"]["old"]["amount"]+=d["PurAmount"]
+            #all_data["22kt"]["old"]["weight"]+=d.get("PurNetwt",0)
             fine_rate = all_rates[d["VouDate"]]
+            all_data["22kt"]["old"]["weight"]+=round(d["PurAmount"]/fine_rate,3)
+            all_data["22kt"]["old"]["amount"]+=d["PurAmount"]
             fine_data["old"]["weight"]+= round(d["PurAmount"]/fine_rate,3)
             fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==210:
+            fine_rate = all_rates[d["VouDate"]]
             all_data["24kt"]["old"]["weight"]+=d.get("PurNetwt",0)
             all_data["24kt"]["old"]["amount"]+=d["PurAmount"]
             fine_data["old"]["weight"]+= d.get("PurNetwt",0)
             fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==12:
-            all_data["18kt"]["old"]["weight"]+=d.get("PurNetwt",0)
+            fine_rate = all_rates[d["VouDate"]]
+            #all_data["18kt"]["old"]["weight"]+=d.get("PurNetwt",0)
+            all_data["18kt"]["old"]["weight"]+=round(d["PurAmount"]/fine_rate,3)
             all_data["18kt"]["old"]["amount"]+=d["PurAmount"]
             fine_rate = all_rates[d["VouDate"]]
             fine_data["old"]["weight"]+= round(d["PurAmount"]/fine_rate,3)
             fine_data["old"]["amount"]+=d["PurAmount"]
         elif d["ItemMstID"] ==237:
-            all_data["di"]["old"]["weight"]+=d.get('PurNetwt',0)
+            fine_rate = all_rates[d["VouDate"]]
+            #all_data["di"]["old"]["weight"]+=d.get('PurNetwt',0)
+            all_data["di"]["old"]["weight"]+=round(d["PurAmount"]/fine_rate,3)
             all_data["di"]["old"]["amount"]+=d["PurAmount"]
 
     for category, values in all_data.items():
@@ -442,30 +449,36 @@ GROUP BY m.VouId
     for key in payment_data:
         payment_data[key] = format_indian_number_no_decimal(payment_data[key]-srt_payment_data[key])
 
-    return {"data":all_data,"fine_data":fine_data,"payment_data":payment_data,"rate":{"g":gold_rate,"s":silver_rate}}
+    current_ts_ms = int(datetime.now().timestamp() * 1000)
+    url = f"https://bcast.arihantspot.com:7768/VOTSBroadcastStreaming/Services/xml/GetLiveRateByTemplateID/arihant?_={current_ts_ms}"
 
-    """try:
-        response = frappe.make_get_request(
-            url="https://api.example.com/data",
-            params={
-                "from_date": "2026-01-01",
-                "to_date": "2026-01-31",
-                "branch": "Mumbai"
-            },
-            timeout=0.2  # 200 milliseconds
-        )
-    except requests.exceptions.Timeout:
-        frappe.log_error("API timeout after 200ms", "External API")
-        response = None
-    except Exception as e:
-        frappe.log_error(str(e), "External API Error")
-        response = None
+    payload = {}
+    headers = {}
 
-    # Continue execution regardless
-    if response:
-        print(response)
+    response = requests.request("GET", url, headers=headers, data=payload)   
+    dt = response.text
+    #match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", response)
+    match = re.search(r"GOLD 999 WITH GST IMP-IND\s*-\s*(\d+)", dt)
+
+    if match:
+        arihant_gold_rate = int(match.group(1))/10
+        arihant_gold_rate = round(arihant_gold_rate)
+        total_gt =0
+        for gt ,gvalue in all_data.items():
+            cash_receipt = parse_amount(gvalue["today"]["cash_receipt"])
+            old_amount = parse_amount(gvalue["old"]["amount"])
+            total_gt += (cash_receipt - old_amount)
     else:
-        print("Skipping API, continuing flow...")"""
+        arihant_gold_rate=0
+
+    total_wt_can_purchase =""
+    if arihant_gold_rate !=0:
+        total_wt_can_purchase = round((total_gt / arihant_gold_rate),3)
+    return {"data":all_data,"fine_data":fine_data,"payment_data":payment_data,"rate":{"g":gold_rate,"s":silver_rate},"arihant_rate":arihant_gold_rate ,"total_wt_can_purchase":total_wt_can_purchase}
+
+def parse_amount(val):
+    return int(val.replace(",", ""))
+
 
 def format_indian_number_no_decimal(n):
     if n is None:

@@ -490,6 +490,50 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 		margin-bottom: 8px;
 	}
 }
+/* TABLE STYLE SUMMARY */
+.sum-table {
+	background: #f8faff;
+	border-radius: 10px;
+	border: 1px solid #e2e8f0;
+	overflow: hidden;
+}
+
+.sum-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 8px 10px;
+	border-bottom: 1px solid #edf0f7;
+	font-size: 12px;
+}
+
+.sum-row:last-child {
+	border-bottom: none;
+}
+
+.sum-cell.label {
+	color: #475569;
+	font-weight: 600;
+}
+
+.sum-cell.value {
+	font-weight: 700;
+	color: #0f172a;
+	/*font-family: "DM Mono", monospace;*/
+}
+
+/* highlight total */
+.sum-row.total {
+	background: #ecfdf5;
+}
+
+.sum-row.total .value {
+	color: #15803d;
+}
+
+/* optional: negative value */
+.sum-row.total.negative .value {
+	color: #dc2626;
+}
 	</style>`).appendTo(page.body);
 
 	// ================= RATE BAR (compact) =================
@@ -535,6 +579,8 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 	let FULL_DATA = {};
 	let FINE_DATA = {};
 	let PAYMENT_DATA = {};
+	let arihant_rate=0;
+	let gold_can_purchase=0
 
 	// ================= HELPERS =================
 	function formatAmt(num) {
@@ -613,7 +659,119 @@ function build24KTOverview() {
 		}
 	};
 }
-	function renderSummary() {
+function renderSummary() {
+
+	const overview = build24KTOverview();
+	const m = getMethod();
+	const arihant_gold_rate = arihant_rate
+	const gold_can_purchase= total_wt_can_purchase
+
+	const ketanAmt = overview.ketan.amt || 0;
+	const otherAmt = overview.other.amt || 0;
+
+	const ketanWt = overview.ketan.wt || 0;
+	const otherWt = overview.other.wt || 0;
+
+	const requiredAmt = ketanAmt + otherAmt;
+
+	// 👉 adjust if needed
+	const purchaseWt = ketanWt - otherWt;
+
+	const isNegative = purchaseWt < 0;
+
+	let rows = '';
+
+	if (m === 'ketan') {
+
+		rows = `
+		<div class="sum-table">
+
+			<div class="sum-row">
+				<div class="sum-cell label">Amount</div>
+				<div class="sum-cell value">${formatAmt(ketanAmt)}</div>
+			</div>
+
+			<div class="sum-row">
+				<div class="sum-cell label">Sold Weight</div>
+				<div class="sum-cell value">K: ${formatWt(ketanWt)}</div>
+			</div>
+
+			<div class="sum-row total ${isNegative ? 'negative' : ''}">
+				<div class="sum-cell label">Wt Purchase As per Arihant(${arihant_gold_rate})</div>
+				<div class="sum-cell value">${gold_can_purchase}</div>
+			</div>
+
+		</div>`;
+	}
+
+	else if (m === 'other') {
+
+		rows = `
+		<div class="sum-table">
+
+			<div class="sum-row">
+				<div class="sum-cell label">Amount</div>
+				<div class="sum-cell value">${formatAmt(ketanAmt)}</div>
+			</div>
+
+			<div class="sum-row">
+				<div class="sum-cell label">Sold Weight</div>
+				<div class="sum-cell value">O: ${formatWt(otherWt)}</div>
+			</div>
+
+			<div class="sum-row total ${isNegative ? 'negative' : ''}">
+				<div class="sum-cell label">Wt Purchase As per Arihant(${arihant_gold_rate})</div>
+				<div class="sum-cell value">${gold_can_purchase}</div>
+			</div>
+
+		</div>`;
+	}
+
+	else {
+		
+		rows = `
+		<div class="sum-table">
+
+			<div class="sum-row">
+				<div class="sum-cell label">Amount</div>
+				<div class="sum-cell value">${formatAmt(ketanAmt)}</div>
+			</div>
+
+			<div class="sum-row">
+				<div class="sum-cell label">Sold Weight</div>
+				<div class="sum-cell value">
+					K: ${formatWt(ketanWt)} &nbsp; | &nbsp;
+					O: ${formatWt(otherWt)}
+				</div>
+			</div>
+
+			<div class="sum-row total ${isNegative ? 'negative' : ''}">
+				<div class="sum-cell label">Wt Purchase As per Arihant(${arihant_gold_rate})</div>
+				<div class="sum-cell value">${gold_can_purchase}</div>
+			</div>
+
+		</div>`;
+	}
+
+	return `
+	<div class="fade-in">
+		<div class="ov-card" id="overview-card">
+
+			<div class="ov-card-header">
+				24 KT Overview
+				<span class="chevron">▼</span>
+			</div>
+
+			<div class="sum-wrapper">
+				<div class="sum-main-title">Net Wt to be Purchase</div>
+				${rows}
+			</div>
+
+		</div>
+	</div>`;
+}
+
+	function renderSummary1() {
 		const overview = build24KTOverview();
 	const d = FINE_DATA || {};
 	const m = getMethod(); 
@@ -731,6 +889,7 @@ function ktDetailCard(title, kd) {
 		rows += valueRow('Other', data?.wt_other, data?.amt_other);
 	}
 
+	if (name === 'Net') return ``;
 	return `
 	<div class="kt-subsection">
 		<div class="kt-subtitle">${name}</div>
@@ -897,6 +1056,10 @@ function formatWt(w) {
 				FULL_DATA    = r.message.data        || {};
 				FINE_DATA    = r.message.fine_data   || {};
 				PAYMENT_DATA = r.message.payment_data|| {};
+
+				arihant_rate = r.message.arihant_rate || 0
+				total_wt_can_purchase = r.message.total_wt_can_purchase||0
+				
 
 				content.html(renderSummary());
 
