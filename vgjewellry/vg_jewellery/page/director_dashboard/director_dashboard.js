@@ -564,9 +564,9 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 	// ================= METHOD RADIO =================
 	$(`
 	<div class="method-bar">
-		<input type="radio" name="method" id="m-both" value="both" checked>
+		<input type="radio" name="method" id="m-both" value="both" >
 		<label for="m-both">Both Methods</label>
-		<input type="radio" name="method" id="m-ketan" value="ketan">
+		<input type="radio" name="method" id="m-ketan" value="ketan" checked>
 		<label for="m-ketan">As per Ketan Sir</label>
 		<input type="radio" name="method" id="m-other" value="other">
 		<label for="m-other">As per Other</label>
