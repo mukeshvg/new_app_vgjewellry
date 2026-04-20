@@ -42,7 +42,7 @@ def get_data(from_date, to_date):
     current_date = current_date_str.strftime("%Y-%m-%d")
     rate_qry=""" select Top(2) trm.ItemTradMstID,trm.PurRate ,trm.SalesRate  from dbo.TodayRateMst trm where trm.ItemTradMstID in(1001,4001)
 and trm.TDate = ? """
-    val_values = (current_date)
+    val_values = (from_date)
     cursor_val.execute(rate_qry,(val_values))
     res_val = cursor_val.fetchall()
     data_val = []
