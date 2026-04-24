@@ -257,7 +257,7 @@ def get_silver_margin_report_data():
 
         table="LabelTransaction"
         columns=["LabelTransID","UserID","UniqueLabelID"]
-        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' "
+        condition="VouType='ST'   and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001)  "
         select_user_res=get_sql_server_data(branch,table,columns,condition)
         user_label_res={}
         for sur in select_user_res:
@@ -265,10 +265,10 @@ def get_silver_margin_report_data():
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID','PurWastPer','PurLabourRate','PurLabourOn','PurLabourAmount','LabourRate']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001)  ";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (4004,4003,4005,6005)  and ItemMstID not in (4002,4001) ";    
         #condition="(VouType='SL' or VouType='SRT')  and  ItemTradMstId in (4004,4003,4005)  and ItemMstID not in (4002,4001)  and LabelNo not like 'O%' and LabelNo='SK80T/   3047'";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
-        logger.info(f"{select_label_res}")
+        #logger.info(f"{select_label_res}")
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']
             if slr['VouType']=="SRT":
@@ -281,17 +281,17 @@ def get_silver_margin_report_data():
             ItemTradMstId=slr['ItemTradMstId']
             #Metal_Rate=valsad_rate_master[VouDate][ItemTradMstId]
             Metal_Rate = valsad_rate_master.get(VouDate, {}).get(ItemTradMstId, 0)   
-            if VouDate not in rate_master or 4003 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4003) is None :
+            if VouDate not in rate_master or 4001 not in rate_master[VouDate] or rate_master.get(VouDate, {}).get(4001) is None :
                 Base_Rate=0
             else:
-                Base_Rate=rate_master[VouDate][4003]
+                Base_Rate=rate_master[VouDate][4001]
             if Metal_Rate == 0:
                 for fallback_id in [4001, 4003, 4005,4004]:
                     fallback_rate = valsad_rate_master.get(VouDate, {}).get(fallback_id, 0)
                     if fallback_rate != 0:
                         Metal_Rate = fallback_rate
                         break    
-            logger.info(f"{Metal_Rate}")
+            #logger.info(f"{Metal_Rate}")
             NetWt=float(slr['NetWt'])
             ItemMstID=slr['ItemMstID']
             item_name=items[ItemMstID]
@@ -405,7 +405,7 @@ def get_silver_margin_report_data():
                 Purchase_Amt = float(Sales_Amt) * 0.85;
             margin = float(Sales_Amt) - Purchase_Amt
             if Purchase_Amt==0:
-                return label_no
+                return f"{LabelNo}--{VouDate}--net-{NetWt}--purity{Purchase_Purity}--base{Base_Rate}"
 
             margin_percentage= round((margin / Purchase_Amt * 100),2)
 
@@ -473,7 +473,7 @@ def get_silver_margin_report_data():
                 doc.save(ignore_permissions=True)
                 frappe.db.commit()
                 updated += 1
-                logger.info(f"[UPDATE] voucher_date={voucher_date_norm}  label_no={label_no}  name={existing_name}")
+                #logger.info(f"[UPDATE] voucher_date={voucher_date_norm}  label_no={label_no}  name={existing_name}")
             else:
                 # ── INSERT ──
                 doc = frappe.get_doc({
@@ -509,13 +509,13 @@ def get_silver_margin_report_data():
                 doc.insert(ignore_permissions=True)
                 frappe.db.commit()
                 inserted += 1
-                logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no}")
+                #logger.info(f"[INSERT] voucher_date={voucher_date_norm}  label_no={label_no}")
 
         except Exception as e:
             errors += 1
-            logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
+            #logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
-    logger.info(f"Silver Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
+    #logger.info(f"Silver Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
     frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
     frappe.db.commit()
 
