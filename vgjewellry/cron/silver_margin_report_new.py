@@ -404,6 +404,8 @@ def get_silver_margin_report_data():
             if int(slr["ItemTradMstId"])== 6005 :
                 Purchase_Amt = float(Sales_Amt) * 0.85;
             margin = float(Sales_Amt) - Purchase_Amt
+            if Purchase_Amt==0:
+                return label_no
 
             margin_percentage= round((margin / Purchase_Amt * 100),2)
 
