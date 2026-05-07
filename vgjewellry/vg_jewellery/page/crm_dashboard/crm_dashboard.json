@@ -1,0 +1,29 @@
+{
+ "content": null,
+ "creation": "2026-05-07 16:49:53.196377",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-05-07 16:49:53.196377",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "crm-dashboard",
+ "owner": "Administrator",
+ "page_name": "crm-dashboard",
+ "roles": [
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Director"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "CRM DASHBOARD"
+}

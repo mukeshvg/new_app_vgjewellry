@@ -111,7 +111,7 @@ def get_silver_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
-    first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
+    """first_doc = frappe.get_all("dia_from",fields=["name", "from_date"], order_by="creation asc", limit=1)
     if first_doc:
         doc_name1234 = first_doc[0].name
         from_date1 = first_doc[0].from_date
@@ -120,7 +120,7 @@ def get_silver_margin_report_data():
             to_date1 = from_date1 + timedelta(days=30)
 
     from_date =str(from_date1)
-    to_date = str(to_date1)
+    to_date = str(to_date1)"""
 
 
     # Build date query string
@@ -516,8 +516,8 @@ def get_silver_margin_report_data():
             #logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     #logger.info(f"Silver Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
-    frappe.db.commit()
+    """frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
+    frappe.db.commit()"""
 
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}
     
