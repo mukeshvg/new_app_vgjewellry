@@ -126,7 +126,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-20 10:21:21.266640",
+ "modified": "2026-05-11 17:55:58.556612",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Silver_Wastage_Purchase",
@@ -167,6 +167,12 @@
    "role": "Auditor",
    "share": 1,
    "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Guest Auditor",
+   "select": 1
   }
  ],
  "row_format": "Dynamic",
