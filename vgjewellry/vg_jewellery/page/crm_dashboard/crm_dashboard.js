@@ -298,7 +298,7 @@ function show_day_details(date) {
                         <button class="btn btn-danger" onclick="$('.modal').remove()">X</button>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="modal-body" style="height:77vh;overflow-y:auto">
 
                         <table class="table table-bordered table-sm" id="dayTable">
 
@@ -411,16 +411,16 @@ function render_employee_notes(response) {
     });
 
     let html = `
-        <div class="modal fade show" style="display:block;background:rgba(0,0,0,0.5)">
+        <div class="modal modal-2 fade show" style="display:block;background:rgba(0,0,0,0.5)">
             <div class="modal-dialog modal-lg modal-xl">
                 <div class="modal-content">
 
                     <div class="modal-header">
                         <h4>Employee Notes</h4>
-                        <button class="btn btn-danger" onclick="$('.modal').remove()">X</button>
+                        <button class="btn btn-danger" onclick="$('.modal-2').remove()">X</button>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="modal-body" style="height:77vh;overflow-y:auto">
 
                         <table class="table table-bordered table-sm" id="employeeNotesTable">
 
@@ -539,13 +539,13 @@ function render_employee_notes1(response) {
     });
 
     let html = `
-        <div class="modal fade show" style="display:block;background:rgba(0,0,0,0.5)">
+        <div class="modal modal_1 fade show" style="display:block;background:rgba(0,0,0,0.5)">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
 
                     <div class="modal-header">
                         <h4>Employee Notes</h4>
-                        <button class="btn btn-danger" onclick="$('.modal').remove()">X</button>
+                        <button class="btn btn-danger" onclick="$('.modal_1').remove()">X</button>
                     </div>
 
                     <div class="modal-body">

@@ -67,6 +67,8 @@ def employee_call_report(emp_id, udate=None):
         "Content-Type": "application/json",
         "Authorization": "token api_key:api_secret"
     }
+    session_user = frappe.session.user
+    roles = frappe.get_roles(session_user)
 
     try:
         response = requests.post(
@@ -79,6 +81,11 @@ def employee_call_report(emp_id, udate=None):
         response.raise_for_status()
 
         result = response.json()
+        if "data" in result:
+            for row in result["data"]:
+                mobile = row.get("mobile_no")
+                if "Admin" not in roles:
+                    row["mobile_no"] = "XXXXXXXXXX"
 
         return {
             "status": "success",
@@ -90,7 +97,7 @@ def employee_call_report(emp_id, udate=None):
 
         frappe.log_error(
             title="POST API Error",
-            message=str(e)
+                message=str(e)
         )
 
         return {
