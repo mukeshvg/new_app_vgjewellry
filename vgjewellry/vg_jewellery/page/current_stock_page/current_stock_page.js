@@ -315,10 +315,12 @@ frappe.pages['current_stock_page'].on_page_load = function(wrapper) {
 			], () => {
 				let webori = window.location.origin;
 				if (webori.search("10.10.10.137") > 0) {
-					window.flexlickey = "Z7UN-162H69-6T1N31-1X1Z09-4K2L1E-38615B-1S386C-4P4S1Q-6T2J2O-6N4K47-6I5Y24-114S6V-6F6I16-0Y1F5U-3X0I0N-20253O-3I2O47-2M"
+					//window.flexlickey = "Z7UN-162H69-6T1N31-1X1Z09-4K2L1E-38615B-1S386C-4P4S1Q-6T2J2O-6N4K47-6I5Y24-114S6V-6F6I16-0Y1F5U-3X0I0N-20253O-3I2O47-2M"
+					window.flexlickey = "Z79L-13390U-4T265T-2N1B1I-553U2A-363H6Y-5R2L1W-3P0B4Q-0S0E48-4T6E46-082M0J-1T4D2P-2T5F6T-65170M-0T224Y-643Q1X-324Y5I-6F"
 				}
 				else if(webori.search("app.vgjewellry.com") > 0) {
-					window.flexlickey = "Z7T6-XJ6G1I-57443C-4M4W42-5Y0Q2E-2L1W47-076L30-0M0A6W-6Y182U-3Y3C59-5A4B"
+					//window.flexlickey = "Z7T6-XJ6G1I-57443C-4M4W42-5Y0Q2E-2L1W47-076L30-0M0A6W-6Y182U-3Y3C59-5A4B"
+					window.flexlickey = "Z7YZ-XIAB2O-470404-0W0Z0I-0S1V2U-6G341H-4P4A4O-1O3E2I-1L6Y5Q-215A09-6K5R"
 				}
 
 				let selobj = {}
