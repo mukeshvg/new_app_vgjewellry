@@ -1,0 +1,26 @@
+{
+ "content": null,
+ "creation": "2026-05-25 16:01:26.097473",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-05-25 16:01:26.097473",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "rate-cut",
+ "owner": "Administrator",
+ "page_name": "rate-cut",
+ "roles": [
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Administrator"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Rate Cut"
+}

@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-25 18:57:06.434675",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "vendor",
+  "acc_mst_id",
+  "fine_wt",
+  "fine_wt_selected",
+  "net_wt",
+  "oc",
+  "hm",
+  "bill_amt",
+  "is_submitted"
+ ],
+ "fields": [
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Data",
+   "label": "Vendor"
+  },
+  {
+   "fieldname": "acc_mst_id",
+   "fieldtype": "Int",
+   "label": "acc_mst_id"
+  },
+  {
+   "fieldname": "fine_wt",
+   "fieldtype": "Float",
+   "label": "fine_wt"
+  },
+  {
+   "fieldname": "fine_wt_selected",
+   "fieldtype": "Float",
+   "label": "fine_wt_selected"
+  },
+  {
+   "fieldname": "net_wt",
+   "fieldtype": "Float",
+   "label": "net_wt"
+  },
+  {
+   "fieldname": "oc",
+   "fieldtype": "Float",
+   "label": "oc"
+  },
+  {
+   "fieldname": "hm",
+   "fieldtype": "Float",
+   "label": "hm"
+  },
+  {
+   "fieldname": "bill_amt",
+   "fieldtype": "Float",
+   "label": "bill_amt"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_submitted",
+   "fieldtype": "Check",
+   "label": "is_submitted"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-25 18:58:49.069693",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Rate Cut Summary",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

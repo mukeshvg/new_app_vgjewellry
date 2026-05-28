@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-25 17:06:43.238599",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "vendor",
+  "acc_mst_id",
+  "item_tran_id",
+  "vou_no",
+  "fine_wt",
+  "net_wt",
+  "oc",
+  "hm",
+  "is_selected",
+  "is_completed",
+  "summary_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Data",
+   "label": "Vendor"
+  },
+  {
+   "fieldname": "acc_mst_id",
+   "fieldtype": "Int",
+   "label": "acc_mst_id"
+  },
+  {
+   "fieldname": "item_tran_id",
+   "fieldtype": "Int",
+   "label": "item_tran_id"
+  },
+  {
+   "fieldname": "vou_no",
+   "fieldtype": "Data",
+   "label": "vou_no"
+  },
+  {
+   "fieldname": "fine_wt",
+   "fieldtype": "Float",
+   "label": "fine_wt"
+  },
+  {
+   "fieldname": "net_wt",
+   "fieldtype": "Float",
+   "label": "net_wt"
+  },
+  {
+   "fieldname": "oc",
+   "fieldtype": "Float",
+   "label": "oc"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_selected",
+   "fieldtype": "Check",
+   "label": "is_selected"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_completed",
+   "fieldtype": "Check",
+   "label": "is_completed"
+  },
+  {
+   "fieldname": "summary_id",
+   "fieldtype": "Data",
+   "label": "summary_id"
+  },
+  {
+   "fieldname": "hm",
+   "fieldtype": "Float",
+   "label": "HM"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-26 16:34:34.854568",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Rate Cut Transaction",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
