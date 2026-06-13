@@ -117,7 +117,7 @@ def get_silver_margin_report_data():
         from_date1 = first_doc[0].from_date
 
         if from_date1:
-            to_date1 = from_date1 + timedelta(days=30)
+            to_date1 = from_date1 + timedelta(days=10)
 
     from_date =str(from_date1)
     to_date = str(to_date1)"""
@@ -204,8 +204,7 @@ def get_silver_margin_report_data():
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
                 else:
                     valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
-            if branch=="vapi" or branch =="surat" :
-
+            if False and (branch=="vapi" or branch =="surat") :
                 valsad_rate_master[rate_date][rr['ItemTradMstID']]=round(rr['SalesRate']/10);
                 #rate_master[rate_date]=valsad_rate_master[rate_date];
         table="ItemWiseLabour"
@@ -516,8 +515,8 @@ def get_silver_margin_report_data():
             #logger.error(f"[ERROR] uid={uid}  label_no={row.get('label_no')}  error={e}")
 
     #logger.info(f"Silver Margin sync complete — inserted={inserted}  updated={updated}  errors={errors}")
-    """frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
-    frappe.db.commit()"""
+    #frappe.db.set_value("dia_from", doc_name1234, "from_date",to_date1 )
+    #frappe.db.commit()
 
     return {"inserted": inserted, "updated": updated, "errors": errors ,"voucher_date":from_date}
     

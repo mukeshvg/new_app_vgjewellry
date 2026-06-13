@@ -114,7 +114,7 @@ def get_gold_margin_report_data():
         from_date1 = first_doc[0].from_date
 
         if from_date1:
-            to_date1 = from_date1 + timedelta(days=7)
+            to_date1 = from_date1 + timedelta(days=3)
 
     from_date =str(from_date1)
     to_date = str(to_date1)
@@ -255,7 +255,7 @@ def get_gold_margin_report_data():
         check_wastage=[]
         table="LabelTransaction"
         columns=["LabelTransID","VouType","VouDate","LabelNo","ItemMstID","SupplierCode","GrossWt","NetWt","Location","VarietyMstId","LabourPer","Purity",'ItemTradMstId','OtherCharge','LabourDisAmt','AccDisAmt','MetalDisAmt','ItemTradMstId','LabourAmount','SalesManId','UniqueLabelID','UserID']
-        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)  and LabelNo not like 'O%'";    
+        condition="(VouType='SL' or VouType='SRT') and "+date_query +" and  ItemTradMstId in (1002,1003)  and ItemMstID not in (10266 ,10000031,203,260,10000054,200,204,196)  ";    
         select_label_res=get_sql_server_data(branch,table,columns,condition)
         for slr in select_label_res:
             UniqueLabelID=slr['UniqueLabelID']

@@ -40,7 +40,7 @@ import frappe
     
 def get_or_create_kra(data1):
     # Check if emp_code exists
-    emp_code=data1["EMP ID"]
+    emp_code=int(data1["EMP ID"])
     department=data1["DEPARTMENT"];
     emp_name=data1["NAME"]
     counter=data1["COUNTER"]

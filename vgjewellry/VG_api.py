@@ -45,8 +45,9 @@ def StockReport_R001(sd,ed,branch):
         DAY(sp.VouDate) AS [Day],
         (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.NetWt ELSE 0 END) - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.NetWt ELSE 0 END)) AS SLNetwt,
         (SUM(CASE WHEN sp.VouType = 'SL' THEN sp.DiamondWt ELSE 0 END) - SUM(CASE WHEN sp.VouType = 'SRT' THEN sp.DiamondWt ELSE 0 END)) AS SlDiawt,
-        (SUM(CASE WHEN sp.VouType = 'SL' THEN (sp.TaxableAmt - sp.LabourDisAmt) ELSE 0 END) - SUM(CASE WHEN sp.VouType = 'SRT' THEN (sp.TaxableAmt - sp.LabourDisAmt) ELSE 0 END)) AS SlAmount,
+        (SUM(CASE WHEN sp.VouType = 'SL' THEN (sp.TaxableAmt - sp.DiscountAmt) ELSE 0 END) - SUM(CASE WHEN sp.VouType = 'SRT' THEN (sp.TaxableAmt - sp.DiscountAmt) ELSE 0 END)) AS SlAmount,
         CASE sp.YearID 
+            WHEN '16' THEN '26-27' 
             WHEN '15' THEN '25-26' 
             WHEN '14' THEN '24-25' 
             WHEN '13' THEN '23-24' 
@@ -220,7 +221,8 @@ def emp_data(emp_code):
         raise e
 #Flextmoster
 
-#Customeroutstanding    
+#Customeroutstanding   
+@frappe.whitelist(allow_guest=True)
 def custoutstandingdata():
 
     db_name = frappe.get_conf().db_name
@@ -254,7 +256,7 @@ def custoutstandingdata():
     LEFT JOIN  spmst sm ON sm.AccMstID = ab.AccMstID
     LEFT JOIN  salesmanmst smm ON smm.SalesManMstID = sm.SalesManCode
     LEFT JOIN  addressdtl ad on ad.AccMstID = ab.AccMstID
-    WHERE ab.YearID = 15
+    WHERE ab.YearID = 16
         AND ab.ClBal < 0
         -- AND ab.BranchID = 1
         AND am.AccCategory = 5

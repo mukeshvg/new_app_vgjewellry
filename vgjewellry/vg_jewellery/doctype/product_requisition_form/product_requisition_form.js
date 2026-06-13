@@ -90,6 +90,7 @@ frappe.ui.form.on("Product_Requisition_Item", {
 					let grid_row = frm.fields_dict.product_details.grid.grid_rows_by_docname[cdn];
 					let fields = ["variety", "weight_range","size", "qty","jota"];
 					fields.forEach(f => {
+						if(!grid_row?.on_grid_fields_dict?.[f]?.df) return;
 						grid_row.on_grid_fields_dict[f].df.read_only = 0;
 						if(f=="jota" && [86,17,57,10292,10276,10000061,10000036,10000018,10000010].indexOf(row.item) !=-1){
 							grid_row.on_grid_fields_dict[f].df.hidden = 0;

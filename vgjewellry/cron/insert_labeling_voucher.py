@@ -19,7 +19,7 @@ def connect_ho():
     return conn
 def insert_voucher():
     today = date.today()
-    two_days_ago = today - timedelta(days=30)
+    two_days_ago = today - timedelta(days=5)
     con_ornysis=connect_ornsys();
     cursor_ornysis=con_ornysis.cursor()
     user_qry ='''

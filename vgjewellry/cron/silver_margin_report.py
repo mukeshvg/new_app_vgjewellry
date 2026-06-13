@@ -111,6 +111,7 @@ def get_silver_margin_report_data():
     from_date = yesterday.strftime("%Y-%m-%d")
     to_date   = today.strftime("%Y-%m-%d")
 
+
     # Build date query string
     date_query = f"VouDate >= '{from_date}' AND VouDate <= '{to_date}'"
 
