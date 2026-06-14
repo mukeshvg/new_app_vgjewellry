@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "ratecut_date",
   "vendor",
   "acc_mst_id",
   "fine_wt",
@@ -13,7 +14,12 @@
   "oc",
   "hm",
   "bill_amt",
-  "is_submitted"
+  "is_submitted",
+  "rate_999_with_gst",
+  "rate_999_without_gst",
+  "bill_value_without_gst",
+  "bill_value_with_gst",
+  "diff"
  ],
  "fields": [
   {
@@ -61,12 +67,47 @@
    "fieldname": "is_submitted",
    "fieldtype": "Check",
    "label": "is_submitted"
+  },
+  {
+   "fieldname": "ratecut_date",
+   "fieldtype": "Date",
+   "label": "Ratecut Date"
+  },
+  {
+   "fieldname": "rate_999_with_gst",
+   "fieldtype": "Float",
+   "label": "Rate 999 with GST",
+   "precision": "0"
+  },
+  {
+   "fieldname": "rate_999_without_gst",
+   "fieldtype": "Float",
+   "label": "Rate 999 Without GST",
+   "precision": "0"
+  },
+  {
+   "fieldname": "bill_value_without_gst",
+   "fieldtype": "Float",
+   "label": "Bill Value Without GST",
+   "precision": "0"
+  },
+  {
+   "fieldname": "bill_value_with_gst",
+   "fieldtype": "Float",
+   "label": "Bill Value With GST",
+   "precision": "0"
+  },
+  {
+   "fieldname": "diff",
+   "fieldtype": "Float",
+   "label": "Diff",
+   "precision": "0"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-25 18:58:49.069693",
+ "modified": "2026-06-14 17:22:56.418131",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",

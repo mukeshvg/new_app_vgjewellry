@@ -13,6 +13,9 @@
   "net_wt",
   "oc",
   "hm",
+  "original_fine_wt",
+  "original_oc",
+  "original_hm",
   "is_selected",
   "is_completed",
   "summary_id"
@@ -74,12 +77,27 @@
    "fieldname": "hm",
    "fieldtype": "Float",
    "label": "HM"
+  },
+  {
+   "fieldname": "original_fine_wt",
+   "fieldtype": "Float",
+   "label": "original fine wt"
+  },
+  {
+   "fieldname": "original_oc",
+   "fieldtype": "Float",
+   "label": "original oc"
+  },
+  {
+   "fieldname": "original_hm",
+   "fieldtype": "Float",
+   "label": "original HM"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-26 16:34:34.854568",
+ "modified": "2026-06-14 14:55:58.989535",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",
