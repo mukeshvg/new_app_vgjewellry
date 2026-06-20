@@ -29,7 +29,9 @@ def get_all_vendor_rate_cut():
     SELECT
         it.ItemTranID,
         it.VouNo,
+        it.VouID,
         it.VouDate,
+        it.TranID,
         it.ItemTradMstID,
         it.GrossWt,
         it.NetWt,
@@ -44,6 +46,13 @@ def get_all_vendor_rate_cut():
         vam.AccSubID,
         am.AccName,
         ts.Amount as HM,
+
+        return_it.VouNo AS ReturnVouNo,
+        return_ir.VouDate AS ReturnVouDate,
+        return_ir.GrossWt AS ReturnGrossWt,
+        return_ir.NetWt AS ReturnNetWt,
+        return_ir.FineWt AS ReturnFineWt,
+        return_ir.Narration AS ReturnNarration,
 
 
 
@@ -67,6 +76,14 @@ def get_all_vendor_rate_cut():
     Left Join dbo.IRTranStudded as ts
        on it.TranID=ts.IRTranId  and    ts.StyleID = 63
 
+    LEFT JOIN dbo.ItemTransaction return_it
+        ON return_it.OpVouMstId = it.VouID
+      -- AND return_it.OpVouTranId = it.TranID
+
+    -- Get details of that voucher
+    LEFT JOIN dbo.IRMst return_ir
+        ON return_ir.VouNo = return_it.VouNo
+       AND return_ir.YearID = 16
 
 
     WHERE it.VouNo LIKE 'HARM /%'
@@ -122,6 +139,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     total_oc = 0
     total_bill_amt = 0
     total_hm = 0
+    total_returnfinewt = 0
 
     for r in rows:
         fine_wt = flt(r.get("FineWt") or 0)
@@ -129,6 +147,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         oc = flt(r.get("OtherCharge") or 0)
         bill_amt = flt(r.get("BillAmt") or 0)
         hm= flt(r.get("HM") or 0)
+        returnfinewt= flt(r.get("ReturnFineWt") or 0)
 
         # totals
         total_fine_wt += fine_wt
@@ -136,6 +155,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         total_oc += oc
         total_bill_amt += bill_amt
         total_hm += hm
+        total_returnfinewt += returnfinewt
         doc = frappe.get_doc({
             "doctype": "Rate Cut Transaction",
             "vendor": vendor,
@@ -146,6 +166,12 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
             "net_wt": r.get("NetWt"),
             "oc": r.get("OtherCharge"),
             "hm": r.get("HM"),
+            "returnfinewt": r.get('ReturnFineWt'),
+            "returngrosswt": r.get('ReturnGrossWt'),
+            "returnnetwt": r.get('ReturnNetWt'),
+            "returnvoudate": r.get('ReturnVouDate'),
+            "returnnarration": r.get('ReturnNarration'),
+            "returnvouno": r.get('ReturnVouNo'),
             "is_selected": 1,
             "is_completed": 0,
             "summary_id":summary_id
@@ -158,6 +184,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     summary_doc.oc = total_oc
     summary_doc.bill_amt = total_bill_amt
     summary_doc.hm = total_hm
+    summary_doc.returnfinewt = total_returnfinewt
 
     summary_doc.save(ignore_permissions=True)
 
@@ -176,7 +203,8 @@ def get_saved_transactions(acc_mst_id , summary_id):
             "is_completed": 0,
             "is_selected": 1
         },
-        fields=["item_tran_id","fine_wt", "oc", "hm"]
+        fields=["item_tran_id","fine_wt", "oc", "hm","returnfinewt"]
+
     )
 
 @frappe.whitelist()
@@ -278,3 +306,35 @@ def delete_rate_cut_summary(summary_id):
     frappe.db.commit()
 
     return "deleted"
+
+@frappe.whitelist()
+def update_rate_cut_row(summary_id, acc_mst_id,
+                        rate999_wgst,
+                        rate999_wogst,
+                        bill_without_gst,
+                        bill_with_gst):
+
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    doc.rate_999_with_gst = rate999_wgst
+    doc.rate_999_without_gst = rate999_wogst
+    doc.bill_value_without_gst = bill_without_gst
+    doc.bill_value_with_gst = bill_with_gst
+
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return "ok"
+
+@frappe.whitelist()
+def update_bill_and_diff(summary_id, bill_amt, diff):
+
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    doc.bill_amt = flt(bill_amt)
+    doc.diff = flt(diff)
+
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return "ok"

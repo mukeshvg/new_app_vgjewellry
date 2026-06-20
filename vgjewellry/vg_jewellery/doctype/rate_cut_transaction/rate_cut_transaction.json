@@ -18,7 +18,13 @@
   "original_hm",
   "is_selected",
   "is_completed",
-  "summary_id"
+  "summary_id",
+  "returnfinewt",
+  "returngrosswt",
+  "returnnetwt",
+  "returnvoudate",
+  "returnnarration",
+  "returnvouno"
  ],
  "fields": [
   {
@@ -92,12 +98,42 @@
    "fieldname": "original_hm",
    "fieldtype": "Float",
    "label": "original HM"
+  },
+  {
+   "fieldname": "returnfinewt",
+   "fieldtype": "Float",
+   "label": "ReturnFineWt"
+  },
+  {
+   "fieldname": "returngrosswt",
+   "fieldtype": "Float",
+   "label": "ReturnGrossWt"
+  },
+  {
+   "fieldname": "returnnetwt",
+   "fieldtype": "Float",
+   "label": "ReturnNetWt"
+  },
+  {
+   "fieldname": "returnvoudate",
+   "fieldtype": "Date",
+   "label": "ReturnVouDate"
+  },
+  {
+   "fieldname": "returnnarration",
+   "fieldtype": "Data",
+   "label": "ReturnNarration"
+  },
+  {
+   "fieldname": "returnvouno",
+   "fieldtype": "Data",
+   "label": "ReturnVouNo"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-14 14:55:58.989535",
+ "modified": "2026-06-20 12:37:12.942912",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",

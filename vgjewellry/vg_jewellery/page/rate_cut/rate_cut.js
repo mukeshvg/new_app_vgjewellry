@@ -15,7 +15,20 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	$(page.body).html(`
 
 	<style>
+.modal-dialog {
+    width: 98vw !important;
+    max-width: 98vw !important;
+}
 
+.modal-content {
+    height: 90vh;
+    overflow: hidden;
+}
+
+.modal-body {
+    max-height: 80vh;
+    overflow: auto;
+}
 	    .rate-cut-table {
 		width: 100%;
 		table-layout: fixed;
@@ -104,6 +117,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					"net_wt",
 					"oc",
 					"hm",
+					"returnfinewt",
 					"rate_999_with_gst",
 					"rate_999_without_gst",
 					"bill_value_without_gst",
@@ -124,6 +138,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					netWt: d.net_wt,
 					oc: d.oc,
 					hm: d.hm,
+					returnfinewt:d.returnfinewt,
 					rate999WGst:d.rate_999_with_gst,
 					rate999WithoutGst:d.rate_999_without_gst,
 					billWithoutGst:d.bill_value_without_gst,
@@ -145,6 +160,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		let totalNetWt = 0;
 		let totalOC = 0;
 		let totalHM = 0;
+		let totalReturnFinewt= 0;
 
 		let html = `
 
@@ -159,6 +175,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				<th>Net Wt</th>
 				<th>HM</th>
 				<th>OC</th>
+				<th>Return Fine Wt</th>
 				<th>RATE 999 With GST</th>
 				<th>RATE 999 Without GST</th>
 				<th>BILL VALUE WITHOUT GST</th>
@@ -174,7 +191,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		`;
 
 		addedRows.forEach((row, index) => {
-
+			console.log(row)
 			totalKetanFineWt +=
 				parseFloat(row.ketanFineWt || 0);
 
@@ -189,11 +206,13 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			totalHM +=
 				parseFloat(row.hm || 0);
 
+			totalReturnFinewt+=parseFloat(row.returnfinewt||0)
+
 			html += `
 			<tr>
 				<td>${row.ratecut_date
-        ? moment(row.ratecut_date).format("DD-MM-YYYY")
-        : ''}</td>
+						? moment(row.ratecut_date).format("DD-MM-YYYY")
+						: ''}</td>
 
 			    <td>
 				<span class="vendor-link"
@@ -217,6 +236,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			    <td>
 				${row.oc.toFixed(2)}
 			    </td>
+			    <td>${row.returnfinewt.toFixed(3)}</td>
 
 			    <td><input type="number"
 	   class="form-control rate999wgst-input"
@@ -289,13 +309,13 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			    ${totalNetWt.toFixed(3)}
 			</td>
 
-			<td></td>
+			<td>${totalHM.toFixed(3)}</td>
 
 			<td>
 			    ${totalOC.toFixed(2)}
 			</td>
 
-			<td></td>
+			<td>${totalReturnFinewt.toFixed(3)}</td>
 			<td></td>
 			<td></td>
 			<td></td>
@@ -313,6 +333,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		`;
 
 		$('#vendor-table').html(html);
+		let saveTimeout;
 		$('#vendor-table .rate999wgst-input').on('change', function () {
 			let idx = $(this).data('index');
 
@@ -332,6 +353,8 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			let selectedFineWt =
 				parseFloat(addedRows[idx].selectedFineWt) || 0;
 
+		     	let returnfinewt=parseFloat(addedRows[idx].returnfinewt) || 0;
+
 			let hm =
 				parseFloat(addedRows[idx].hm) || 0;
 
@@ -339,7 +362,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				parseFloat(addedRows[idx].oc) || 0;
 
 			let billWithoutGst =
-				((withoutGst / 10) * selectedFineWt)
+				((withoutGst / 10) * (selectedFineWt-returnfinewt))
 				+ hm
 				+ oc;
 
@@ -354,6 +377,27 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			$(`.withgstvalue-input[data-index="${idx}"]`)
 				.val(withGstValue.toFixed(2));
+
+			clearTimeout(saveTimeout);
+			saveTimeout = setTimeout(() => {
+			       frappe.call({
+        method: "vgjewellry.rate_cut.update_rate_cut_row",
+        args: {
+            summary_id: addedRows[idx].name,
+            acc_mst_id: addedRows[idx].accMstId,
+            rate999_wgst: gstRate,
+            rate999_wogst: withoutGst,
+            bill_without_gst: billWithoutGst,
+            bill_with_gst: withGstValue
+        },
+        callback: function (r) {
+            frappe.show_alert({
+                message: "Saved",
+                indicator: "green"
+            });
+        }
+    });
+			    }, 2000);
 		});
 
 		/*$('#vendor-table .rate999wogst-input').on('change', function () {
@@ -371,6 +415,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			addedRows[idx].withGstValue = parseFloat($(this).val()) || 0;
 		});*/
 
+		let billTimer;
 		$('#vendor-table .billamt-input').on('change', function () {
 			let idx = $(this).data('index');
 
@@ -385,11 +430,34 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			addedRows[idx].diff = diff;
 
+			console.log(billAmt);
+
+			if(billAmt==0) diff=0
+
 			// Update Diff column
 			$(this)
 				.closest('tr')
 				.find('.diff-cell')
 				.text(diff.toFixed(2));
+
+			 clearTimeout(billTimer);
+
+    billTimer = setTimeout(() => {
+	    frappe.call({
+        method: "vgjewellry.rate_cut.update_bill_and_diff",
+        args: {
+            summary_id: addedRows[idx].name,
+            bill_amt: billAmt,
+            diff: diff
+        },
+        callback: function () {
+            frappe.show_alert({
+                message: "Bill Updated",
+                indicator: "green"
+            });
+        }
+    });
+    }, 1000);
 		});
 
 		// Vendor Click
@@ -478,6 +546,12 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				    <th>OC</th>
 				    <th>HM</th>
 				    <th>Item Name</th>
+				    <th>Return Vou No</th>
+			            <th>Return Date</th>
+				    <th>Return GrossWt</th>
+			            <th>Return NetWt</th>
+		        	    <th>Return FineWt</th>
+	                            <th>Return Narration</th>
 				</tr>
 			    </thead>
 
@@ -531,6 +605,26 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			    <td>${record.Narration}</td>
 
+			<td>${record.ReturnVouNo || ''}</td>
+
+    <td>
+        ${record.ReturnVouDate
+            ? frappe.datetime.str_to_user(record.ReturnVouDate)
+            : ''}
+    </td>
+
+    <td>${record.ReturnGrossWt || 0}</td>
+
+    <td>${record.ReturnNetWt || 0}</td>
+
+    <td><input type="number"
+               class="form-control returnfinewt-input"
+               data-id="${record.ItemTranID}"
+               value="${saved.returnfinewt ?? record.ReturnFineWt ?? 0}"
+               step="0.001">
+    </td>
+
+    <td>${record.ReturnNarration || ''}</td>
 			</tr>
 		    `;
 		});
@@ -595,7 +689,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		}
 		d.$wrapper.on(
 			'change',
-			'.txn-check, .finewt-input, .oc-input, .hm-input',
+			'.txn-check, .finewt-input, .oc-input, .hm-input, .returnfinewt-input ',
 			updateTotals
 		);
 		d.set_primary_action("Save Selection", function() {
@@ -622,11 +716,16 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 						d.$wrapper.find(`.hm-input[data-id="${id}"]`).val()
 					) || 0;
 
+					let returnfinewt=parseFloat(
+                                                d.$wrapper.find(`.returnfinewt-input[data-id="${id}"]`).val()
+                                        ) || 0;
+
 					selectedRows.push({
 						...row,
 						FineWt: fineWt,	
 						OtherCharge: oc,
-						HM: hm
+						HM: hm,
+						ReturnFineWt:returnfinewt
 					});
 				}
 			});
@@ -881,45 +980,45 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 	$(document).on('click', '.save-row-btn', function () {
 
-    let idx = $(this).data('index');
+		let idx = $(this).data('index');
 
-    frappe.call({
-        method: "vgjewellry.rate_cut.save_single_rate_cut",
-        args: {
-            row: JSON.stringify(addedRows[idx])
-        },
-        callback: function () {
-            frappe.show_alert({
-                message: "Saved",
-                indicator: "green"
-            });
-        }
-    });
+		frappe.call({
+			method: "vgjewellry.rate_cut.save_single_rate_cut",
+			args: {
+				row: JSON.stringify(addedRows[idx])
+			},
+			callback: function () {
+				frappe.show_alert({
+					message: "Saved",
+					indicator: "green"
+				});
+			}
+		});
 
-});
+	});
 	$(document).on('click', '.remove-row-btn', function () {
 
-    let idx = $(this).data('index');
-        let row = addedRows[idx];
+		let idx = $(this).data('index');
+		let row = addedRows[idx];
 
-    frappe.confirm(`Remove vendor <b>${row.vendor}</b>?`, () => {
+		frappe.confirm(`Remove vendor <b>${row.vendor}</b>?`, () => {
 
 
-        frappe.call({
-            method: "vgjewellry.rate_cut.delete_rate_cut_summary",
-            args: {
-                summary_id: row.name
-            },
-            callback: function () {
+			frappe.call({
+				method: "vgjewellry.rate_cut.delete_rate_cut_summary",
+				args: {
+					summary_id: row.name
+				},
+				callback: function () {
 
-                addedRows.splice(idx, 1);
+					addedRows.splice(idx, 1);
 
-                render_table();   // re-render UI
+					render_table();   // re-render UI
 
-            }
-        });
+				}
+			});
 
-    });
+		});
 
-});
+	});
 };

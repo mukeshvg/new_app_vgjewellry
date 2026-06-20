@@ -13,6 +13,7 @@
   "net_wt",
   "oc",
   "hm",
+  "returnfinewt",
   "bill_amt",
   "is_submitted",
   "rate_999_with_gst",
@@ -102,12 +103,17 @@
    "fieldtype": "Float",
    "label": "Diff",
    "precision": "0"
+  },
+  {
+   "fieldname": "returnfinewt",
+   "fieldtype": "Float",
+   "label": "returnfinewt"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-14 17:22:56.418131",
+ "modified": "2026-06-20 17:03:27.628548",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",
