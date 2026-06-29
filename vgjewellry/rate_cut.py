@@ -15,6 +15,7 @@ from frappe.utils import flt
 from collections import defaultdict
 
 value = os.getenv('sjodbc')
+#value = os.getenv('hoodbc')
 def connect():
     conn = pyodbc.connect(value,autocommit=True)
     conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
@@ -357,7 +358,7 @@ def get_metal_currency_ledger():
         datetime.today() - timedelta(days=days)
     ).date()
 
-    start_date = "2026-04-01"
+    start_date = "2024-04-01"
 
     weightwise = defaultdict(
         lambda: defaultdict(
