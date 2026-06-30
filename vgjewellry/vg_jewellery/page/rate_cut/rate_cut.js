@@ -1,4 +1,4 @@
-frappe.pages['rate-cut'].on_page_load = function(wrapper) {
+frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -15,6 +15,55 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	$(page.body).html(`
 
 	<style>
+	.arihant-card{
+    background: linear-gradient(135deg, #111827, #1f2937);
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: white;
+    display: inline-block;
+    min-width: 260px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.arihant-title{
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #fbbf24;
+}
+
+.arihant-body{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rate-box{
+    background: rgba(255,255,255,0.08);
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 90px;
+}
+
+.rate-box .label{
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.rate-box .value{
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+.gold-999 .value{
+    color: #22c55e;
+}
+
+.gold-995 .value{
+    color: #38bdf8;
+}
 	/* Make ledger modal table header fixed */
 .ledger-fixed-table thead tr:first-child  th, .metal-currency-table thead tr:first-child  th, .rate-cut-individual-table thead tr:first-child  th {
     position: sticky;
@@ -108,21 +157,31 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		    Add
 		</button>
 	    </div>
-	    <div class="col-md-4" style="margin-top:24px">
-	    <span id="arihant-rate-display"
-	  style="
-	    margin-left:20px;
-	    font-weight:bold;
-	    color:#198754;
-	    font-size:16px;
-	  ">
-	Rate: -
-    </span>
+	    <div class="col-md-3" >
+	    <div class="arihant-card">
 
-    <button class="btn btn-warning ml-2"
-	    id="arihant-rate-btn">
-	Arihant Rate
-    </button>
+    <div class="arihant-title">
+        💰 Arihant Metal Rates(With GST)
+    </div>
+
+    <div class="arihant-body">
+
+        <div class="rate-box gold-999">
+            <div class="label">Gold 999</div>
+            <div class="value" id="rate-999">-</div>
+        </div>
+
+        <div class="rate-box gold-995">
+            <div class="label">Gold 995</div>
+            <div class="value" id="rate-995">-</div>
+        </div>
+
+        <button class="btn btn-warning btn-sm" id="arihant-rate-btn">
+            Refresh
+        </button>
+
+    </div>
+</div>
 	    </div>
 	    <div class="col-md-2">
 	    <button class="btn btn-info ml-2"
@@ -142,7 +201,9 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			method: "frappe.client.get_list",
 			args: {
 				doctype: "Rate Cut Summary",
-				filters: { is_submitted: 0 },
+				filters: {
+					is_submitted: 0
+				},
 				fields: [
 					"name",
 					"ratecut_date",
@@ -166,7 +227,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 				addedRows = (r.message || []).map(d => ({
 					name: d.name,
-					ratecut_date:d.ratecut_date,
+					ratecut_date: d.ratecut_date,
 					vendor: d.vendor,
 					accMstId: d.acc_mst_id,
 					ketanFineWt: d.fine_wt,
@@ -174,13 +235,13 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					netWt: d.net_wt,
 					oc: d.oc,
 					hm: d.hm,
-					returnfinewt:d.returnfinewt,
-					rate999WGst:d.rate_999_with_gst,
-					rate999WithoutGst:d.rate_999_without_gst,
-					billWithoutGst:d.bill_value_without_gst,
-					withGstValue:d.bill_value_with_gst,
-					billAmt:d.bill_amt,
-					diff:d.diff
+					returnfinewt: d.returnfinewt,
+					rate999WGst: d.rate_999_with_gst,
+					rate999WithoutGst: d.rate_999_without_gst,
+					billWithoutGst: d.bill_value_without_gst,
+					withGstValue: d.bill_value_with_gst,
+					billAmt: d.bill_amt,
+					diff: d.diff
 
 
 				}));
@@ -189,6 +250,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			}
 		});
 	}
+
 	function render_table() {
 
 		let totalKetanFineWt = 0;
@@ -196,7 +258,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		let totalNetWt = 0;
 		let totalOC = 0;
 		let totalHM = 0;
-		let totalReturnFinewt= 0;
+		let totalReturnFinewt = 0;
 
 		let html = `
 
@@ -227,7 +289,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		`;
 
 		addedRows.forEach((row, index) => {
-			
+
 			totalKetanFineWt +=
 				parseFloat(row.ketanFineWt || 0);
 
@@ -242,7 +304,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			totalHM +=
 				parseFloat(row.hm || 0);
 
-			totalReturnFinewt+=parseFloat(row.returnfinewt||0)
+			totalReturnFinewt += parseFloat(row.returnfinewt || 0)
 
 			html += `
 			<tr>
@@ -257,7 +319,13 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				</span>
 			    </td>
 
-			    <td>${row.ketanFineWt}</td>
+			    <td>
+			    <input type="number"
+           class="form-control form-control-sm ketan-finewt-input"
+           data-index="${index}"
+           value="${row.ketanFineWt || 0}"
+           step="0.001">
+			    </td>
 
 			    <td>
 				${row.selectedFineWt.toFixed(3)}
@@ -389,7 +457,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			let selectedFineWt =
 				parseFloat(addedRows[idx].selectedFineWt) || 0;
 
-		     	let returnfinewt=parseFloat(addedRows[idx].returnfinewt) || 0;
+			let returnfinewt = parseFloat(addedRows[idx].returnfinewt) || 0;
 
 			let hm =
 				parseFloat(addedRows[idx].hm) || 0;
@@ -398,9 +466,9 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				parseFloat(addedRows[idx].oc) || 0;
 
 			let billWithoutGst =
-				((withoutGst / 10) * (selectedFineWt-returnfinewt))
-				+ hm
-				+ oc;
+				((withoutGst / 10) * (selectedFineWt - returnfinewt)) +
+				hm +
+				oc;
 
 			addedRows[idx].billWithoutGst = billWithoutGst;
 
@@ -416,24 +484,24 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			clearTimeout(saveTimeout);
 			saveTimeout = setTimeout(() => {
-			       frappe.call({
-        method: "vgjewellry.rate_cut.update_rate_cut_row",
-        args: {
-            summary_id: addedRows[idx].name,
-            acc_mst_id: addedRows[idx].accMstId,
-            rate999_wgst: gstRate,
-            rate999_wogst: withoutGst,
-            bill_without_gst: billWithoutGst,
-            bill_with_gst: withGstValue
-        },
-        callback: function (r) {
-            frappe.show_alert({
-                message: "Saved",
-                indicator: "green"
-            });
-        }
-    });
-			    }, 2000);
+				frappe.call({
+					method: "vgjewellry.rate_cut.update_rate_cut_row",
+					args: {
+						summary_id: addedRows[idx].name,
+						acc_mst_id: addedRows[idx].accMstId,
+						rate999_wgst: gstRate,
+						rate999_wogst: withoutGst,
+						bill_without_gst: billWithoutGst,
+						bill_with_gst: withGstValue
+					},
+					callback: function (r) {
+						frappe.show_alert({
+							message: "Saved",
+							indicator: "green"
+						});
+					}
+				});
+			}, 2000);
 		});
 
 		/*$('#vendor-table .rate999wogst-input').on('change', function () {
@@ -451,6 +519,43 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			addedRows[idx].withGstValue = parseFloat($(this).val()) || 0;
 		});*/
 
+
+		$('#vendor-table .ketan-finewt-input').on('change', function () {
+
+			let idx = $(this).data('index');
+			let value = parseFloat($(this).val()) || 0;
+
+			// update local data
+			addedRows[idx].ketanFineWt = value;
+
+			// optional: auto recalc dependent fields if needed
+			let selectedFineWt = parseFloat(addedRows[idx].selectedFineWt || 0);
+			let netWt = parseFloat(addedRows[idx].netWt || 0);
+
+			// example recalculation (if you want logic)
+			// addedRows[idx].netWt = selectedFineWt - value;
+
+			// optional: auto save to backend
+			clearTimeout(window.ketanFineWtTimer);
+
+			window.ketanFineWtTimer = setTimeout(() => {
+
+				frappe.call({
+					method: "vgjewellry.rate_cut.update_ketan_finewt",
+					args: {
+						summary_id: addedRows[idx].name,
+						ketan_finewt: value
+					},
+					callback: function () {
+						frappe.show_alert({
+							message: "Fine Wt Updated",
+							indicator: "green"
+						});
+					}
+				});
+
+			}, 800);
+		});
 		let billTimer;
 		$('#vendor-table .billamt-input').on('change', function () {
 			let idx = $(this).data('index');
@@ -466,9 +571,8 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			addedRows[idx].diff = diff;
 
-			
 
-			if(billAmt==0) diff=0
+			if (billAmt == 0) diff = 0
 
 			// Update Diff column
 			$(this)
@@ -476,24 +580,24 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 				.find('.diff-cell')
 				.text(diff.toFixed(2));
 
-			 clearTimeout(billTimer);
+			clearTimeout(billTimer);
 
-    billTimer = setTimeout(() => {
-	    frappe.call({
-        method: "vgjewellry.rate_cut.update_bill_and_diff",
-        args: {
-            summary_id: addedRows[idx].name,
-            bill_amt: billAmt,
-            diff: diff
-        },
-        callback: function () {
-            frappe.show_alert({
-                message: "Bill Updated",
-                indicator: "green"
-            });
-        }
-    });
-    }, 1000);
+			billTimer = setTimeout(() => {
+				frappe.call({
+					method: "vgjewellry.rate_cut.update_bill_and_diff",
+					args: {
+						summary_id: addedRows[idx].name,
+						bill_amt: billAmt,
+						diff: diff
+					},
+					callback: function () {
+						frappe.show_alert({
+							message: "Bill Updated",
+							indicator: "green"
+						});
+					}
+				});
+			}, 1000);
 		});
 
 		// Vendor Click
@@ -503,14 +607,14 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 	load_summary_table();
 
-	function bind_vendor_click(){
-		$('.vendor-link').on('click', function() {
+	function bind_vendor_click() {
+		$('.vendor-link').on('click', function () {
 
 			let index = $(this).data('index');
 			let rowData = addedRows[index];
-			
-			let summary_id= rowData.name;
-			
+
+			let summary_id = rowData.name;
+
 
 			frappe.call({
 				method: "vgjewellry.rate_cut.get_saved_transactions",
@@ -518,7 +622,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					acc_mst_id: rowData.accMstId,
 					summary_id: summary_id
 				},
-				callback: function(r) {
+				callback: function (r) {
 					let savedRows = r.message || [];
 					savedSelected = savedRows.map(
 						x => x.item_tran_id
@@ -532,7 +636,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					});
 					let vendorRecords =
 						apiData[rowData.accMstId];
-					
+
 
 					open_vendor_modal(
 						rowData,
@@ -545,7 +649,8 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			});
 		});
 	}
-	function open_vendor_modal(rowData, records,savedSelected,savedMap,vendorName){
+
+	function open_vendor_modal(rowData, records, savedSelected, savedMap, vendorName) {
 
 
 		let modalHtml = `
@@ -553,12 +658,12 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	<b>Total FineWt:</b>
 	<span id="total-finewt">0.000</span>
 
-	&nbsp;&nbsp;&nbsp;
+	   
 
 	<b>Total OC:</b>
 	<span id="total-oc">0.00</span>
 
-	&nbsp;&nbsp;&nbsp;
+	   
 
 	<b>Total HM:</b>
 	<span id="total-hm">0.00</span>
@@ -597,7 +702,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		records.forEach(record => {
 			let checked = savedSelected.includes(record.ItemTranID);
 			let saved = savedMap[record.ItemTranID] || {};
-			
+
 
 			modalHtml += `
 			<tr>
@@ -671,19 +776,18 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		`;
 
 		let d = new frappe.ui.Dialog({
-			title: vendorName ,
+			title: vendorName,
 			size: 'extra-large',
-			fields: [
-				{
-					fieldtype: 'HTML',
-					fieldname: 'vendor_records'
-				}
-			]
+			fields: [{
+				fieldtype: 'HTML',
+				fieldname: 'vendor_records'
+			}]
 		});
 
 		d.fields_dict.vendor_records.$wrapper.html(
 			modalHtml
 		);
+
 		function updateTotals() {
 
 			let totalFineWt = 0;
@@ -727,11 +831,11 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			'.txn-check, .finewt-input, .oc-input, .hm-input, .returnfinewt-input ',
 			updateTotals
 		);
-		d.set_primary_action("Save Selection", function() {
+		d.set_primary_action("Save Selection", function () {
 
 			let selectedRows = [];
 
-			d.$wrapper.find(".txn-check:checked").each(function() {
+			d.$wrapper.find(".txn-check:checked").each(function () {
 
 				let id = $(this).data("id");
 
@@ -751,16 +855,16 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 						d.$wrapper.find(`.hm-input[data-id="${id}"]`).val()
 					) || 0;
 
-					let returnfinewt=parseFloat(
-                                                d.$wrapper.find(`.returnfinewt-input[data-id="${id}"]`).val()
-                                        ) || 0;
+					let returnfinewt = parseFloat(
+						d.$wrapper.find(`.returnfinewt-input[data-id="${id}"]`).val()
+					) || 0;
 
 					selectedRows.push({
 						...row,
-						FineWt: fineWt,	
+						FineWt: fineWt,
 						OtherCharge: oc,
 						HM: hm,
-						ReturnFineWt:returnfinewt
+						ReturnFineWt: returnfinewt
 					});
 				}
 			});
@@ -768,12 +872,12 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			frappe.call({
 				method: "vgjewellry.rate_cut.save_selected_transactions",
 				args: {
-					summary_id:rowData.name,
+					summary_id: rowData.name,
 					vendor: rowData.vendor,
 					acc_mst_id: rowData.accMstId,
 					rows: JSON.stringify(selectedRows)
 				},
-				callback: function() {
+				callback: function () {
 
 					frappe.msgprint("Saved");
 
@@ -823,7 +927,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	frappe.call({
 		method: "vgjewellry.rate_cut.get_all_vendor_rate_cut",
 
-		callback: function(r) {
+		callback: function (r) {
 
 			if (!r.message) return;
 
@@ -909,16 +1013,15 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					}
 				);
 			});*/
-			$('#arihant-rate-btn').on('click', function() {
+			$('#arihant-rate-btn').on('click', function () {
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_arihant_rate",
 					callback: function (r) {
 
 						if (r.message) {
 
-							$('#arihant-rate-display').text(
-								`Rate: ${r.message}`
-							);
+							$('#rate-999').text(r.message.gold_999 || '-');
+							$('#rate-995').text(r.message.gold_995 || '-');
 
 						} else {
 
@@ -929,23 +1032,23 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 			});
 			$('#metal-currency-ledger-btn').on('click', function () {
 
-			    frappe.call({
-				method: "vgjewellry.rate_cut.get_metal_currency_ledger",
-				callback: function (r) {
+				frappe.call({
+					method: "vgjewellry.rate_cut.get_metal_currency_ledger",
+					callback: function (r) {
 
-				    let data = r.message || [];
-			            data.sort((a, b) => {
+						let data = r.message || [];
+						data.sort((a, b) => {
 
-				    let accountCompare = (a.name || "").localeCompare(b.name || "");
+							let accountCompare = (a.name || "").localeCompare(b.name || "");
 
-				    if (accountCompare !== 0) {
-					return accountCompare;
-				    }
+							if (accountCompare !== 0) {
+								return accountCompare;
+							}
 
-				    //return (a.metal || "").localeCompare(b.metal || "");
-				});		
+							//return (a.metal || "").localeCompare(b.metal || "");
+						});
 
-				    let html = `
+						let html = `
 				      <div class="mb-2">
 
 					    <button class="btn btn-primary btn-sm"
@@ -1000,11 +1103,11 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 						<tbody>
 				    `;
 
-				    if (data.length) {
+						if (data.length) {
 
-					data.forEach((row,i) => {
+							data.forEach((row, i) => {
 
-					    html += `
+								html += `
 						<tr>
 						<td class="text-center">
 						<input type="checkbox"
@@ -1042,151 +1145,150 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 						</tr>
 					    `;
-					});
+							});
 
-				    } else {
+						} else {
 
-					html += `
+							html += `
 					    <tr>
 						<td colspan="6" class="text-center">
 						    No Data Found
 						</td>
 					    </tr>
 					`;
-				    }
+						}
 
-				    html += `
+						html += `
 						</tbody>
 					    </table>
 					</div>
 				    `;
 
-				    let d = new frappe.ui.Dialog({
-					title: 'Metal Currency Ledger',
-					size: 'extra-large',
-					fields: [
-					    {
-						fieldtype: 'HTML',
-						fieldname: 'ledger_html'
-					    }
-					]
-				    });
-
-				    d.fields_dict.ledger_html.$wrapper.html(html);
-				    function filterLedgerTable() {
-				    
-
-    let filters = {};
-
-    d.$wrapper.find(".metal-currency-table .col-filter").each(function () {
-        let col = $(this).data("col");
-        let val = $(this).val().toLowerCase().trim();
-        filters[col] = val;
-    });
-
-    d.$wrapper.find(".metal-currency-table tbody tr").each(function () {
-
-        let row = $(this);
-        let show = true;
-
-        Object.keys(filters).forEach(col => {
-
-            let filterVal = filters[col];
-            if (!filterVal) return;
-
-            let cellText = row.find("td").eq(col).text().toLowerCase();
-
-            if (!cellText.includes(filterVal)) {
-                show = false;
-            }
-        });
-
-        row.toggle(show);
-    });
-}
-
-					d.$wrapper.on(
-					    "keyup",
-					    ".metal-currency-table .col-filter",
-					    filterLedgerTable
-					);
-					d.$wrapper.on("change", "#select-all-ledger", function () {
-
-					    let checked = $(this).is(":checked");
-
-					    d.$wrapper.find(".ledger-row:visible")
-						.prop("checked", checked);
-
-					});
-					d.$wrapper.on("click", "#process-selected", function () {
-
-					    let selected = [];
-
-					    d.$wrapper.find(".ledger-row:checked").each(function () {
-
-						selected.push(
-						    data[$(this).data("index")]
-						);
-
-					    });
-
-					    if (!selected.length) {
-
-						frappe.msgprint("Please select at least one row.");
-
-						return;
-					    }
-
-					    
-
-					    frappe.call({
-						method: "vgjewellry.rate_cut.process_selected_ledger",
-						args: {
-						    rows: JSON.stringify(selected)
-						},
-						callback: function(r) {
-
-						     frappe.show_alert({
-						    message: "Saved Successfully",
-						    indicator: "green"
+						let d = new frappe.ui.Dialog({
+							title: 'Metal Currency Ledger',
+							size: 'extra-large',
+							fields: [{
+								fieldtype: 'HTML',
+								fieldname: 'ledger_html'
+							}]
 						});
-						    d.hide();
-						   setTimeout(() => {
-							   location.reload();
-						        }, 300);	
 
+						d.fields_dict.ledger_html.$wrapper.html(html);
+
+						function filterLedgerTable() {
+
+
+							let filters = {};
+
+							d.$wrapper.find(".metal-currency-table .col-filter").each(function () {
+								let col = $(this).data("col");
+								let val = $(this).val().toLowerCase().trim();
+								filters[col] = val;
+							});
+
+							d.$wrapper.find(".metal-currency-table tbody tr").each(function () {
+
+								let row = $(this);
+								let show = true;
+
+								Object.keys(filters).forEach(col => {
+
+									let filterVal = filters[col];
+									if (!filterVal) return;
+
+									let cellText = row.find("td").eq(col).text().toLowerCase();
+
+									if (!cellText.includes(filterVal)) {
+										show = false;
+									}
+								});
+
+								row.toggle(show);
+							});
 						}
-					    });
 
-					});
-				    d.show();
-				    d.show();
+						d.$wrapper.on(
+							"keyup",
+							".metal-currency-table .col-filter",
+							filterLedgerTable
+						);
+						d.$wrapper.on("change", "#select-all-ledger", function () {
 
-			d.$wrapper.on('click', '.ledger-account-link', function () {
+							let checked = $(this).is(":checked");
 
-			    let acc = $(this).data('acc');
+							d.$wrapper.find(".ledger-row:visible")
+								.prop("checked", checked);
 
-			    frappe.call({
-				method: "vgjewellry.rate_cut.get_metal_currency_ledger_details",
-				args: {
-				    acc_mst_id: acc
-				},
-				callback: function (r) {
-					if (r.message) {
-                				showLedgerModal(r.message);
-            				}
+						});
+						d.$wrapper.on("click", "#process-selected", function () {
 
-				}
-			    });
+							let selected = [];
 
-			});	
-				}
-			    });
+							d.$wrapper.find(".ledger-row:checked").each(function () {
+
+								selected.push(
+									data[$(this).data("index")]
+								);
+
+							});
+
+							if (!selected.length) {
+
+								frappe.msgprint("Please select at least one row.");
+
+								return;
+							}
+
+
+							frappe.call({
+								method: "vgjewellry.rate_cut.process_selected_ledger",
+								args: {
+									rows: JSON.stringify(selected)
+								},
+								callback: function (r) {
+
+									frappe.show_alert({
+										message: "Saved Successfully",
+										indicator: "green"
+									});
+									d.hide();
+									setTimeout(() => {
+										location.reload();
+									}, 300);
+
+								}
+							});
+
+						});
+						d.show();
+						d.show();
+
+						d.$wrapper.on('click', '.ledger-account-link', function () {
+
+							let acc = $(this).data('acc');
+
+							frappe.call({
+								method: "vgjewellry.rate_cut.get_metal_currency_ledger_details",
+								args: {
+									acc_mst_id: acc
+								},
+								callback: function (r) {
+									if (r.message) {
+										showLedgerModal(r.message);
+									}
+
+								}
+							});
+
+						});
+					}
+				});
 
 			});
-function showLedgerModal(res) {
 
-    let finalHtml = `
+			function showLedgerModal(res) {
+
+				let finalHtml = `
         <h5 class="mb-3">Final Amount</h5>
         <table class="table table-bordered table-sm">
             <thead>
@@ -1201,8 +1303,8 @@ function showLedgerModal(res) {
             <tbody>
     `;
 
-    (res.final || []).forEach(row => {
-        finalHtml += `
+				(res.final || []).forEach(row => {
+					finalHtml += `
             <tr>
                 <td>${row.type || ""}</td>
                 <td>${row.transaction || ""}</td>
@@ -1211,14 +1313,14 @@ function showLedgerModal(res) {
                 <td>${row.val_all || 0}</td>
             </tr>
         `;
-    });
+				});
 
-    finalHtml += `
+				finalHtml += `
             </tbody>
         </table>
     `;
 
-    let tableHtml = `
+				let tableHtml = `
       <div class="ledger-scroll">
         <table class="table table-bordered table-striped ledger-fixed-table" >
             <thead>
@@ -1246,9 +1348,9 @@ function showLedgerModal(res) {
             <tbody>
     `;
 
-    (res.data || []).forEach(row => {
+				(res.data || []).forEach(row => {
 
-        tableHtml += `
+					tableHtml += `
             <tr>
                 <td>${row.vno || ""}</td>
                 <td>${row.vdate || ""}</td>
@@ -1260,56 +1362,54 @@ function showLedgerModal(res) {
                 <td>${row.is_due || ""}</td>
             </tr>
         `;
-    });
+				});
 
-    tableHtml += `
+				tableHtml += `
             </tbody>
         </table>
         </div>
     `;
 
-    const d = new frappe.ui.Dialog({
-        title: res.name || "Ledger Details",
-        size: "extra-large",
-        fields: [
-            {
-                fieldtype: "HTML",
-                fieldname: "content"
-            }
-        ]
-    });
+				const d = new frappe.ui.Dialog({
+					title: res.name || "Ledger Details",
+					size: "extra-large",
+					fields: [{
+						fieldtype: "HTML",
+						fieldname: "content"
+					}]
+				});
 
-    d.show();
-    
-    d.$wrapper.on("keyup", ".ledger-filter-input", function () {
+				d.show();
 
-    let colIndex = $(this).data("col");
-    let value = $(this).val().toLowerCase();
+				d.$wrapper.on("keyup", ".ledger-filter-input", function () {
 
-    d.$wrapper.find(".ledger-fixed-table tbody tr").each(function () {
+					let colIndex = $(this).data("col");
+					let value = $(this).val().toLowerCase();
 
-        let cellText = $(this)
-            .find("td")
-            .eq(colIndex)
-            .text()
-            .toLowerCase();
+					d.$wrapper.find(".ledger-fixed-table tbody tr").each(function () {
 
-        if (cellText.includes(value)) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
-    });
-});
+						let cellText = $(this)
+							.find("td")
+							.eq(colIndex)
+							.text()
+							.toLowerCase();
 
-    d.fields_dict.content.$wrapper.html(`
+						if (cellText.includes(value)) {
+							$(this).show();
+						} else {
+							$(this).hide();
+						}
+					});
+				});
+
+				d.fields_dict.content.$wrapper.html(`
         ${finalHtml}
         <hr>
         ${tableHtml}
     `);
-}
+			}
 			// Add Button
-			$('#add-row-btn').on('click', function() {
+			$('#add-row-btn').on('click', function () {
 
 				let selectedName = field.get_value();
 
@@ -1356,7 +1456,8 @@ function showLedgerModal(res) {
 
 					totalOC +=
 						parseFloat(row.OtherCharge || 0);
-				})*/;
+				})*/
+				;
 				let today = frappe.datetime.get_today();
 
 				addedRows.push({
@@ -1380,7 +1481,7 @@ function showLedgerModal(res) {
 					args: {
 						data: JSON.stringify(addedRows)
 					},
-					callback: function(r) {
+					callback: function (r) {
 						console.log("Saved to DocType");
 					}
 				});
@@ -1429,7 +1530,7 @@ function showLedgerModal(res) {
 
 					addedRows.splice(idx, 1);
 
-					render_table();   // re-render UI
+					render_table(); // re-render UI
 
 				}
 			});
@@ -1437,15 +1538,15 @@ function showLedgerModal(res) {
 		});
 		setTimeout(() => {
 
-    $(".modal.show").each(function () {
-        const text = $(this).find(".frappe-confirm-message").text();
-        if (text.includes("Remove vendor")) {
-            $(this).addClass("remove-modal");
-        }
+			$(".modal.show").each(function () {
+				const text = $(this).find(".frappe-confirm-message").text();
+				if (text.includes("Remove vendor")) {
+					$(this).addClass("remove-modal");
+				}
 
-    });
+			});
 
-}, 200);
+		}, 200);
 
 	});
 };

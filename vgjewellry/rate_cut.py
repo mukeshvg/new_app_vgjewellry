@@ -252,14 +252,36 @@ def get_arihant_rate():
     response = requests.request("GET", url, headers=headers, data=payload)
     dt = response.text
     #match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", response)
-    match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
+    #match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
+    match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
 
     if match:
         arihant_gold_rate = int(match.group(1))
         arihant_gold_rate = round(arihant_gold_rate)
     else:
         arihant_gold_rate=0
-    return arihant_gold_rate    
+    
+    
+        
+    match2 = re.search(r"GOLD 995 WITH GST\s*-\s*(\d+)", dt)    
+    if match2:
+        arihant_gold_995rate = int(match2.group(1))
+        arihant_gold_995rate = round(arihant_gold_995rate)
+    else:
+        arihant_gold_995rate=0
+    return {
+    "gold_999": arihant_gold_rate,
+    "gold_995": arihant_gold_995rate,
+    "dt":dt
+    
+	}    
+      
+
+@frappe.whitelist()
+def update_ketan_finewt(summary_id, ketan_finewt):
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+    doc.fine_wt = ketan_finewt
+    doc.save()
 
 @frappe.whitelist()
 def save_single_rate_cut(row):
@@ -359,6 +381,7 @@ def get_metal_currency_ledger():
     ).date()
 
     start_date = "2024-04-01"
+    #start_date = "2026-04-01"
 
     weightwise = defaultdict(
         lambda: defaultdict(
@@ -376,6 +399,7 @@ def get_metal_currency_ledger():
     # -------------------------
     # MetalTradWiseOs
     # -------------------------
+    
 
     cursor.execute("""
         SELECT
@@ -389,6 +413,8 @@ def get_metal_currency_ledger():
         FROM MetalTradWiseOs
         WHERE VouDate >= ?
     """, start_date)
+
+
 
     cols = [c[0] for c in cursor.description]
 
