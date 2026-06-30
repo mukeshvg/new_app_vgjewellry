@@ -926,7 +926,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	});*/
 	frappe.call({
 		method: "vgjewellry.rate_cut.get_all_vendor_rate_cut",
-
+		freeze: true,
+        	freeze_message: __("Loading Vendors..."),
 		callback: function (r) {
 
 			if (!r.message) return;
@@ -1034,6 +1035,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_metal_currency_ledger",
+					freeze: true,
+        				freeze_message: __("Loading Metal Currency Ledger..."),
 					callback: function (r) {
 
 						let data = r.message || [];
@@ -1070,6 +1073,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 							<th>Payable Wt</th>
 							<th>Receivable Amt</th>
 							<th>Payable Amt</th>
+							<th>Category</th>
 						    </tr>
 						   <tr class ="metal-currency-table-filter">
     <th></th>
@@ -1096,6 +1100,9 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
     <th>
         <input type="text" class="form-control form-control-sm col-filter" data-col="6" placeholder="Search Amt">
+    </th>
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="7" placeholder="Search Cat">
     </th>
 </tr>
 
@@ -1136,11 +1143,15 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 						    </td>
 
 						    <td class="text-right">
-							${parseFloat(row.receivable_amt || 0).toFixed(2)}
+							${parseFloat(row.receivable_amt || 0).toFixed()}
 						    </td>
 
 						    <td class="text-right">
-							${parseFloat(row.payable_amt || 0).toFixed(2)}
+							${parseFloat(row.payable_amt || 0).toFixed()}
+						    </td>
+						    <td class="text-left">
+							${row.grp}
+
 						    </td>
 
 						</tr>

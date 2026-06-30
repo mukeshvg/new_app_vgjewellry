@@ -365,8 +365,9 @@ def update_bill_and_diff(summary_id, bill_amt, diff):
 
 
 
+
 @frappe.whitelist()
-def get_metal_currency_ledger():
+def get_metal_currency_ledger1():
 
     con = connect()
     cursor = con.cursor()
@@ -380,7 +381,7 @@ def get_metal_currency_ledger():
         datetime.today() - timedelta(days=days)
     ).date()
 
-    start_date = "2024-04-01"
+    start_date = "2025-04-01"
     #start_date = "2026-04-01"
 
     weightwise = defaultdict(
@@ -502,6 +503,7 @@ def get_metal_currency_ledger():
     amount_ledger = defaultdict(float)
     amount_ledger_all = defaultdict(float)
 
+
     cursor.execute("""
         SELECT
             OpsitTransID,
@@ -511,6 +513,7 @@ def get_metal_currency_ledger():
         FROM LedgerTrans
         WHERE VouDate >= ?
     """, start_date)
+
 
     cols = [c[0] for c in cursor.description]
 
@@ -532,6 +535,7 @@ def get_metal_currency_ledger():
         if r["VouDate"].date() <= reminder_date:
             amount_ledger[acc] += amount
 
+    return amount_ledger
     # -------------------------
     # Opening Balance
     # -------------------------
@@ -633,6 +637,296 @@ def get_metal_currency_ledger():
 
             result.append({
                 "name": acc_master.get(acc, ""),
+                "metal": item_trade_mst.get(metal, ""),
+                "receivable_wt": d["ReceivableWt"],
+                "payable_wt": d["PayableWt"],
+                "receivable_amt": 0,
+                "payable_amt": 0,
+                "acc": acc,
+                "m": metal,
+                "receivable_wt_all": d["ReceivableWtAll"],
+                "payable_wt_all": d["PayableWtAll"],
+                "receivable_amt_all": 0,
+                "payable_amt_all": 0
+            })
+
+    cursor.close()
+    con.close()
+
+    return result
+
+@frappe.whitelist()
+def get_metal_currency_ledger():
+
+    con = connect()
+    cursor = con.cursor()
+
+    bill_paid_after = 4
+    reminder_before_days = 4
+
+    days = bill_paid_after - reminder_before_days
+
+    reminder_date = (
+        datetime.today() - timedelta(days=days)
+    ).date()
+
+    start_date = "2023-04-01"
+    #start_date = "2026-04-01"
+
+    weightwise = defaultdict(
+        lambda: defaultdict(
+            lambda: {
+                "ReceivableWt": 0,
+                "PayableWt": 0,
+                "ReceivableWtAll": 0,
+                "PayableWtAll": 0
+            }
+        )
+    )
+
+    acc_array = set()
+
+    # -------------------------
+    # MetalTradWiseOs
+    # -------------------------
+    
+
+    cursor.execute("""
+        SELECT
+            TradOsId,
+            AccMstID,
+            SettleTradingId,
+            NetWt,
+            SettleNetWt,
+            IssueOrReceipt,
+            VouDate
+        FROM MetalTradWiseOs
+        WHERE VouDate >= ?
+    """, start_date)
+
+
+
+    cols = [c[0] for c in cursor.description]
+
+    for row in cursor.fetchall():
+
+        r = dict(zip(cols, row))
+
+        metal = r["SettleTradingId"]
+        acc = r["AccMstID"]
+
+        acc_array.add(acc)
+
+        net_wt = float(r["NetWt"] or 0)
+
+        vou_date = r["VouDate"]
+        issue_or_receipt = r["IssueOrReceipt"]
+
+        if issue_or_receipt == "I":
+
+            weightwise[metal][acc]["ReceivableWtAll"] += net_wt
+
+            if vou_date.date() <= reminder_date:
+                weightwise[metal][acc]["ReceivableWt"] += net_wt
+
+        elif issue_or_receipt == "R":
+
+            weightwise[metal][acc]["PayableWtAll"] += net_wt
+
+            if vou_date.date() <= reminder_date:
+                weightwise[metal][acc]["PayableWt"] += net_wt
+
+    # -------------------------
+    # Net off weight balances
+    # -------------------------
+
+    for metal, metal_data in weightwise.items():
+
+        for acc, d in metal_data.items():
+
+            rec = d["ReceivableWt"]
+            pay = d["PayableWt"]
+
+            if rec > pay:
+                d["ReceivableWt"] = round(rec - pay, 3)
+                d["PayableWt"] = 0
+
+            elif pay > rec:
+                d["PayableWt"] = round(pay - rec, 3)
+                d["ReceivableWt"] = 0
+
+            else:
+                d["ReceivableWt"] = 0
+                d["PayableWt"] = 0
+
+            rec_all = d["ReceivableWtAll"]
+            pay_all = d["PayableWtAll"]
+
+            if rec_all > pay_all:
+                d["ReceivableWtAll"] = round(rec_all - pay_all, 3)
+                d["PayableWtAll"] = 0
+
+            elif pay_all > rec_all:
+                d["PayableWtAll"] = round(pay_all - rec_all, 3)
+                d["ReceivableWtAll"] = 0
+
+    # -------------------------
+    # ItemTrade Master
+    # -------------------------
+
+    cursor.execute("""
+        SELECT ItemTradMstID, TradShortName
+        FROM ItemTradMst
+        WHERE ItemTradMstID > 0
+    """)
+
+    item_trade_mst = {
+        row[0]: row[1]
+        for row in cursor.fetchall()
+    }
+
+    # -------------------------
+    # Ledger
+    # -------------------------
+    #amount_ledger = defaultdict(float)
+    #amount_ledger_all = defaultdict(float)
+
+
+    cursor.execute("""
+    SELECT
+        AccMstID,
+        SUM(VouAmt) AS TotalAmount,
+        SUM(
+            CASE
+                WHEN VouDate <= ? THEN VouAmt
+                ELSE 0
+            END
+        ) AS ReminderAmount
+    FROM LedgerTrans
+    WHERE VouDate >= ?
+    GROUP BY AccMstID Having Sum(VouAmt) <> 0
+    """,reminder_date, start_date)
+
+    amount_ledger = {}
+    amount_ledger_all = {}
+    all_acc_ids = set()
+    for acc , total_amount ,reminder_amount in cursor.fetchall():
+        if total_amount !=0:
+            all_acc_ids.add(acc)
+            acc_array.add(acc)
+            amount_ledger_all[acc] = float(total_amount or 0)
+            amount_ledger[acc] = float(reminder_amount or 0)
+    
+    # -------------------------
+    # Opening Balance
+    # -------------------------
+
+    opening_bal = {}
+
+    '''if all_acc_ids:
+
+        for ids in batch(all_acc_ids, 1000):
+
+            placeholders = ",".join("?" for _ in ids)
+
+            cursor.execute(f"""
+                SELECT
+                    AccMstID,
+                    OpBal
+                FROM AccBal
+                WHERE AccMstID IN ({placeholders})
+            """, ids)
+
+            for acc_id, op_bal in cursor.fetchall():
+                op_bal=0
+                opening_bal[acc_id] = float(op_bal or 0)'''
+    # -------------------------
+    # Account Master
+    # -------------------------
+    acc_master = {}
+    acc_group_master = {}
+
+    if acc_array:
+
+        for ids in batch(acc_array, 1000):
+
+            placeholders = ",".join("?" for _ in ids)
+
+            cursor.execute(f"""
+                SELECT
+                    AccMstID,
+                    AccName,
+                    GrpId
+                FROM AccMaster
+                WHERE AccMstID IN ({placeholders})
+                  AND AccCategory IN (16,19,5)
+                  AND GrpId IN (33,42,43,44)
+            """, ids)
+
+            for acc_id, acc_name, grp_id in cursor.fetchall():
+                acc_master[acc_id] = acc_name
+                acc_group_master[acc_id]="Supplier"
+                if grp_id == 33:
+                    acc_group_master[acc_id]="Customer"
+
+    # -------------------------
+    # Build Result
+    # -------------------------
+
+    result = []
+
+    for acc, amount in amount_ledger.items():
+
+        if acc not in acc_master:
+            continue
+
+        amount += opening_bal.get(acc, 0)
+
+        payable = amount if amount > 0 else 0
+        receivable = -amount if amount < 0 else 0
+
+        if payable == 0 and receivable == 0:
+            continue
+
+        amount_all = (
+            amount_ledger_all[acc]
+            + opening_bal.get(acc, 0)
+        )
+
+        payable_all = amount_all if amount_all > 0 else 0
+        receivable_all = -amount_all if amount_all < 0 else 0
+
+        result.append({
+            "name": acc_master[acc],
+            "grp":acc_group_master[acc],
+            "metal": "",
+            "receivable_wt": 0,
+            "payable_wt": 0,
+            "receivable_amt": round(receivable),
+            "payable_amt": round(payable),
+            "acc": acc,
+            "m": -1,
+            "receivable_wt_all": 0,
+            "payable_wt_all": 0,
+            "receivable_amt_all": round(receivable_all),
+            "payable_amt_all": round(payable_all)
+        })
+
+    for metal, metal_data in weightwise.items():
+
+        for acc, d in metal_data.items():
+
+            if (
+                d["ReceivableWt"] == 0 and
+                d["PayableWt"] == 0
+            ):
+                continue
+            aname = acc_master.get(acc, "")
+            if aname =="":
+                continue
+            result.append({
+                "name": acc_master.get(acc, ""),
+                "grp":acc_group_master[acc],
                 "metal": item_trade_mst.get(metal, ""),
                 "receivable_wt": d["ReceivableWt"],
                 "payable_wt": d["PayableWt"],
@@ -761,7 +1055,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
     cursor.execute("""
         SELECT OpBal
         FROM AccBal
-        WHERE AccMstID = ?
+        WHERE AccMstID = ? and OpBal <> 0 order by AccBalId desc
     """, acc_mst_id)
 
     opening_bal = 0
@@ -792,6 +1086,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
             "is_due": "yes",
             "v": opening_date
         })
+
 
     # --------------------------------------------------
     # Account Name
@@ -852,7 +1147,8 @@ def get_metal_currency_ledger_details(acc_mst_id):
             else "no"
         )
 
-        amount_ledger[vou_date].append({
+        OpsitTransID = "c"+str(r.OpsitTransID)
+        amount_ledger[OpsitTransID].append({
             "vno": vno,
             "vdate": vou_date_display,
             "metal": "",
@@ -863,6 +1159,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
             "is_due": is_due,
             "v": vou_date
         })
+
 
     # --------------------------------------------------
     # Metal Transactions
@@ -908,7 +1205,9 @@ def get_metal_currency_ledger_details(acc_mst_id):
             else "no"
         )
 
-        amount_ledger[vou_date].append({
+        OpsitTransID= "m"+str(r.TradOsId)
+
+        amount_ledger[OpsitTransID].append({
             "vno": vno,
             "vdate": vou_date_display,
             "metal": item_trade_mst.get(
@@ -1024,6 +1323,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
         key = row["metal"] if row["metal"] else "amt"
 
         metal_wise[key].append(row)
+    
 
     settled = {}
 
@@ -1057,7 +1357,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
             else:
 
                 row["is_show"] = "yes"
-                temp.append(row)
+            temp.append(row)
 
         settled[metal] = temp
 
