@@ -68,14 +68,14 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 .ledger-fixed-table thead tr:first-child  th, .metal-currency-table thead tr:first-child  th, .rate-cut-individual-table thead tr:first-child  th {
     position: sticky;
     top: 0;
-    background: #111;   /* match dark theme */
+    background: #FFFFFF;   /* match dark theme */
     z-index: 5;
 }
 
 .ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th  {
     position: sticky;
     top: 38px; /* height of first header row */
-    background: #111;
+    background: #FFFFFF;
     z-index: 2;
 }
 
