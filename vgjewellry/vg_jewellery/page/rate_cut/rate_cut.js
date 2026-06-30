@@ -15,6 +15,26 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	$(page.body).html(`
 
 	<style>
+	/* Make ledger modal table header fixed */
+.ledger-fixed-table thead tr:first-child  th, .metal-currency-table thead tr:first-child  th, .rate-cut-individual-table thead tr:first-child  th {
+    position: sticky;
+    top: 0;
+    background: #111;   /* match dark theme */
+    z-index: 5;
+}
+
+.ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th  {
+    position: sticky;
+    top: 38px; /* height of first header row */
+    background: #111;
+    z-index: 2;
+}
+
+/* Scroll only table body */
+.ledger-scroll {
+    max-height: 65vh;
+    overflow-y: auto;
+}
 	.vou-no {
     white-space: nowrap !important;
 }
@@ -207,7 +227,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		`;
 
 		addedRows.forEach((row, index) => {
-			console.log(row)
+			
 			totalKetanFineWt +=
 				parseFloat(row.ketanFineWt || 0);
 
@@ -446,7 +466,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			addedRows[idx].diff = diff;
 
-			console.log(billAmt);
+			
 
 			if(billAmt==0) diff=0
 
@@ -488,9 +508,9 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 			let index = $(this).data('index');
 			let rowData = addedRows[index];
-			console.log(rowData);
+			
 			let summary_id= rowData.name;
-			console.log(summary_id);
+			
 
 			frappe.call({
 				method: "vgjewellry.rate_cut.get_saved_transactions",
@@ -512,7 +532,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 					});
 					let vendorRecords =
 						apiData[rowData.accMstId];
-					console.log(vendorRecords);
+					
 
 					open_vendor_modal(
 						rowData,
@@ -543,11 +563,11 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 	<b>Total HM:</b>
 	<span id="total-hm">0.00</span>
     </div>
-		    <div style="overflow-x:auto;">
+		    <div style="overflow-x:auto;" class="ledger-scroll">
 
 			<table class="
 			    table table-bordered
-			    table-striped
+			    table-striped rate-cut-individual-table
 			">
 
 			    <thead>
@@ -577,8 +597,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 		records.forEach(record => {
 			let checked = savedSelected.includes(record.ItemTranID);
 			let saved = savedMap[record.ItemTranID] || {};
-			console.log(savedSelected);
-			console.log(record);
+			
 
 			modalHtml += `
 			<tr>
@@ -936,7 +955,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 					</div>
 					<div style="max-height:75vh;overflow:auto;">
-					    <table class="table table-bordered table-striped">
+					    <table class="table table-bordered table-striped metal-currency-table">
 						<thead>
 						    <tr>
 						    	<th style="width:40px;text-align:center;">
@@ -949,27 +968,33 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 							<th>Receivable Amt</th>
 							<th>Payable Amt</th>
 						    </tr>
-						    <tr>
-						       <th></th>
-							<th>
-							    <input type="text"
-								   id="filter-account"
-								   class="form-control form-control-sm"
-								   placeholder="Search Account">
-							</th>
+						   <tr class ="metal-currency-table-filter">
+    <th></th>
 
-							<th>
-							    <input type="text"
-								   id="filter-metal"
-								   class="form-control form-control-sm"
-								   placeholder="Search Metal">
-							</th>
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="1" placeholder="Search Account">
+    </th>
 
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-						    </tr>
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="2" placeholder="Search Metal">
+    </th>
+
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="3" placeholder="Search Wt">
+    </th>
+
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="4" placeholder="Search Wt">
+    </th>
+
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="5" placeholder="Search Amt">
+    </th>
+
+    <th>
+        <input type="text" class="form-control form-control-sm col-filter" data-col="6" placeholder="Search Amt">
+    </th>
+</tr>
 
 						</thead>
 						<tbody>
@@ -1049,37 +1074,40 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 
 				    d.fields_dict.ledger_html.$wrapper.html(html);
 				    function filterLedgerTable() {
+				    
 
-					    let account = d.$wrapper.find("#filter-account")
-						.val()
-						.toLowerCase();
+    let filters = {};
 
-					    let metal = d.$wrapper.find("#filter-metal")
-						.val()
-						.toLowerCase();
+    d.$wrapper.find(".metal-currency-table .col-filter").each(function () {
+        let col = $(this).data("col");
+        let val = $(this).val().toLowerCase().trim();
+        filters[col] = val;
+    });
 
-					    d.$wrapper.find("tbody tr").each(function () {
+    d.$wrapper.find(".metal-currency-table tbody tr").each(function () {
 
-						let accText = $(this)
-						    .find("td:eq(1)")
-						    .text()
-						    .toLowerCase();
+        let row = $(this);
+        let show = true;
 
-						let metalText = $(this)
-						    .find("td:eq(2)")
-						    .text()
-						    .toLowerCase();
+        Object.keys(filters).forEach(col => {
 
-						let accountMatch = !account || accText.includes(account);
-						let metalMatch = !metal || metalText.includes(metal);
+            let filterVal = filters[col];
+            if (!filterVal) return;
 
-						$(this).toggle(accountMatch && metalMatch);
-					    });
-					}
+            let cellText = row.find("td").eq(col).text().toLowerCase();
+
+            if (!cellText.includes(filterVal)) {
+                show = false;
+            }
+        });
+
+        row.toggle(show);
+    });
+}
 
 					d.$wrapper.on(
 					    "keyup",
-					    "#filter-account, #filter-metal",
+					    ".metal-currency-table .col-filter",
 					    filterLedgerTable
 					);
 					d.$wrapper.on("change", "#select-all-ledger", function () {
@@ -1109,7 +1137,7 @@ frappe.pages['rate-cut'].on_page_load = function(wrapper) {
 						return;
 					    }
 
-					    console.log(selected);
+					    
 
 					    frappe.call({
 						method: "vgjewellry.rate_cut.process_selected_ledger",
@@ -1191,7 +1219,8 @@ function showLedgerModal(res) {
     `;
 
     let tableHtml = `
-        <table class="table table-bordered table-striped">
+      <div class="ledger-scroll">
+        <table class="table table-bordered table-striped ledger-fixed-table" >
             <thead>
                 <tr>
                     <th>Voucher No</th>
@@ -1203,6 +1232,16 @@ function showLedgerModal(res) {
                     <th>Receivable Amt</th>
                     <th>Due</th>
                 </tr>
+                <tr class="ledger-filter-row">
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="0" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="1" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="2" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="3" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="4" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="5" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="6" placeholder="Search"></th>
+        <th><input type="text" class="form-control form-control-sm ledger-filter-input" data-col="7" placeholder="Search"></th>
+    </tr>
             </thead>
             <tbody>
     `;
@@ -1226,6 +1265,7 @@ function showLedgerModal(res) {
     tableHtml += `
             </tbody>
         </table>
+        </div>
     `;
 
     const d = new frappe.ui.Dialog({
@@ -1240,6 +1280,27 @@ function showLedgerModal(res) {
     });
 
     d.show();
+    
+    d.$wrapper.on("keyup", ".ledger-filter-input", function () {
+
+    let colIndex = $(this).data("col");
+    let value = $(this).val().toLowerCase();
+
+    d.$wrapper.find(".ledger-fixed-table tbody tr").each(function () {
+
+        let cellText = $(this)
+            .find("td")
+            .eq(colIndex)
+            .text()
+            .toLowerCase();
+
+        if (cellText.includes(value)) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+});
 
     d.fields_dict.content.$wrapper.html(`
         ${finalHtml}
