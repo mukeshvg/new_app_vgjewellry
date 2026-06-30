@@ -730,7 +730,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	       value="${saved.fine_wt ?? record.FineWt ?? 0}"
 	       step="0.001"></td>
 
-			    <td>${record.Purity}</td>
+			    <td>${record.tradname}</td>
 
 			    <td><input type="number"
 	   class="form-control oc-input"
