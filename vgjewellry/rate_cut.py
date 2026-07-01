@@ -255,8 +255,8 @@ def get_arihant_rate():
     response = requests.request("GET", url, headers=headers, data=payload)
     dt = response.text
     #match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", response)
-    #match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
-    match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
+    match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
+    #match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
 
     if match:
         arihant_gold_rate = int(match.group(1))

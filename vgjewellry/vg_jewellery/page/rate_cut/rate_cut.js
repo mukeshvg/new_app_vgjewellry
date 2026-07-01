@@ -1014,7 +1014,30 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					}
 				);
 			});*/
-			$('#arihant-rate-btn').on('click', function () {
+			function loadArihantRate() {
+				frappe.call({
+					method: "vgjewellry.rate_cut.get_arihant_rate",
+					callback: function (r) {
+						if (r.message) {
+							$('#rate-999').text(r.message.gold_999 || '-');
+							$('#rate-995').text(r.message.gold_995 || '-');
+						}
+					}
+				});
+			}
+
+			// Initial load
+			loadArihantRate();
+
+			// Auto refresh every 5 seconds
+			let arihantRateInterval = setInterval(loadArihantRate, 10000);
+
+			// Manual refresh button
+			$('#arihant-rate-btn').on('click', loadArihantRate);
+			$(wrapper).on("remove", function () {
+				clearInterval(arihantRateInterval);
+			});
+			/*$('#arihant-rate-btn').on('click', function () {
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_arihant_rate",
 					callback: function (r) {
@@ -1030,7 +1053,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 						}
 					}
 				});
-			});
+			});*/
 			$('#metal-currency-ledger-btn').on('click', function () {
 
 				frappe.call({
@@ -1307,8 +1330,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
                     <th>Type</th>
                     <th>Transaction</th>
                     <th>Value</th>
-                    <th>Transaction All</th>
-                    <th>Value All</th>
+                    <!--<th>Transaction All</th>
+                    <th>Value All</th>-->
                 </tr>
             </thead>
             <tbody>
@@ -1320,8 +1343,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
                 <td>${row.type || ""}</td>
                 <td>${row.transaction || ""}</td>
                 <td>${row.val || 0}</td>
-                <td>${row.transaction_all || ""}</td>
-                <td>${row.val_all || 0}</td>
+               <!-- <td>${row.transaction_all || ""}</td>
+                <td>${row.val_all || 0}</td>-->
             </tr>
         `;
 				});
