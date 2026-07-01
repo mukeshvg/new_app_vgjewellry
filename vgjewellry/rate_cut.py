@@ -2,6 +2,9 @@ import frappe
 import pyodbc
 import os
 import pymysql
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.styles import Font
 from datetime import date
 from decimal import Decimal
 from frappe.utils.logger import get_logger
@@ -265,6 +268,8 @@ def get_arihant_rate():
         match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
     if not match:    
         match = re.search(r"GOLD\s*9999\s*\(\s*4\s*NINE\s*\)\s*WITH\s*GST\s*\t-\t(\d+)",dt, re.IGNORECASE)
+    if not match:
+    	match2 = re.search(r"GOLD\s*995\s*WITH\s*GST\s+(\d+)", dt,re.IGNORECASE)
 
     if match:
         arihant_gold_rate = int(match.group(1))
@@ -274,7 +279,9 @@ def get_arihant_rate():
     
     
         
-    match2 = re.search(r"GOLD 995 WITH GST\s*-\s*(\d+)", dt)    
+    match2 = re.search(r"GOLD 995 WITH GST\s*-\s*(\d+)", dt ,re.IGNORECASE) 
+    if not match2:
+    	match2 = re.search(r"GOLD\s*995\s*WITH\s*GST\s+(\d+)", dt, re.IGNORECASE)
     if match2:
         arihant_gold_995rate = int(match2.group(1))
         arihant_gold_995rate = round(arihant_gold_995rate)
@@ -283,6 +290,7 @@ def get_arihant_rate():
     return {
     "gold_999": arihant_gold_rate,
     "gold_995": arihant_gold_995rate,
+    "d":dt
 	}    
       
 
@@ -609,298 +617,6 @@ def get_metal_currency_ledger():
 
             for acc_id, op_bal in cursor.fetchall():
                 opening_bal[acc_id] = float(op_bal or 0)
-    # -------------------------
-    # Account Master
-    # -------------------------
-    acc_master = {}
-    acc_group_master = {}
-
-    if acc_array:
-
-        for ids in batch(acc_array, 1000):
-
-            placeholders = ",".join("?" for _ in ids)
-
-            cursor.execute(f"""
-                SELECT
-                    AccMstID,
-                    AccName,
-                    GrpId
-                FROM AccMaster
-                WHERE AccMstID IN ({placeholders})
-                  AND AccCategory IN (16,19,5)
-                  AND GrpId IN (33,42,43,44)
-            """, ids)
-
-            for acc_id, acc_name, grp_id in cursor.fetchall():
-                acc_master[acc_id] = acc_name
-                acc_group_master[acc_id]="Supplier"
-                if grp_id == 33:
-                    acc_group_master[acc_id]="Customer"
-
-    # -------------------------
-    # Build Result
-    # -------------------------
-
-    result = []
-
-    for acc, amount in amount_ledger.items():
-
-        if acc not in acc_master:
-            continue
-
-        amount += opening_bal.get(acc, 0)
-
-        payable = amount if amount > 0 else 0
-        receivable = -amount if amount < 0 else 0
-
-        if payable == 0 and receivable == 0:
-            continue
-
-        amount_all = (
-            amount_ledger_all[acc]
-            + opening_bal.get(acc, 0)
-        )
-
-        payable_all = amount_all if amount_all > 0 else 0
-        receivable_all = -amount_all if amount_all < 0 else 0
-
-        result.append({
-            "name": acc_master[acc],
-            "grp":acc_group_master[acc],
-            "metal": "",
-            "receivable_wt": 0,
-            "payable_wt": 0,
-            "receivable_amt": round(receivable),
-            "payable_amt": round(payable),
-            "acc": acc,
-            "m": -1,
-            "receivable_wt_all": 0,
-            "payable_wt_all": 0,
-            "receivable_amt_all": round(receivable_all),
-            "payable_amt_all": round(payable_all)
-        })
-
-    for metal, metal_data in weightwise.items():
-
-        for acc, d in metal_data.items():
-
-            if (
-                d["ReceivableWt"] == 0 and
-                d["PayableWt"] == 0
-            ):
-                continue
-            aname = acc_master.get(acc, "")
-            if aname =="":
-                continue
-            result.append({
-                "name": acc_master.get(acc, ""),
-                "grp":acc_group_master[acc],
-                "metal": item_trade_mst.get(metal, ""),
-                "receivable_wt": d["ReceivableWt"],
-                "payable_wt": d["PayableWt"],
-                "receivable_amt": 0,
-                "payable_amt": 0,
-                "acc": acc,
-                "m": metal,
-                "receivable_wt_all": d["ReceivableWtAll"],
-                "payable_wt_all": d["PayableWtAll"],
-                "receivable_amt_all": 0,
-                "payable_amt_all": 0
-            })
-
-    cursor.close()
-    con.close()
-
-    return result
-
-
-
-@frappe.whitelist()
-def get_metal_currency_ledger1():
-
-    con = connect()
-    cursor = con.cursor()
-
-    bill_paid_after = 4
-    reminder_before_days = 4
-
-    days = bill_paid_after - reminder_before_days
-
-    reminder_date = (
-        datetime.today() - timedelta(days=days)
-    ).date()
-
-    start_date = "2023-04-01"
-    #start_date = "2026-04-01"
-
-    weightwise = defaultdict(
-        lambda: defaultdict(
-            lambda: {
-                "ReceivableWt": 0,
-                "PayableWt": 0,
-                "ReceivableWtAll": 0,
-                "PayableWtAll": 0
-            }
-        )
-    )
-
-    acc_array = set()
-
-    # -------------------------
-    # MetalTradWiseOs
-    # -------------------------
-    
-
-    cursor.execute("""
-        SELECT
-            TradOsId,
-            AccMstID,
-            SettleTradingId,
-            NetWt,
-            SettleNetWt,
-            IssueOrReceipt,
-            VouDate
-        FROM MetalTradWiseOs
-        WHERE VouDate >= ?
-    """, start_date)
-
-
-
-    cols = [c[0] for c in cursor.description]
-
-    for row in cursor.fetchall():
-
-        r = dict(zip(cols, row))
-
-        metal = r["SettleTradingId"]
-        acc = r["AccMstID"]
-
-        acc_array.add(acc)
-
-        net_wt = float(r["NetWt"] or 0)
-
-        vou_date = r["VouDate"]
-        issue_or_receipt = r["IssueOrReceipt"]
-
-        if issue_or_receipt == "I":
-
-            weightwise[metal][acc]["ReceivableWtAll"] += net_wt
-
-            if vou_date.date() <= reminder_date:
-                weightwise[metal][acc]["ReceivableWt"] += net_wt
-
-        elif issue_or_receipt == "R":
-
-            weightwise[metal][acc]["PayableWtAll"] += net_wt
-
-            if vou_date.date() <= reminder_date:
-                weightwise[metal][acc]["PayableWt"] += net_wt
-
-    # -------------------------
-    # Net off weight balances
-    # -------------------------
-
-    for metal, metal_data in weightwise.items():
-
-        for acc, d in metal_data.items():
-
-            rec = d["ReceivableWt"]
-            pay = d["PayableWt"]
-
-            if rec > pay:
-                d["ReceivableWt"] = round(rec - pay, 3)
-                d["PayableWt"] = 0
-
-            elif pay > rec:
-                d["PayableWt"] = round(pay - rec, 3)
-                d["ReceivableWt"] = 0
-
-            else:
-                d["ReceivableWt"] = 0
-                d["PayableWt"] = 0
-
-            rec_all = d["ReceivableWtAll"]
-            pay_all = d["PayableWtAll"]
-
-            if rec_all > pay_all:
-                d["ReceivableWtAll"] = round(rec_all - pay_all, 3)
-                d["PayableWtAll"] = 0
-
-            elif pay_all > rec_all:
-                d["PayableWtAll"] = round(pay_all - rec_all, 3)
-                d["ReceivableWtAll"] = 0
-
-    # -------------------------
-    # ItemTrade Master
-    # -------------------------
-
-    cursor.execute("""
-        SELECT ItemTradMstID, TradShortName
-        FROM ItemTradMst
-        WHERE ItemTradMstID > 0
-    """)
-
-    item_trade_mst = {
-        row[0]: row[1]
-        for row in cursor.fetchall()
-    }
-
-    # -------------------------
-    # Ledger
-    # -------------------------
-    #amount_ledger = defaultdict(float)
-    #amount_ledger_all = defaultdict(float)
-
-
-    cursor.execute("""
-    SELECT
-        AccMstID,
-        SUM(VouAmt) AS TotalAmount,
-        SUM(
-            CASE
-                WHEN VouDate <= ? THEN VouAmt
-                ELSE 0
-            END
-        ) AS ReminderAmount
-    FROM LedgerTrans
-    WHERE VouDate >= ?
-    GROUP BY AccMstID Having Sum(VouAmt) <> 0
-    """,reminder_date, start_date)
-
-    amount_ledger = {}
-    amount_ledger_all = {}
-    all_acc_ids = set()
-    for acc , total_amount ,reminder_amount in cursor.fetchall():
-        if total_amount !=0:
-            all_acc_ids.add(acc)
-            acc_array.add(acc)
-            amount_ledger_all[acc] = float(total_amount or 0)
-            amount_ledger[acc] = float(reminder_amount or 0)
-    
-    # -------------------------
-    # Opening Balance
-    # -------------------------
-
-    opening_bal = {}
-
-    '''if all_acc_ids:
-
-        for ids in batch(all_acc_ids, 1000):
-
-            placeholders = ",".join("?" for _ in ids)
-
-            cursor.execute(f"""
-                SELECT
-                    AccMstID,
-                    OpBal
-                FROM AccBal
-                WHERE AccMstID IN ({placeholders})
-            """, ids)
-
-            for acc_id, op_bal in cursor.fetchall():
-                op_bal=0
-                opening_bal[acc_id] = float(op_bal or 0)'''
     # -------------------------
     # Account Master
     # -------------------------
@@ -1477,3 +1193,157 @@ def process_selected_ledger(rows):
     frappe.db.commit()
 
     return "Saved"
+
+
+@frappe.whitelist()
+def export_rate_cut_excel():
+
+    wb = Workbook()
+
+    # ---------------- Summary Sheet ---------------- #
+
+    ws = wb.active
+    ws.title = "Rate Cut Summary"
+
+    headers = [
+        "Vendor","Rate Cut Date","FineWt","Selected FineWt",
+        "NetWt","OC","HM","Return FineWt",
+        "Rate999 GST","Rate999 WO GST",
+        "Bill WO GST","Bill W GST","Bill Amt","Diff"
+    ]
+
+    for c, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=c)
+        cell.value = h
+        cell.font = Font(bold=True)
+
+    summaries = frappe.get_all(
+        "Rate Cut Summary",
+        fields=[
+            "name",
+            "vendor",
+            "ratecut_date",
+            "fine_wt",
+            "fine_wt_selected",
+            "net_wt",
+            "oc",
+            "hm",
+            "returnfinewt",
+            "rate_999_with_gst",
+            "rate_999_without_gst",
+            "bill_value_without_gst",
+            "bill_value_with_gst",
+            "bill_amt",
+            "diff"
+        ],
+        order_by="vendor"
+    )
+
+    row = 2
+
+    for s in summaries:
+
+        ws.append([
+            s.vendor,
+            s.ratecut_date,
+            s.fine_wt,
+            s.fine_wt_selected,
+            s.net_wt,
+            s.oc,
+            s.hm,
+            s.returnfinewt,
+            s.rate_999_with_gst,
+            s.rate_999_without_gst,
+            s.bill_value_without_gst,
+            s.bill_value_with_gst,
+            s.bill_amt,
+            s.diff
+        ])
+
+        # ---------------- Vendor Sheet ---------------- #
+
+        sheet_name = (s.vendor or "Vendor")[:31]   # Excel sheet max length = 31
+
+        # Avoid duplicate sheet names
+        original = sheet_name
+        i = 1
+        while sheet_name in wb.sheetnames:
+            sheet_name = f"{original[:28]}_{i}"
+            i += 1
+
+        vendor_ws = wb.create_sheet(title=sheet_name)
+
+        vendor_headers = [
+            "Vou No",
+            "Item Tran ID",
+            "FineWt",
+            "NetWt",
+            "OC",
+            "HM",
+            "Return FineWt",
+            "Return GrossWt",
+            "Return NetWt",
+            "Return VouNo",
+            "Return VouDate",
+            "Return Narration"
+        ]
+
+        for c, h in enumerate(vendor_headers, 1):
+            cell = vendor_ws.cell(row=1, column=c)
+            cell.value = h
+            cell.font = Font(bold=True)
+
+        transactions = frappe.get_all(
+            "Rate Cut Transaction",
+            filters={
+                "summary_id": s.name
+            },
+            fields=[
+                "vou_no",
+                "item_tran_id",
+                "fine_wt",
+                "net_wt",
+                "oc",
+                "hm",
+                "returnfinewt",
+                "returngrosswt",
+                "returnnetwt",
+                "returnvouno",
+                "returnvoudate",
+                "returnnarration"
+            ]
+        )
+
+        for t in transactions:
+            vendor_ws.append([
+                t.vou_no,
+                t.item_tran_id,
+                t.fine_wt,
+                t.net_wt,
+                t.oc,
+                t.hm,
+                t.returnfinewt,
+                t.returngrosswt,
+                t.returnnetwt,
+                t.returnvouno,
+                t.returnvoudate,
+                t.returnnarration
+            ])
+
+        # Auto width
+        for column in vendor_ws.columns:
+            length = max(len(str(cell.value or "")) for cell in column)
+            vendor_ws.column_dimensions[column[0].column_letter].width = min(length + 3, 35)        
+        
+
+    filename = f"Rate_Cut_Summary_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+    file_path = os.path.join(
+        frappe.get_site_path("public", "files"),
+        filename
+    )
+
+    wb.save(file_path)
+
+    return "/files/" + filename
+    

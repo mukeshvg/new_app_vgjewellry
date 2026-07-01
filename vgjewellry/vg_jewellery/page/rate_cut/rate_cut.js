@@ -189,6 +189,11 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
     Metal Currency Ledger
 </button>
 	    </div>
+	     <div class="col-md-2">
+	    <button class="btn btn-success ml-2" id="export-rate-cut">
+    Export Excel
+</button>
+</div>
 
 	</div>
 
@@ -1078,6 +1083,29 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			$(wrapper).on("remove", function () {
 				clearInterval(arihantRateInterval);
 			});
+			
+			$('#export-rate-cut').on('click', function () {
+
+			frappe.call({
+				method: "vgjewellry.rate_cut.export_rate_cut_excel",
+				freeze: true,
+				freeze_message: __("Generating Excel..."),
+				callback: function (r) {
+
+				    if (!r.message) {
+				        frappe.msgprint("Unable to generate Excel.");
+				        return;
+				    }
+
+				    // If API returns file URL
+				    window.open(r.message, "_blank");
+
+				    // OR
+				    // window.location.href = r.message;
+				}
+			});
+
+		});
 			
 			$('#metal-currency-ledger-btn').on('click', function () {
 
