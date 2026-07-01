@@ -72,7 +72,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
     z-index: 5;
 }
 
-.ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th  {
+.ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th ,.rate-cut-individual-table thead tr.vendor-filter-row th  {
     position: sticky;
     top: 38px; /* height of first header row */
     background: #FFFFFF;
@@ -668,6 +668,24 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	<b>Total HM:</b>
 	<span id="total-hm">0.00</span>
     </div>
+    <style>
+    .rate-cut-individual-table {
+    min-width: 2600px;   /* adjust if needed */
+    table-layout: auto;
+}
+
+.rate-cut-individual-table th,
+.rate-cut-individual-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.vendor-filter-row input {
+    min-width: 120px;
+    width: 100%;
+    font-size: 12px;
+    padding: 3px 6px;
+}
+    </style>
 		    <div style="overflow-x:auto;" class="ledger-scroll">
 
 			<table class="
@@ -677,13 +695,18 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			    <thead>
 				<tr>
-				    <th></th>
+				    
+				    <th style="width:40px;text-align:center;">
+    				<input type="checkbox" id="select-all-vendor-harm">
+					</th>
+				    
 				    <th>Vou No</th>
 				    <th>Date</th>
 				    <th>GrossWt</th>
 				    <th>NetWt</th>
 				    <th>FineWt</th>
 				    <th>Purity</th>
+				    <th>Pcs</th>
 				    <th>OC</th>
 				    <th>HM</th>
 				    <th>Item Name</th>
@@ -694,11 +717,55 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		        	    <th>Return FineWt</th>
 	                            <th>Return Narration</th>
 				</tr>
+				<tr class="vendor-filter-row">
+			    <th></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="1" placeholder="Vou No"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="2" placeholder="Date"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="3" placeholder="GrossWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="4" placeholder="NetWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="5" placeholder="FineWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="6" placeholder="Purity"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="7" placeholder="Pcs"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="8" placeholder="OC"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="9" placeholder="HM"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="10" placeholder="Item"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="11" placeholder="Return Vou"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="12" placeholder="Return Date"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="13" placeholder="GrossWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="14" placeholder="NetWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="15" placeholder="FineWt"></th>
+
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="16" placeholder="Narration"></th>
+			</tr>
 			    </thead>
 
 			    <tbody>
 		`;
 
+		records.sort((a, b) => {
+		    let d = new Date(a.VouDate) - new Date(b.VouDate);
+
+		    if (d !== 0) return d;
+
+		    return (a.VouNo || "").localeCompare(b.VouNo || "", undefined, {
+			numeric: true
+		    });
+
+		});
 		records.forEach(record => {
 			let checked = savedSelected.includes(record.ItemTranID);
 			let saved = savedMap[record.ItemTranID] || {};
@@ -714,10 +781,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
     </td>
 			    <td class="vou-no">${record.VouNo}</td>
 
-			    <td>
-				${frappe.datetime.str_to_user(
-					record.VouDate
-				)}
+			    <td class="vou-no">
+			    ${moment(record.VouDate).format("DD-MM-YYYY")}
 			    </td>
 
 			    <td>${record.GrossWt}</td>
@@ -731,6 +796,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	       step="0.001"></td>
 
 			    <td>${record.tradname}</td>
+			    <td>${record.Pcs}</td>
 
 			    <td><input type="number"
 	   class="form-control oc-input"
@@ -747,10 +813,10 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			<td class="vou-no">${record.ReturnVouNo || ''}</td>
 
-    <td>
-        ${record.ReturnVouDate
-            ? frappe.datetime.str_to_user(record.ReturnVouDate)
-            : ''}
+    <td class="vou-no">
+    ${record.ReturnVouDate
+    ? moment(record.ReturnVouDate).format("DD-MM-YYYY")
+    : ''}
     </td>
 
     <td>${record.ReturnGrossWt || 0}</td>
@@ -817,6 +883,22 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				) || 0;
 			});
 
+			d.$wrapper.on("change", "#select-all-vendor-harm", function () {
+
+			let checked = $(this).is(":checked");
+
+			d.$wrapper.find(".txn-check:visible").prop("checked", checked);
+
+			updateTotals();
+		});	
+		d.$wrapper.on("change", "#select-all-vendor-harm", function () {
+
+    let checked = $(this).is(":checked");
+
+    d.$wrapper.find(".txn-check:visible").prop("checked", checked);
+
+    updateTotals();
+});
 			d.$wrapper.find('#total-finewt')
 				.text(totalFineWt.toFixed(3));
 
@@ -826,6 +908,44 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			d.$wrapper.find('#total-hm')
 				.text(totalHM.toFixed(2));
 		}
+		function filterVendorTable() {
+
+		    let filters = {};
+
+		    d.$wrapper.find(".vendor-filter").each(function () {
+			filters[$(this).data("col")] = $(this).val().toLowerCase().trim();
+		    });
+
+		    d.$wrapper.find(".rate-cut-individual-table tbody tr").each(function () {
+
+			let row = $(this);
+			let show = true;
+
+			Object.keys(filters).forEach(col => {
+
+			    if (!filters[col]) return;
+
+			    let txt = row.find("td").eq(col).text().toLowerCase();
+
+			    // search inside input fields also
+			    let input = row.find("td").eq(col).find("input");
+			    if (input.length) {
+				txt = input.val().toLowerCase();
+			    }
+
+			    if (!txt.includes(filters[col])) {
+				show = false;
+			    }
+
+			});
+
+			row.toggle(show);
+
+		    });
+
+		}
+
+		d.$wrapper.on("keyup", ".vendor-filter", filterVendorTable);
 		d.$wrapper.on(
 			'change',
 			'.txn-check, .finewt-input, .oc-input, .hm-input, .returnfinewt-input ',
@@ -890,40 +1010,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		d.show();
 
 	}
-	/*frappe.call({
-		method: "frappe.client.get_list",
-		args: {
-			doctype: "Rate Cut Summary",
-			filters: {
-				is_submitted: 0
-			},
-			fields: [
-				"name",
-				"vendor",
-				"acc_mst_id",
-				"fine_wt",
-				"fine_wt_selected",
-				"net_wt",
-				"oc",
-				"hm"
-			]
-		},
-		callback: function(r) {
-
-			addedRows = (r.message || []).map(d => ({
-				name:d.name,
-				vendor: d.vendor,
-				accMstId: d.acc_mst_id,
-				ketanFineWt: d.fine_wt,
-				selectedFineWt: d.fine_wt_selected,
-				netWt: d.net_wt,
-				oc: d.oc,
-				hm: d.hm 
-			}));
-
-			render_table();
-		}
-	});*/
+	
 	frappe.call({
 		method: "vgjewellry.rate_cut.get_all_vendor_rate_cut",
 		freeze: true,
@@ -967,53 +1054,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				render_input: true
 			});
 
-			/*$('#vendor-table1 .save-row-btn').on('click', function() {
-				let idx = $(this).data('index');
-
-				frappe.call({
-					method: "vgjewellry.rate_cut.save_single_rate_cut",
-					args: {
-						row: JSON.stringify(addedRows[idx])
-					},
-					callback: function () {
-						frappe.show_alert({
-							message: "Saved",
-							indicator: "green"
-						});
-					}
-				});
-			});
-			$('#vendor-table1 .remove-row-btn').on('click', function () {
-
-				let idx = $(this).data('index');
-
-				let row = addedRows[idx];
-
-				frappe.confirm(
-					'Remove this vendor?',
-					function () {
-
-						frappe.call({
-							method: "vgjewellry.rate_cut.delete_rate_cut_summary",
-							args: {
-								summary_id: row.name
-							},
-							callback: function () {
-
-								addedRows.splice(idx, 1);
-
-								render_table();
-
-								frappe.show_alert({
-									message: "Removed",
-									indicator: "red"
-								});
-							}
-						});
-
-					}
-				);
-			});*/
+			
 			function loadArihantRate() {
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_arihant_rate",
@@ -1037,23 +1078,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			$(wrapper).on("remove", function () {
 				clearInterval(arihantRateInterval);
 			});
-			/*$('#arihant-rate-btn').on('click', function () {
-				frappe.call({
-					method: "vgjewellry.rate_cut.get_arihant_rate",
-					callback: function (r) {
-
-						if (r.message) {
-
-							$('#rate-999').text(r.message.gold_999 || '-');
-							$('#rate-995').text(r.message.gold_995 || '-');
-
-						} else {
-
-							frappe.msgprint("Rate not found");
-						}
-					}
-				});
-			});*/
+			
 			$('#metal-currency-ledger-btn').on('click', function () {
 
 				frappe.call({
@@ -1480,18 +1505,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				let totalNetWt = 0;
 				let totalOC = 0;
 
-				/*rows.forEach(row => {
-
-					totalFineWtSelected +=
-						parseFloat(row.FineWt || 0);
-
-					totalNetWt +=
-						parseFloat(row.NetWt || 0);
-
-					totalOC +=
-						parseFloat(row.OtherCharge || 0);
-				})*/
-				;
+				
 				let today = frappe.datetime.get_today();
 
 				addedRows.push({

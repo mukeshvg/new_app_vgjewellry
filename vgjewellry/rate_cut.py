@@ -37,6 +37,7 @@ def get_all_vendor_rate_cut():
         it.ItemTradMstID,
         it.GrossWt,
         it.NetWt,
+        it.Pcs,
         (it.FineWt+it.WastageWeight) as FineWt,
         it.Purity,
         itm.TradShortName as tradname,
@@ -115,6 +116,9 @@ WHERE RN = 1
     for record in res:
         row = dict(zip(columnNames, record))
         acc_mst_id = str(row["AccMstID"])
+        row["HM"]= float( row.get("Pcs")* 45 or 0)
+        if float(row["OtherCharge"]) > 0 :
+            row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] )
         grouped_data[acc_mst_id].append(row)
     cursor.close();
     con.close();
@@ -254,9 +258,13 @@ def get_arihant_rate():
 
     response = requests.request("GET", url, headers=headers, data=payload)
     dt = response.text
-    #match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", response)
-    match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
-    #match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
+    match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", dt)
+    if not match:
+        match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
+    if not match:    
+        match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
+    if not match:    
+        match = re.search(r"GOLD\s*9999\s*\(\s*4\s*NINE\s*\)\s*WITH\s*GST\s*\t-\t(\d+)",dt, re.IGNORECASE)
 
     if match:
         arihant_gold_rate = int(match.group(1))
@@ -275,8 +283,6 @@ def get_arihant_rate():
     return {
     "gold_999": arihant_gold_rate,
     "gold_995": arihant_gold_995rate,
-    "dt":dt
-    
 	}    
       
 
