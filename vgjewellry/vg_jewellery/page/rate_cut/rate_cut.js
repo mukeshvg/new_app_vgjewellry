@@ -1193,7 +1193,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 1000000000);
+			let arihantRateInterval = setInterval(loadArihantRate, 10000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
