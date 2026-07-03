@@ -835,13 +835,33 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		    });
 
 		});
+		const lightColors = [
+		    "#FFF2CC", // Light Yellow
+		    "#D9EAD3", // Light Green
+		    "#D0E0E3", // Light Blue
+		    "#F4CCCC", // Light Red
+		    "#EAD1DC", // Light Pink
+		    "#D9D2E9", // Lavender
+		    "#FCE5CD", // Light Orange
+		    "#CFE2F3", // Sky Blue
+		    "#E2F0D9", // Pale Green
+		    "#F9CB9C"  // Peach
+		];
+
+		let voucherColorMap = {};
+		let colorIndex = 0;
 		records.forEach(record => {
 			let checked = savedSelected.includes(record.ItemTranID);
 			let saved = savedMap[record.ItemTranID] || {};
+		if (!voucherColorMap[record.VouNo]) {
+		    voucherColorMap[record.VouNo] = lightColors[colorIndex % lightColors.length];
+		    colorIndex++;
+		}
 
+		let rowColor = voucherColorMap[record.VouNo];
 
 			modalHtml += `
-			<tr>
+			<tr style="background-color:${rowColor};">
  <td>
 	<input type="checkbox"
 	       class="txn-check"

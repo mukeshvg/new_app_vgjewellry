@@ -17,6 +17,7 @@ import json
 from frappe.utils import flt
 from collections import defaultdict
 from frappe.utils import formatdate
+from openpyxl.styles import PatternFill
 
 value = os.getenv('sjodbc')
 #value = os.getenv('hoodbc')
@@ -1421,6 +1422,22 @@ def export_rate_cut_excel():
         total_return_gross = 0
         total_return_net = 0
 
+        light_colors = [
+    "FFF2CC",  # Light Yellow
+    "D9EAD3",  # Light Green
+    "D0E0E3",  # Light Blue
+    "F4CCCC",  # Light Red
+    "EAD1DC",  # Light Pink
+    "D9D2E9",  # Lavender
+    "FCE5CD",  # Light Orange
+    "CFE2F3",  # Sky Blue
+    "E2F0D9",  # Pale Green
+    "F9CB9C",  # Peach
+    ]
+
+        voucher_colors = {}
+        color_index = 0
+
         for t in transactions:
 
             total_fine += t.fine_wt or 0
@@ -1452,6 +1469,21 @@ def export_rate_cut_excel():
                 t.returnvoudate,
                 t.returnnarration
             ])
+            voucher = t.vou_no or ""
+            if voucher not in voucher_colors:
+                voucher_colors[voucher] = light_colors[color_index % len(light_colors)]
+                color_index += 1
+
+            fill = PatternFill(
+                fill_type="solid",
+                start_color=voucher_colors[voucher],
+                end_color=voucher_colors[voucher]
+            )
+
+            row_no = vendor_ws.max_row
+
+            for cell in vendor_ws[row_no]:
+                cell.fill = fill
 
         # Total row
         vendor_ws.append([
@@ -1474,6 +1506,7 @@ def export_rate_cut_excel():
             "",
             ""
         ])
+
 
         # Make total row bold
         last_row = vendor_ws.max_row
