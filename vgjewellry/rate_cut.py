@@ -16,6 +16,7 @@ from collections import defaultdict
 import json
 from frappe.utils import flt
 from collections import defaultdict
+from frappe.utils import formatdate
 
 value = os.getenv('sjodbc')
 #value = os.getenv('hoodbc')
@@ -312,6 +313,12 @@ def get_arihant_rate():
 def update_ketan_finewt(summary_id, ketan_finewt):
     doc = frappe.get_doc("Rate Cut Summary", summary_id)
     doc.fine_wt = ketan_finewt
+    doc.save()
+
+@frappe.whitelist()
+def update_netwt(summary_id, net_wt):
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+    doc.net_wt = net_wt
     doc.save()
 
 @frappe.whitelist()
@@ -1288,7 +1295,10 @@ def export_rate_cut_excel():
     vendor_headers = [
         "Vendor",
         "Vou No",
+        "Vou Date",
         "Item Tran ID",
+        "Purity",
+        "Pcs",
         "FineWt",
         "NetWt",
         "OC",
@@ -1356,7 +1366,10 @@ def export_rate_cut_excel():
 
         if current_last_vendor != s.vendor:
             vendor_ws.append([
-                s.vendor,
+                f"{s.vendor} - Consignment Stock Report As On {formatdate(s.ratecut_date, 'dd/MM/yyyy')}",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -1378,7 +1391,10 @@ def export_rate_cut_excel():
             filters={"summary_id": s.name},
             fields=[
                 "vou_no",
+                "voucher_date",
                 "item_tran_id",
+                "purity",
+                "pcs",
                 "fine_wt",
                 "net_wt",
                 "oc",
@@ -1395,7 +1411,79 @@ def export_rate_cut_excel():
             order_by="vou_no"
         )
 
+        # Totals
+        total_fine = 0
+        total_net = 0
+        total_oc = 0
+        total_hm = 0
+        total_wastage = 0
+        total_return_fine = 0
+        total_return_gross = 0
+        total_return_net = 0
+
         for t in transactions:
+
+            total_fine += t.fine_wt or 0
+            total_net += t.net_wt or 0
+            total_oc += t.oc or 0
+            total_hm += t.hm or 0
+            total_wastage += t.sales_wastage_wt or 0
+            total_return_fine += t.returnfinewt or 0
+            total_return_gross += t.returngrosswt or 0
+            total_return_net += t.returnnetwt or 0
+
+            vendor_ws.append([
+                "",
+                t.vou_no,
+                t.voucher_date,
+                t.item_tran_id,
+                t.purity,
+                t.pcs,
+                t.fine_wt,
+                t.net_wt,
+                t.oc,
+                t.hm,
+                t.sales_wastage_per,
+                t.sales_wastage_wt,
+                t.returnfinewt,
+                t.returngrosswt,
+                t.returnnetwt,
+                t.returnvouno,
+                t.returnvoudate,
+                t.returnnarration
+            ])
+
+        # Total row
+        vendor_ws.append([
+            "TOTAL",
+            "",
+            "",
+            "",
+            "",
+            "",
+            total_fine,
+            total_net,
+            total_oc,
+            total_hm,
+            "",
+            total_wastage,
+            total_return_fine,
+            total_return_gross,
+            total_return_net,
+            "",
+            "",
+            ""
+        ])
+
+        # Make total row bold
+        last_row = vendor_ws.max_row
+        for cell in vendor_ws[last_row]:
+            cell.font = Font(bold=True)
+
+        # Blank row
+        vendor_ws.append([""] * len(vendor_headers))
+
+        '''for t in transactions:
             vendor_ws.append([
                 "",   # Vendor shown only once above
                 t.vou_no,
@@ -1415,7 +1503,7 @@ def export_rate_cut_excel():
             ])
 
         # Blank row after each vendor
-        vendor_ws.append([""] * len(vendor_headers))
+        vendor_ws.append([""] * len(vendor_headers))'''
 
     # ---------------- Auto Width ---------------- #
 

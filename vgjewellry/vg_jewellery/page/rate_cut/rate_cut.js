@@ -345,7 +345,11 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			    </td>
 
 			    <td>
-				${row.netWt.toFixed(3)}
+			    <input type="number"
+           class="form-control nnetwt-input"
+           data-index="${index}"
+           value="${row.netWt || ''}"
+           step="0.01">
 			    </td>
 
 			    <td>${row.hm}</td>
@@ -550,6 +554,39 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					callback: function () {
 						frappe.show_alert({
 							message: "Fine Wt Updated",
+							indicator: "green"
+						});
+					}
+				});
+
+			}, 800);
+		});
+		$('#vendor-table .nnetwt-input').on('change', function () {
+
+			let idx = $(this).data('index');
+			let value = parseFloat($(this).val()) || 0;
+
+			// update local data
+			addedRows[idx].netWt = value;
+
+
+			// example recalculation (if you want logic)
+			// addedRows[idx].netWt = selectedFineWt - value;
+
+			// optional: auto save to backend
+			clearTimeout(window.ketanFineWtTimer2);
+
+			window.ketanFineWtTimer2 = setTimeout(() => {
+
+				frappe.call({
+					method: "vgjewellry.rate_cut.update_netwt",
+					args: {
+						summary_id: addedRows[idx].name,
+						net_wt: value
+					},
+					callback: function () {
+						frappe.show_alert({
+							message: "Net Wt Updated",
 							indicator: "green"
 						});
 					}
