@@ -124,7 +124,7 @@ WHERE RN = 1
         row["HM"]= float( row.get("Pcs")* 45 or 0)
         if row["WastagePer"] > 0:
             row["WastagePer"] = float(row.get("WastagePer"))-0.33
-        row["WastageWt"] = float(row.get("NetWt")) * float(row["WastagePer"])    
+        row["WastageWt"] = float(row.get("NetWt")) * float(row["WastagePer"]) / 100   
         if float(row["OtherCharge"]) > 0 :
             row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] )
         grouped_data[acc_mst_id].append(row)
