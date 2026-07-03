@@ -20,7 +20,10 @@
   "rate_999_without_gst",
   "bill_value_without_gst",
   "bill_value_with_gst",
-  "diff"
+  "diff",
+  "sales_wastage_per",
+  "sales_wastage_wt",
+  "rate_cut_note"
  ],
  "fields": [
   {
@@ -108,12 +111,27 @@
    "fieldname": "returnfinewt",
    "fieldtype": "Float",
    "label": "returnfinewt"
+  },
+  {
+   "fieldname": "sales_wastage_per",
+   "fieldtype": "Float",
+   "label": "Sales Wastage Per"
+  },
+  {
+   "fieldname": "sales_wastage_wt",
+   "fieldtype": "Float",
+   "label": "Sales Wastage Wt"
+  },
+  {
+   "fieldname": "rate_cut_note",
+   "fieldtype": "Small Text",
+   "label": "Rate Cut Note"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-20 17:03:27.628548",
+ "modified": "2026-07-03 09:44:02.753219",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",

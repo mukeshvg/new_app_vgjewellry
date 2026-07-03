@@ -219,13 +219,15 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					"net_wt",
 					"oc",
 					"hm",
+					"sales_wastage_wt",
 					"returnfinewt",
 					"rate_999_with_gst",
 					"rate_999_without_gst",
 					"bill_value_without_gst",
 					"bill_value_with_gst",
 					"bill_amt",
-					"diff"
+					"diff",
+					"rate_cut_note"
 				]
 			},
 			callback: function (r) {
@@ -240,13 +242,15 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					netWt: d.net_wt,
 					oc: d.oc,
 					hm: d.hm,
+					sales_wastage_wt:d.sales_wastage_wt,
 					returnfinewt: d.returnfinewt,
 					rate999WGst: d.rate_999_with_gst,
 					rate999WithoutGst: d.rate_999_without_gst,
 					billWithoutGst: d.bill_value_without_gst,
 					withGstValue: d.bill_value_with_gst,
 					billAmt: d.bill_amt,
-					diff: d.diff
+					diff: d.diff,
+					rate_cut_note: d.rate_cut_note
 
 
 				}));
@@ -264,6 +268,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		let totalOC = 0;
 		let totalHM = 0;
 		let totalReturnFinewt = 0;
+		let totalSales_Wastage_Wt = 0;
 
 		let html = `
 
@@ -278,6 +283,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				<th>Net Wt</th>
 				<th>HM</th>
 				<th>OC</th>
+				<th>Sales Wastage Wt</th>
 				<th>Return Fine Wt</th>
 				<th>RATE 999 With GST</th>
 				<th>RATE 999 Without GST</th>
@@ -285,6 +291,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				<th>WITH GST VALUE</th>
 				<th>BILL AMT</th>
 				<th>Diff</th>
+				<th>Notes</th>
 				<th>Save</th>
 				<th>Remove</th>
 			    </tr>
@@ -310,6 +317,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				parseFloat(row.hm || 0);
 
 			totalReturnFinewt += parseFloat(row.returnfinewt || 0)
+			totalSales_Wastage_Wt += parseFloat(row.sales_wastage_wt || 0)
 
 			html += `
 			<tr>
@@ -342,9 +350,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			    <td>${row.hm}</td>
 
-			    <td>
-				${row.oc.toFixed(2)}
-			    </td>
+			    <td>${row.oc.toFixed(2)}</td>
+			    <td>${row.sales_wastage_wt.toFixed(2)}</td>
 			    <td>${row.returnfinewt.toFixed(3)}</td>
 
 			    <td><input type="number"
@@ -378,6 +385,11 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	   step="0.01"></td>
 
 			    <td class="diff-cell"> ${(row.diff || 0).toFixed(2)}</td>
+			    <td><input type="text" 
+	   class="form-control rate_cut_note-input"
+	   data-index="${index}"
+	   value="${row.rate_cut_note || ''}"
+	   ></td>
 <td>
     <button
 	class="btn btn-success btn-sm save-row-btn"
@@ -420,11 +432,10 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			<td>${totalHM.toFixed(3)}</td>
 
-			<td>
-			    ${totalOC.toFixed(2)}
-			</td>
-
+			<td>${totalOC.toFixed(2)}</td>
+			<td>${totalSales_Wastage_Wt.toFixed(2)}</td>
 			<td>${totalReturnFinewt.toFixed(3)}</td>
+			<td></td>
 			<td></td>
 			<td></td>
 			<td></td>
@@ -509,21 +520,6 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			}, 2000);
 		});
 
-		/*$('#vendor-table .rate999wogst-input').on('change', function () {
-			let idx = $(this).data('index');
-			addedRows[idx].rate999WithoutGst = parseFloat($(this).val()) || 0;
-		});
-
-		$('#vendor-table .billwithoutgst-input').on('change', function () {
-			let idx = $(this).data('index');
-			addedRows[idx].billWithoutGst = parseFloat($(this).val()) || 0;
-		});
-
-		$('#vendor-table .withgstvalue-input').on('change', function () {
-			let idx = $(this).data('index');
-			addedRows[idx].withGstValue = parseFloat($(this).val()) || 0;
-		});*/
-
 
 		$('#vendor-table .ketan-finewt-input').on('change', function () {
 
@@ -604,6 +600,34 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				});
 			}, 1000);
 		});
+		
+		let rateCutNoteTimer;
+		$('#vendor-table .rate_cut_note-input').on('change', function () {
+			let idx = $(this).data('index');
+
+			let rate_cut_note =$(this).val() || "";
+
+			addedRows[idx].rate_cut_note = rate_cut_note;
+
+
+			clearTimeout(rateCutNoteTimer);
+
+			rateCutNoteTimer = setTimeout(() => {
+				frappe.call({
+					method: "vgjewellry.rate_cut.update_rate_cut_note",
+					args: {
+						summary_id: addedRows[idx].name,
+						rate_cut_note: rate_cut_note
+					},
+					callback: function () {
+						frappe.show_alert({
+							message: "Notes Updated",
+							indicator: "green"
+						});
+					}
+				});
+			}, 500);
+		});
 
 		// Vendor Click
 		bind_vendor_click();
@@ -659,14 +683,14 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 
 		let modalHtml = `
-		<div class="mb-3">
+		<div class="mb-12">
 	<b>Total FineWt:</b>
-	<span id="total-finewt">0.000</span>
-
-	   
+	<span id="total-finewt" style="margin-right:20px">0.000</span>
+	<b>Total NetWt:</b>
+	<span id ="total-snetwt" style="margin-right:20px">0.000</span>   
 
 	<b>Total OC:</b>
-	<span id="total-oc">0.00</span>
+	<span id="total-oc" style="margin-right:20px">0.00</span>
 
 	   
 
@@ -712,6 +736,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				    <th>FineWt</th>
 				    <th>Purity</th>
 				    <th>Pcs</th>
+				    <th>Sales Wastage %</th>
+				    <th>Sales Wastage Wt</th>
 				    <th>OC</th>
 				    <th>HM</th>
 				    <th>Item Name</th>
@@ -738,29 +764,30 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="6" placeholder="Purity"></th>
 
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="7" placeholder="Pcs"></th>
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="8" placeholder="OC"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="8" placeholder="Wastage %"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="9" placeholder="Wastage Wt"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="10" placeholder="OC"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="9" placeholder="HM"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="11" placeholder="HM"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="10" placeholder="Item"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="12" placeholder="Item"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="11" placeholder="Return Vou"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="13" placeholder="Return Vou"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="12" placeholder="Return Date"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="14" placeholder="Return Date"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="13" placeholder="GrossWt"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="15" placeholder="GrossWt"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="14" placeholder="NetWt"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="16" placeholder="NetWt"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="15" placeholder="FineWt"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="17" placeholder="FineWt"></th>
 
-			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="16" placeholder="Narration"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="18" placeholder="Narration"></th>
 			</tr>
 			    </thead>
 
 			    <tbody>
 		`;
-
 		records.sort((a, b) => {
 		    let d = new Date(a.VouDate) - new Date(b.VouDate);
 
@@ -792,17 +819,16 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			    <td>${record.GrossWt}</td>
 
-			    <td>${record.NetWt}</td>
-
-			    <td> <input type="number"
-	       class="form-control finewt-input"
-	       data-id="${record.ItemTranID}"
-	       value="${saved.fine_wt ?? record.FineWt ?? 0}"
-	       step="0.001"></td>
-
+			    <td>
+				<input type="number" class="form-control snetwt-input" data-id="${record.ItemTranID}" value="${saved.net_wt ?? record.NetWt ?? 0}" step="0.001">
+			    </td>
+			    <td>
+			    <input type="number"  class="form-control finewt-input" data-id="${record.ItemTranID}" value="${saved.fine_wt ?? record.FineWt ?? 0}" step="0.001">
+			    </td>
 			    <td>${record.tradname}</td>
 			    <td>${record.Pcs}</td>
-
+			    <td>${record.WastagePer}</td>
+			    <td>${record.WastageWt.toFixed(3)}</td>
 			    <td><input type="number"
 	   class="form-control oc-input"
 	   data-id="${record.ItemTranID}"
@@ -841,9 +867,39 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		});
 
 		modalHtml += `
-			    </tbody>
-			</table>
-		    </div>
+		    </tbody>
+
+		    <tfoot>
+			<tr style="font-weight:bold;background:#f5f5f5;">
+			    <td colspan="3" style="text-align:right;">Total</td>
+
+			    <td id="tfoot-grosswt">0.000</td>
+			    <td id="tfoot-netwt">0.000</td>
+			    <td id="tfoot-finewt">0.000</td>
+
+			    <td></td>
+			    <td id="tfoot-pcs">0</td>
+
+			    <td></td>
+
+			    <td id="tfoot-wastagewt">0.000</td>
+
+			    <td id="tfoot-oc">0.00</td>
+			    <td id="tfoot-hm">0.00</td>
+
+			    <td></td>
+			    <td></td>
+			    <td></td>
+
+			    <td id="tfoot-returngross">0.000</td>
+			    <td id="tfoot-returnnet">0.000</td>
+			    <td id="tfoot-returnfine">0.000</td>
+
+			    <td></td>
+			</tr>
+		    </tfoot>
+		</table>
+		</div>
 		`;
 
 		let d = new frappe.ui.Dialog({
@@ -859,9 +915,59 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			modalHtml
 		);
 
+		function updateTableTotals() {
+		    let gross = 0;
+		    let net = 0;
+		    let fine = 0;
+		    let pcs = 0;
+		    let wastage = 0;
+		    let oc = 0;
+		    let hm = 0;
+		    let returnGross = 0;
+		    let returnNet = 0;
+		    let returnFine = 0;
+
+		    d.$wrapper.find(".rate-cut-individual-table tbody tr:visible").each(function () {
+
+			let td = $(this).find("td");
+
+			gross += parseFloat(td.eq(3).text()) || 0;
+
+			net += parseFloat(td.eq(4).find("input").val()) || 0;
+
+			fine += parseFloat(td.eq(5).find("input").val()) || 0;
+
+			pcs += parseFloat(td.eq(7).text()) || 0;
+
+			wastage += parseFloat(td.eq(9).text()) || 0;
+
+			oc += parseFloat(td.eq(10).find("input").val()) || 0;
+
+			hm += parseFloat(td.eq(11).find("input").val()) || 0;
+
+			returnGross += parseFloat(td.eq(15).text()) || 0;
+
+			returnNet += parseFloat(td.eq(16).text()) || 0;
+
+			returnFine += parseFloat(td.eq(17).find("input").val()) || 0;
+		    });
+
+		    d.$wrapper.find("#tfoot-grosswt").text(gross.toFixed(3));
+		    d.$wrapper.find("#tfoot-netwt").text(net.toFixed(3));
+		    d.$wrapper.find("#tfoot-finewt").text(fine.toFixed(3));
+		    d.$wrapper.find("#tfoot-pcs").text(pcs);
+		    d.$wrapper.find("#tfoot-wastagewt").text(wastage.toFixed(3));
+		    d.$wrapper.find("#tfoot-oc").text(oc.toFixed(2));
+		    d.$wrapper.find("#tfoot-hm").text(hm.toFixed(2));
+		    d.$wrapper.find("#tfoot-returngross").text(returnGross.toFixed(3));
+		    d.$wrapper.find("#tfoot-returnnet").text(returnNet.toFixed(3));
+		    d.$wrapper.find("#tfoot-returnfine").text(returnFine.toFixed(3));
+		}
+
 		function updateTotals() {
 
 			let totalFineWt = 0;
+			let totalNetWt = 0;
 			let totalOC = 0;
 			let totalHM = 0;
 
@@ -869,11 +975,9 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 				let id = $(this).data('id');
 
-				totalFineWt += parseFloat(
-					d.$wrapper.find(
-						`.finewt-input[data-id="${id}"]`
-					).val()
-				) || 0;
+				totalFineWt += parseFloat(d.$wrapper.find(`.finewt-input[data-id="${id}"]`).val()) || 0;
+				totalNetWt += parseFloat(d.$wrapper.find(`.snetwt-input[data-id="${id}"]`).val()) || 0;
+
 
 				totalOC += parseFloat(
 					d.$wrapper.find(
@@ -904,14 +1008,11 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
     updateTotals();
 });
-			d.$wrapper.find('#total-finewt')
-				.text(totalFineWt.toFixed(3));
+			d.$wrapper.find('#total-finewt').text(totalFineWt.toFixed(3));
+			d.$wrapper.find('#total-snetwt').text(totalNetWt.toFixed(3));
 
-			d.$wrapper.find('#total-oc')
-				.text(totalOC.toFixed(2));
-
-			d.$wrapper.find('#total-hm')
-				.text(totalHM.toFixed(2));
+			d.$wrapper.find('#total-oc').text(totalOC.toFixed(2));
+			d.$wrapper.find('#total-hm').text(totalHM.toFixed(2));
 		}
 		function filterVendorTable() {
 
@@ -947,14 +1048,17 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			row.toggle(show);
 
 		    });
-
+			updateTableTotals();
 		}
 
 		d.$wrapper.on("keyup", ".vendor-filter", filterVendorTable);
 		d.$wrapper.on(
 			'change',
 			'.txn-check, .finewt-input, .oc-input, .hm-input, .returnfinewt-input ',
-			updateTotals
+			function () {
+        		updateTotals();
+       			 updateTableTotals();
+    			}
 		);
 		d.set_primary_action("Save Selection", function () {
 
@@ -1005,13 +1109,26 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 				callback: function () {
 
 					frappe.msgprint("Saved");
-
 					d.hide();
 					load_summary_table();
+					 setTimeout(() => {
+
+                        $(".modal.show").each(function () {
+                                const text = $(this).find(".msgprint").text();
+                                if (text.includes("Saved")) {
+                                        $(this).addClass("remove-modal");
+                                }
+
+                        });
+
+                }, 200);
 				}
 			});
 		});
 		updateTotals();
+		setTimeout(() => {
+		updateTableTotals();
+		}, 500);	
 		d.show();
 
 	}
@@ -1076,7 +1193,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 10000);
+			let arihantRateInterval = setInterval(loadArihantRate, 1000000000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
@@ -1545,6 +1662,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					netWt: totalNetWt,
 					hm: '',
 					oc: totalOC,
+					sales_wastage_wt:'',
 					rate999WGst: '',
 					rate999WithoutGst: '',
 					billWithoutGst: '',

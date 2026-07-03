@@ -41,6 +41,7 @@ def get_all_vendor_rate_cut():
         it.GrossWt,
         it.NetWt,
         it.Pcs,
+        it.WastagePer,
         (it.FineWt+it.WastageWeight) as FineWt,
         it.Purity,
         itm.TradShortName as tradname,
@@ -120,6 +121,9 @@ WHERE RN = 1
         row = dict(zip(columnNames, record))
         acc_mst_id = str(row["AccMstID"])
         row["HM"]= float( row.get("Pcs")* 45 or 0)
+        if row["WastagePer"] > 0:
+            row["WastagePer"] = float(row.get("WastagePer"))-0.33
+        row["WastageWt"] = float(row.get("NetWt")) * float(row["WastagePer"])    
         if float(row["OtherCharge"]) > 0 :
             row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] )
         grouped_data[acc_mst_id].append(row)
@@ -152,6 +156,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     total_bill_amt = 0
     total_hm = 0
     total_returnfinewt = 0
+    total_sales_wastage_wt = 0
 
     for r in rows:
         fine_wt = flt(r.get("FineWt") or 0)
@@ -159,6 +164,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         oc = flt(r.get("OtherCharge") or 0)
         bill_amt = flt(r.get("BillAmt") or 0)
         hm= flt(r.get("HM") or 0)
+        sales_wastage_wt= flt(r.get("WastageWt") or 0)
         returnfinewt= flt(r.get("ReturnFineWt") or 0)
 
         # totals
@@ -167,6 +173,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         total_oc += oc
         total_bill_amt += bill_amt
         total_hm += hm
+        total_sales_wastage_wt += sales_wastage_wt
         total_returnfinewt += returnfinewt
         doc = frappe.get_doc({
             "doctype": "Rate Cut Transaction",
@@ -186,7 +193,12 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
             "returnvouno": r.get('ReturnVouNo'),
             "is_selected": 1,
             "is_completed": 0,
-            "summary_id":summary_id
+            "summary_id":summary_id,
+            "purity":r.get("tradname"),
+            "pcs":r.get("Pcs"),
+            "sales_wastage_per":r.get("WastagePer"),
+            "sales_wastage_wt":r.get("WastageWt"),
+            "voucher_date":r.get("VouDate")
         })
         doc.insert()
 
@@ -197,6 +209,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     summary_doc.bill_amt = total_bill_amt
     summary_doc.hm = total_hm
     summary_doc.returnfinewt = total_returnfinewt
+    summary_doc.sales_wastage_wt = total_sales_wastage_wt
 
     summary_doc.save(ignore_permissions=True)
 
@@ -215,7 +228,7 @@ def get_saved_transactions(acc_mst_id , summary_id):
             "is_completed": 0,
             "is_selected": 1
         },
-        fields=["item_tran_id","fine_wt", "oc", "hm","returnfinewt"]
+        fields=["item_tran_id","fine_wt", "oc", "hm","returnfinewt","sales_wastage_per","sales_wastage_wt"]
 
     )
 
@@ -246,6 +259,7 @@ def save_rate_cut_summary(data):
         doc.net_wt = d["netWt"]
         doc.oc = d["oc"]
         doc.hm = d["hm"]
+        doc.sales_wastage_wt = d["sales_wastage_wt"]
 
         doc.save(ignore_permissions=True)
 
@@ -381,6 +395,17 @@ def update_bill_and_diff(summary_id, bill_amt, diff):
     return "ok"
 
 
+@frappe.whitelist()
+def update_rate_cut_note(summary_id , rate_cut_note):
+
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    doc.rate_cut_note = rate_cut_note
+
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return "ok"
 
 
 
@@ -1197,6 +1222,221 @@ def process_selected_ledger(rows):
 
 @frappe.whitelist()
 def export_rate_cut_excel():
+    import os
+    import frappe
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+
+    wb = Workbook()
+
+    # ---------------- Summary Sheet ---------------- #
+
+    ws = wb.active
+    ws.title = "Rate Cut Summary"
+
+    headers = [
+        "Vendor",
+        "Rate Cut Date",
+        "FineWt",
+        "Selected FineWt",
+        "NetWt",
+        "OC",
+        "HM",
+        "Sales Wastage Wt",
+        "Return FineWt",
+        "Rate999 GST",
+        "Rate999 WO GST",
+        "Bill WO GST",
+        "Bill W GST",
+        "Bill Amt",
+        "Diff",
+        "Notes"
+    ]
+
+    for c, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=c)
+        cell.value = h
+        cell.font = Font(bold=True)
+
+    summaries = frappe.get_all(
+        "Rate Cut Summary",
+        fields=[
+            "name",
+            "vendor",
+            "ratecut_date",
+            "fine_wt",
+            "fine_wt_selected",
+            "net_wt",
+            "oc",
+            "hm",
+            "sales_wastage_wt",
+            "returnfinewt",
+            "rate_999_with_gst",
+            "rate_999_without_gst",
+            "bill_value_without_gst",
+            "bill_value_with_gst",
+            "bill_amt",
+            "diff",
+            "rate_cut_note"
+        ],
+        order_by="vendor"
+    )
+
+    # Dictionary to hold A, B, C... sheets
+    alpha_sheets = {}
+
+    vendor_headers = [
+        "Vendor",
+        "Vou No",
+        "Item Tran ID",
+        "FineWt",
+        "NetWt",
+        "OC",
+        "HM",
+        "Sales Wastage Per",
+        "Sales Wastage Wt",
+        "Return FineWt",
+        "Return GrossWt",
+        "Return NetWt",
+        "Return Vou No",
+        "Return Vou Date",
+        "Return Narration"
+    ]
+
+    for s in summaries:
+
+        # Summary Sheet
+        ws.append([
+            s.vendor,
+            s.ratecut_date,
+            s.fine_wt,
+            s.fine_wt_selected,
+            s.net_wt,
+            s.oc,
+            s.hm,
+            s.sales_wastage_wt,
+            s.returnfinewt,
+            s.rate_999_with_gst,
+            s.rate_999_without_gst,
+            s.bill_value_without_gst,
+            s.bill_value_with_gst,
+            s.bill_amt,
+            s.diff
+        ])
+
+        # ---------------- Alphabet Sheet ---------------- #
+
+        vendor = (s.vendor or "").strip()
+
+        if vendor:
+            sheet_name = vendor[0].upper()
+            if not sheet_name.isalpha():
+                sheet_name = "Others"
+        else:
+            sheet_name = "Others"
+
+        # Create alphabet sheet only once
+        if sheet_name not in alpha_sheets:
+
+            vendor_ws = wb.create_sheet(title=sheet_name)
+
+            for c, h in enumerate(vendor_headers, 1):
+                cell = vendor_ws.cell(row=1, column=c)
+                cell.value = h
+                cell.font = Font(bold=True)
+
+            alpha_sheets[sheet_name] = vendor_ws
+
+        vendor_ws = alpha_sheets[sheet_name]
+
+        # Add a vendor heading whenever vendor changes
+        current_last_vendor = None
+        if vendor_ws.max_row > 1:
+            current_last_vendor = vendor_ws.cell(vendor_ws.max_row, 1).value
+
+        if current_last_vendor != s.vendor:
+            vendor_ws.append([
+                s.vendor,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ])
+
+        transactions = frappe.get_all(
+            "Rate Cut Transaction",
+            filters={"summary_id": s.name},
+            fields=[
+                "vou_no",
+                "item_tran_id",
+                "fine_wt",
+                "net_wt",
+                "oc",
+                "hm",
+                "sales_wastage_per",
+                "sales_wastage_wt",
+                "returnfinewt",
+                "returngrosswt",
+                "returnnetwt",
+                "returnvouno",
+                "returnvoudate",
+                "returnnarration"
+            ],
+            order_by="vou_no"
+        )
+
+        for t in transactions:
+            vendor_ws.append([
+                "",   # Vendor shown only once above
+                t.vou_no,
+                t.item_tran_id,
+                t.fine_wt,
+                t.net_wt,
+                t.oc,
+                t.hm,
+                t.sales_wastage_per,
+                t.sales_wastage_wt,
+                t.returnfinewt,
+                t.returngrosswt,
+                t.returnnetwt,
+                t.returnvouno,
+                t.returnvoudate,
+                t.returnnarration
+            ])
+
+        # Blank row after each vendor
+        vendor_ws.append([""] * len(vendor_headers))
+
+    # ---------------- Auto Width ---------------- #
+
+    for sheet in wb.worksheets:
+        for column in sheet.columns:
+            length = max(len(str(cell.value or "")) for cell in column)
+            sheet.column_dimensions[column[0].column_letter].width = min(length + 3, 35)
+
+    filename = f"Rate_Cut_Summary_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+    file_path = os.path.join(
+        frappe.get_site_path("public", "files"),
+        filename
+    )
+
+    wb.save(file_path)
+
+    return "/files/" + filename
+
+@frappe.whitelist()
+def export_rate_cut_excel1():
 
     wb = Workbook()
 

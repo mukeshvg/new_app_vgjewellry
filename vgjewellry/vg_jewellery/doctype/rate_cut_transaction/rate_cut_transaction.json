@@ -24,7 +24,12 @@
   "returnnetwt",
   "returnvoudate",
   "returnnarration",
-  "returnvouno"
+  "returnvouno",
+  "voucher_date",
+  "purity",
+  "pcs",
+  "sales_wastage_per",
+  "sales_wastage_wt"
  ],
  "fields": [
   {
@@ -128,12 +133,37 @@
    "fieldname": "returnvouno",
    "fieldtype": "Data",
    "label": "ReturnVouNo"
+  },
+  {
+   "fieldname": "voucher_date",
+   "fieldtype": "Date",
+   "label": "Voucher Date"
+  },
+  {
+   "fieldname": "purity",
+   "fieldtype": "Data",
+   "label": "Purity"
+  },
+  {
+   "fieldname": "pcs",
+   "fieldtype": "Int",
+   "label": "Pcs"
+  },
+  {
+   "fieldname": "sales_wastage_per",
+   "fieldtype": "Float",
+   "label": "Sales Wastage Per"
+  },
+  {
+   "fieldname": "sales_wastage_wt",
+   "fieldtype": "Float",
+   "label": "Sales Wastage Wt"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-20 12:37:12.942912",
+ "modified": "2026-07-02 15:47:49.213256",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",
