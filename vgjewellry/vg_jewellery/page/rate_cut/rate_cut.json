@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-05-25 16:01:26.097473",
+ "modified": "2026-07-03 14:34:18.946380",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "rate-cut",
@@ -16,6 +16,9 @@
   },
   {
    "role": "Administrator"
+  },
+  {
+   "role": "Rate Cut"
   }
  ],
  "script": null,
