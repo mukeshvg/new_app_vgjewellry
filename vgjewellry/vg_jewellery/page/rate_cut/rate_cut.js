@@ -134,7 +134,45 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	</style>
 
 	<div class="row mb-4">
+<div class="col-md-2">
+    <label class="control-label">Rate Cut Date</label>
+    <input type="date"
+           class="form-control"
+           id="rate-cut-date-filter">
+</div>
 
+<div class="col-md-2" style="margin-top:24px;">
+    <button class="btn btn-primary" id="filter-rate-cut">
+        Filter
+    </button>
+
+    <button class="btn btn-secondary" id="clear-rate-cut-filter">
+        Clear
+    </button>
+</div>
+<div class="col-md-3" style="margin-top:24px;">
+    <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               id="rate-cut-done"
+               checked>
+
+        <label class="form-check-label" for="rate-cut-done">
+            Rate Cut Done
+        </label>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               id="rate-cut-not-done"
+               checked>
+
+        <label class="form-check-label" for="rate-cut-not-done">
+            Rate Cut Not Done
+        </label>
+    </div>
+</div>
 	    <!--<div class="col-md-4">
 		<div id="vendor-autocomplete"></div>
 	    </div>
@@ -202,13 +240,31 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 	function load_summary_table() {
 
+		let filters = {
+        	is_submitted: 0
+    	};
+		let selectedDate = $('#rate-cut-date-filter').val();
+
+    	if (selectedDate) {
+        	filters.ratecut_date = selectedDate;
+    	}
+    	let done = $("#rate-cut-done").is(":checked");
+    let notDone = $("#rate-cut-not-done").is(":checked");
+
+    // If only "Done" is checked
+    if (done && !notDone) {
+        filters.rate_999_with_gst = [">", 0];
+    }
+
+    // If only "Not Done" is checked
+    if (!done && notDone) {
+        filters.rate_999_with_gst = ["in", ["", null, 0]];
+    }	
 		frappe.call({
 			method: "frappe.client.get_list",
 			args: {
 				doctype: "Rate Cut Summary",
-				filters: {
-					is_submitted: 0
-				},
+				filters: filters,
 				fields: [
 					"name",
 					"ratecut_date",
@@ -259,6 +315,19 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			}
 		});
 	}
+	
+	$('#filter-rate-cut').on('click', function () {
+    load_summary_table();
+});
+
+$('#clear-rate-cut-filter').on('click', function () {
+    $('#rate-cut-date-filter').val('');
+    load_summary_table();
+});
+
+$("#rate-cut-done, #rate-cut-not-done").on("change", function () {
+    load_summary_table();
+});
 
 	function render_table() {
 
@@ -670,6 +739,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		bind_vendor_click();
 
 	}
+
+	$('#rate-cut-date-filter').val(frappe.datetime.get_today());
 
 	load_summary_table();
 

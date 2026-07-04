@@ -250,6 +250,8 @@ WHERE RN = 1
             row["NetWt"]= row["NetWt"]- row["ReturnNetWt"]
             row["FineWt"]= row["FineWt"]- row["ReturnFineWt"]
             row["Pcs"]= row["Pcs"]- row["ReturnPcs"]
+        if row["NetWt"]== 0:
+            continue
         row["HM"]= float( row.get("Pcs")* 45 or 0)
         if row["WastagePer"] > 0:
             row["WastagePer"] = float(row.get("WastagePer"))-0.33
