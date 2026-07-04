@@ -134,134 +134,6 @@ WHERE RN = 1
 
     return dict(grouped_data)
 
-@frappe.whitelist(allow_guest=True)
-def get_vendor_rate_cut(acc_mst_id,summary_id):
-    con = connect()
-    cursor=con.cursor()
-    qry= '''
-    WITH CTE AS
-(
-    SELECT
-        it.ItemTranID,
-        it.VouNo,
-        it.VouID,
-        it.VouDate,
-        it.TranID,
-        it.OpVouType,
-        it.ItemTradMstID,
-        it.GrossWt,
-        it.NetWt,
-        it.Pcs,
-        it.WastagePer,
-        (it.FineWt+it.WastageWeight) as FineWt,
-        it.Purity,
-        itm.TradShortName as tradname,
-        it.OtherCharge,
-        it.SattleTradId,
-        it.Narration as ItemName,
-        va.Narration,
-        va.IRMstID ,
-        vam.AccMstID,
-        vam.AccSubID,
-        am.AccName,
-        ts.Amount as HM,
-
-        return_it.Pcs AS ReturnPcs,
-        return_it.VouNo AS ReturnVouNo,
-        return_it.VouDate AS ReturnVouDate,
-        return_it.GrossWt AS ReturnGrossWt,
-        return_it.NetWt AS ReturnNetWt,
-        return_it.FineWt AS ReturnFineWt,
-        return_ir.Narration AS ReturnNarration,
-
-
-
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY it.ItemTranID
-            ORDER BY vam.AccMstID
-        ) AS RN
-
-    FROM dbo.ItemTransaction it
-
-    INNER JOIN dbo.IRMst va
-        ON it.VouNo = va.VouNo
-
-    INNER JOIN dbo.VouActionMst vam
-        ON it.VouID = vam.VId
-
-    LEFT JOIN dbo.AccMaster am
-        ON am.AccMstID = vam.AccMstID
-
-    LEFT JOIN dbo.ItemTradMst itm On itm.ItemTradMstID= it.ItemTradMstID    
-
-    Left Join dbo.IRTranStudded as ts
-       on it.TranID=ts.IRTranId  and    ts.StyleID = 63
-
-    LEFT JOIN dbo.ItemTransaction return_it
-        ON return_it.OpVouMstId = it.VouID
-       AND return_it.OpVouTranId = it.TranID
-
-    -- Get details of that voucher
-    LEFT JOIN dbo.IRMst return_ir
-        ON return_ir.VouNo = return_it.VouNo
-       AND return_ir.YearID = 16
-
-
-    WHERE it.VouNo LIKE 'HARM /%'
-        AND it.YearID = 16
-        --	AND it.OpVouTranId = 0
-        --AND it.OpVouType = ''
-        AND vam.VouType = 'AAR'
-        AND vam.AccMstID = ?
-        And va.YearID=16
-)
-
-SELECT *
-FROM CTE
-WHERE RN = 1
-    '''
-    values = (acc_mst_id)
-    cursor.execute(qry,(values))
-    res = cursor.fetchall()
-    data = []
-    columnNames = [column[0] for column in cursor.description]
-
-    grouped_data = defaultdict(list)
-    
-    completed_item_tran_ids = set(
-    frappe.db.sql("""
-        SELECT rct.item_tran_id
-        FROM `tabRate Cut Transaction` rct
-        INNER JOIN `tabRate Cut Summary` rcs
-            ON rcs.name = rct.summary_id
-        WHERE rct.acc_mst_id = %s
-          AND IFNULL(rcs.rate_999_with_gst, 0) > 0
-    """, (acc_mst_id,), pluck=True)
-	)
-
-    for record in res:
-        row = dict(zip(columnNames, record))
-        if row["ItemTranID"] in completed_item_tran_ids:
-        	continue
-        acc_mst_id = str(row["AccMstID"])
-        if row.get("OpVouType") !="":
-            row["GrossWt"]= row["GrossWt"]- row["ReturnGrossWt"]
-            row["NetWt"]= row["NetWt"]- row["ReturnNetWt"]
-            row["FineWt"]= row["FineWt"]- row["ReturnFineWt"]
-            row["Pcs"]= row["Pcs"]- row["ReturnPcs"]
-        row["HM"]= float( row.get("Pcs")* 45 or 0)
-        if row["WastagePer"] > 0:
-            row["WastagePer"] = float(row.get("WastagePer"))-0.33
-        row["WastageWt"] = round((float(row.get("NetWt")) * float(row["WastagePer"]) / 100),3)   
-        if float(row["OtherCharge"]) > 0 :
-            row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] )
-        grouped_data[acc_mst_id].append(row)
-    cursor.close();
-    con.close();
-
-    return dict(grouped_data)
-
 @frappe.whitelist()
 def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
 
@@ -349,39 +221,20 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
 
     return "saved"
 
-
 @frappe.whitelist()
-def get_saved_transactions(acc_mst_id, summary_id):
+def get_saved_transactions(acc_mst_id , summary_id):
 
-    rows = frappe.get_all(
+    return frappe.get_all(
         "Rate Cut Transaction",
         filters={
             "acc_mst_id": acc_mst_id,
-            "summary_id": summary_id,
+            "summary_id":summary_id,
             "is_completed": 0,
             "is_selected": 1
         },
-        fields=["*"]
+        fields=["item_tran_id","fine_wt", "oc", "hm","returnfinewt","sales_wastage_per","sales_wastage_wt"]
+
     )
-
-    rate_exists = False
-    rate_999_with_gst = None
-
-    if summary_id:
-        rate_999_with_gst = frappe.db.get_value(
-            "Rate Cut Summary",
-            summary_id,
-            "rate_999_with_gst"
-        )
-
-        rate_exists = bool(rate_999_with_gst)
-
-    return {
-        "rows": rows,
-        "rate_exists": rate_exists
-        
-    }
-
 
 @frappe.whitelist()
 def save_rate_cut_summary(data):
@@ -1349,51 +1202,12 @@ def process_selected_ledger(rows):
 
     for row in rows:
 
-        # Find the latest summary where rate_999_with_gst is empty
-        summary_id = frappe.db.get_value(
-            "Rate Cut Summary",
-            {
-                "acc_mst_id": row["acc"],
-                "rate_999_with_gst": ["in", ["", None]]
-            },
-            "name",
-            order_by="creation desc"
-        )
-
-        if summary_id:
-            # Update existing record
-            doc = frappe.get_doc("Rate Cut Summary", summary_id)
-        else:
-            # All existing records have rate_999_with_gst filled (or none exist)
-            doc = frappe.new_doc("Rate Cut Summary")
-
-        doc.vendor = row["name"]
-        doc.acc_mst_id = row["acc"]
-        doc.ratecut_date = today
-        doc.fine_wt = row.get("payable_wt", 0)
-
-        doc.save(ignore_permissions=True)
-
-    frappe.db.commit()
-
-    return "Saved"
-    
-
-@frappe.whitelist()
-def process_selected_ledger1(rows):
-    rows = json.loads(rows)
-    today = frappe.utils.today()
-
-    for row in rows:
-
         existing = frappe.db.exists(
             "Rate Cut Summary",
             {
                 "acc_mst_id": row["acc"]
             }
         )
-
-        return existing
 
         if existing:
             doc = frappe.get_doc("Rate Cut Summary", existing)
@@ -1412,6 +1226,7 @@ def process_selected_ledger1(rows):
         doc.save(ignore_permissions=True)
 
     frappe.db.commit()
+
     return "Saved"
 
 

@@ -135,7 +135,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 	<div class="row mb-4">
 
-	    <!--<div class="col-md-4">
+	    <div class="col-md-4">
 		<div id="vendor-autocomplete"></div>
 	    </div>
 
@@ -156,7 +156,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			id="add-row-btn">
 		    Add
 		</button>
-	    </div>-->
+	    </div>
 	    <div class="col-md-3" >
 	    <div class="arihant-card">
 
@@ -689,56 +689,28 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 					summary_id: summary_id
 				},
 				callback: function (r) {
-					let savedRows = r.message.rows || [];
-					let rate999WithGst = r.message.rate_999_with_gst;
-
+					let savedRows = r.message || [];
 					savedSelected = savedRows.map(
 						x => x.item_tran_id
 					);
 
 
 					let savedMap = {};
-					let sv =[];
+
 					savedRows.forEach(row => {
 						savedMap[row.item_tran_id] = row;
-						sv.push(row);
 					});
-					if (!r.message.rate_exists) {
-						frappe.call({
-					method: "vgjewellry.rate_cut.get_vendor_rate_cut",
-					freeze: true,
-                			freeze_message: __("Loading Vendor Data..."),
-					args: {
-					    acc_mst_id: rowData.accMstId,
-					    summary_id: summary_id
-					},
-					callback: function(res) {
-					    // handle response
+					let vendorRecords =
+						apiData[rowData.accMstId];
 
-					    open_vendor_modal(
-						rowData,
-						res.message[rowData.accMstId],
-						savedSelected,
-						savedMap,
-						rowData.vendor
-					    );
-					}
-				    });
-					
-
-					}else{
-					
-					console.log(savedMap);
 
 					open_vendor_modal(
 						rowData,
-						//vendorRecords,
-						sv,
+						vendorRecords,
 						savedSelected,
 						savedMap,
 						rowData.vendor
 					);
-					}
 				}
 			});
 		});
@@ -879,14 +851,14 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		let voucherColorMap = {};
 		let colorIndex = 0;
 		records.forEach(record => {
-			let checked = savedSelected.includes(record.ItemTranID ?? record.item_tran_id);
+			let checked = savedSelected.includes(record.ItemTranID);
 			let saved = savedMap[record.ItemTranID] || {};
-		if (!voucherColorMap[record.VouNo?? record.vou_no]) {
-		    voucherColorMap[record.VouNo?? record.vou_no] = lightColors[colorIndex % lightColors.length];
+		if (!voucherColorMap[record.VouNo]) {
+		    voucherColorMap[record.VouNo] = lightColors[colorIndex % lightColors.length];
 		    colorIndex++;
 		}
 
-		let rowColor = voucherColorMap[record.VouNo?? record.vou_no];
+		let rowColor = voucherColorMap[record.VouNo];
 
 			modalHtml += `
 			<tr style="background-color:${rowColor};">
@@ -896,57 +868,57 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	       data-id="${record.ItemTranID}"
 	       ${checked ? "checked" : ""}>
     </td>
-			    <td class="vou-no">${record.VouNo ?? record.vou_no}</td>
+			    <td class="vou-no">${record.VouNo}</td>
 
 			    <td class="vou-no">
 			    ${moment(record.VouDate).format("DD-MM-YYYY")}
 			    </td>
 
-			    <td>${record.GrossWt ?? record.gross_wt}</td>
+			    <td>${record.GrossWt}</td>
 
 			    <td>
-				<input type="number" class="form-control snetwt-input" data-id="${record.ItemTranID}" value="${saved.net_wt ?? record.NetWt ?? record.net_wt}" step="0.001">
+				<input type="number" class="form-control snetwt-input" data-id="${record.ItemTranID}" value="${saved.net_wt ?? record.NetWt ?? 0}" step="0.001">
 			    </td>
 			    <td>
-			    <input type="number"  class="form-control finewt-input" data-id="${record.ItemTranID}" value="${saved.fine_wt ?? record.FineWt ?? record.fine_wt}" step="0.001">
+			    <input type="number"  class="form-control finewt-input" data-id="${record.ItemTranID}" value="${saved.fine_wt ?? record.FineWt ?? 0}" step="0.001">
 			    </td>
-			    <td>${record.tradname ?? record.purity}</td>
-			    <td>${record.Pcs ?? record.pcs}</td>
-			    <td>${record.WastagePer ?? record.sales_wastage_per}</td>
-			    <td>${record.WastageWt ?? record.sales_wastage_wt ?? 0}</td>
+			    <td>${record.tradname}</td>
+			    <td>${record.Pcs}</td>
+			    <td>${record.WastagePer}</td>
+			    <td>${record.WastageWt.toFixed(3)}</td>
 			    <td><input type="number"
 	   class="form-control oc-input"
 	   data-id="${record.ItemTranID}"
-	   value="${saved.oc ?? record.OtherCharge ?? record.oc}"
+	   value="${saved.oc ?? record.OtherCharge ?? 0}"
 	   step="0.01"></td>
 			    <td><input type="number"
 	   class="form-control hm-input"
 	   data-id="${record.ItemTranID}"
-	   value="${saved.hm ?? record.HM ?? record.hm}"
+	   value="${saved.hm ?? record.HM ?? 0}"
 	   step="0.01"></td>
 
-			    <td>${record.Narration ?? record.narration}</td>
+			    <td>${record.Narration}</td>
 
-			<td class="vou-no">${record.ReturnVouNo  ?? record.returnvouno ?? ""}</td>
+			<td class="vou-no">${record.ReturnVouNo || ''}</td>
 
     <td class="vou-no">
     ${record.ReturnVouDate
     ? moment(record.ReturnVouDate).format("DD-MM-YYYY")
-    : moment(record.returnvoudate).format("DD-MM-YYYY")}
+    : ''}
     </td>
 
-    <td>${record.ReturnGrossWt ?? record.returngrosswt ?? 0}</td>
+    <td>${record.ReturnGrossWt || 0}</td>
 
-    <td>${record.ReturnNetWt ?? record.returnnetwt ?? 0}</td>
+    <td>${record.ReturnNetWt || 0}</td>
 
     <td><input type="number"
                class="form-control returnfinewt-input"
                data-id="${record.ItemTranID}"
-               value="${saved.returnfinewt ?? record.ReturnFineWt ?? record.returnfinewt}"
+               value="${saved.returnfinewt ?? record.ReturnFineWt ?? 0}"
                step="0.001">
     </td>
 
-    <td>${record.ReturnNarration ?? record.returnnarration ?? ''}</td>
+    <td>${record.ReturnNarration || ''}</td>
 			</tr>
 		    `;
 		});
@@ -1218,7 +1190,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 	}
 	
-	/*frappe.call({
+	frappe.call({
 		method: "vgjewellry.rate_cut.get_all_vendor_rate_cut",
 		freeze: true,
         	freeze_message: __("Loading Vendors..."),
@@ -1262,8 +1234,6 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			});
 
 			
-		}
-	});*/
 			function loadArihantRate() {
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_arihant_rate",
@@ -1280,7 +1250,7 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 100000);
+			let arihantRateInterval = setInterval(loadArihantRate, 10000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
@@ -1773,6 +1743,8 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 			// Modal
 
+		}
+	});
 
 	$(document).on('click', '.save-row-btn', function () {
 

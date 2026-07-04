@@ -9,10 +9,12 @@
   "acc_mst_id",
   "item_tran_id",
   "vou_no",
+  "gross_wt",
   "fine_wt",
   "net_wt",
   "oc",
   "hm",
+  "narration",
   "original_fine_wt",
   "original_oc",
   "original_hm",
@@ -158,12 +160,22 @@
    "fieldname": "sales_wastage_wt",
    "fieldtype": "Float",
    "label": "Sales Wastage Wt"
+  },
+  {
+   "fieldname": "gross_wt",
+   "fieldtype": "Float",
+   "label": "Gross Wt"
+  },
+  {
+   "fieldname": "narration",
+   "fieldtype": "Data",
+   "label": "narration"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-03 14:34:03.468811",
+ "modified": "2026-07-03 15:27:44.975417",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",
