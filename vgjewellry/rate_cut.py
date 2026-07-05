@@ -170,7 +170,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
         return_it.VouNo AS ReturnVouNo,
         return_it.VouDate AS ReturnVouDate,
         return_it.GrossWt AS ReturnGrossWt,
-        return_it.NetWt AS ReturnNetWt,
+        return_ir.NetWt AS ReturnNetWt,
         return_it.FineWt AS ReturnFineWt,
         return_ir.Narration AS ReturnNarration,
 
@@ -200,7 +200,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
 
     LEFT JOIN dbo.ItemTransaction return_it
         ON return_it.OpVouMstId = it.VouID
-       AND return_it.OpVouTranId = it.TranID
+        AND return_it.OpVouTranId = it.TranID
 
     -- Get details of that voucher
     LEFT JOIN dbo.IRMst return_ir
@@ -250,7 +250,7 @@ WHERE RN = 1
             row["NetWt"]= row["NetWt"]- row["ReturnNetWt"]
             row["FineWt"]= row["FineWt"]- row["ReturnFineWt"]
             row["Pcs"]= row["Pcs"]- row["ReturnPcs"]
-        if row["NetWt"]== 0:
+        if row["NetWt"]== 0 or row['NetWt'] <0:
             continue
         row["HM"]= float( row.get("Pcs")* 45 or 0)
         if row["WastagePer"] > 0:
