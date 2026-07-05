@@ -453,28 +453,28 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    <td> <input type="number" readonly
 	   class="form-control rate999wogst-input"
 	   data-index="${index}"
-	   value="${row.rate999WithoutGst || ''}"
+	   value="${row.rate999WithoutGst.toFixed() || ''}"
 	   step="0.01"></td>
 
 			    <td><input type="number" readonly
 	   class="form-control billwithoutgst-input"
 	   data-index="${index}"
-	   value="${row.billWithoutGst || ''}"
+	   value="${row.billWithoutGst.toFixed()  || ''}"
 	   step="0.01"></td>
 
 			    <td><input type="number" readonly
 	   class="form-control withgstvalue-input"
 	   data-index="${index}"
-	   value="${row.withGstValue || ''}"
+	   value="${row.withGstValue.toFixed()  || ''}"
 	   step="0.01"></td>
 
 			    <td><input type="number"
 	   class="form-control billamt-input"
 	   data-index="${index}"
-	   value="${row.billAmt || ''}"
+	   value="${row.billAmt.toFixed()  || ''}"
 	   step="0.01"></td>
 
-			    <td class="diff-cell"> ${(row.diff || 0).toFixed(2)}</td>
+			    <td class="diff-cell"> ${(row.diff || 0).toFixed()}</td>
 			    <td><input type="text" 
 	   class="form-control rate_cut_note-input"
 	   data-index="${index}"
@@ -557,7 +557,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			// Update UI
 			$(`.rate999wogst-input[data-index="${idx}"]`)
-				.val(withoutGst.toFixed(2));
+				.val(withoutGst.toFixed());
 			// Calculate Bill Value Without GST
 			let selectedFineWt =
 				parseFloat(addedRows[idx].selectedFineWt) || 0;
@@ -579,13 +579,13 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			// Update UI
 			$(`.billwithoutgst-input[data-index="${idx}"]`)
-				.val(billWithoutGst.toFixed(2));
+				.val(billWithoutGst.toFixed());
 			let withGstValue = billWithoutGst * 1.03;
 
 			addedRows[idx].withGstValue = withGstValue;
 
 			$(`.withgstvalue-input[data-index="${idx}"]`)
-				.val(withGstValue.toFixed(2));
+				.val(withGstValue.toFixed());
 
 			clearTimeout(saveTimeout);
 			saveTimeout = setTimeout(() => {
@@ -1367,7 +1367,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 100000);
+			let arihantRateInterval = setInterval(loadArihantRate, 10000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
