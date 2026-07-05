@@ -135,10 +135,17 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 	<div class="row mb-4">
 <div class="col-md-2">
-    <label class="control-label">Rate Cut Date</label>
+    <label class="control-label">From Date</label>
     <input type="date"
            class="form-control"
-           id="rate-cut-date-filter">
+           id="rate-cut-from-date">
+</div>
+
+<div class="col-md-2">
+    <label class="control-label">To Date</label>
+    <input type="date"
+           class="form-control"
+           id="rate-cut-to-date">
 </div>
 
 <div class="col-md-2" style="margin-top:24px;">
@@ -243,11 +250,16 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 		let filters = {
         	is_submitted: 0
     	};
-		let selectedDate = $('#rate-cut-date-filter').val();
+		let fromDate = $('#rate-cut-from-date').val();
+let toDate = $('#rate-cut-to-date').val();
 
-    	if (selectedDate) {
-        	filters.ratecut_date = selectedDate;
-    	}
+if (fromDate && toDate) {
+    filters.ratecut_date = ["between", [fromDate, toDate]];
+} else if (fromDate) {
+    filters.ratecut_date = [">=", fromDate];
+} else if (toDate) {
+    filters.ratecut_date = ["<=", toDate];
+}
     	let done = $("#rate-cut-done").is(":checked");
     let notDone = $("#rate-cut-not-done").is(":checked");
 
@@ -321,7 +333,12 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 });
 
 $('#clear-rate-cut-filter').on('click', function () {
-    $('#rate-cut-date-filter').val('');
+    $('#rate-cut-from-date').val('');
+    $('#rate-cut-to-date').val('');
+
+    $('#rate-cut-done').prop('checked', true);
+    $('#rate-cut-not-done').prop('checked', true);
+
     load_summary_table();
 });
 
@@ -361,7 +378,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				<th>BILL AMT</th>
 				<th>Diff</th>
 				<th>Notes</th>
-				<th>Save</th>
+				<!--<th>Save</th>-->
 				<th>Remove</th>
 			    </tr>
 			</thead>
@@ -463,13 +480,13 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 	   data-index="${index}"
 	   value="${row.rate_cut_note || ''}"
 	   ></td>
-<td>
+<!--<td>
     <button
 	class="btn btn-success btn-sm save-row-btn"
 	data-index="${index}">
 	Save
     </button>
-</td>
+</td>-->
 
 <td>
     <button
@@ -516,7 +533,6 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			<td></td>
 			<td></td>
 			<td></td>
-
 		    </tr>
 		`;
 
