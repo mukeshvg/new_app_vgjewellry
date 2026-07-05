@@ -87,7 +87,7 @@
    "fieldname": "rate_999_without_gst",
    "fieldtype": "Float",
    "label": "Rate 999 Without GST",
-   "precision": "0"
+   "precision": "2"
   },
   {
    "fieldname": "bill_value_without_gst",
@@ -131,7 +131,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-03 14:33:35.855308",
+ "modified": "2026-07-05 11:34:23.528182",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",
