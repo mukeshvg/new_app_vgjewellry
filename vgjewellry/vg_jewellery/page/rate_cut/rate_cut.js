@@ -571,7 +571,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				parseFloat(addedRows[idx].oc) || 0;
 
 			let billWithoutGst =
-				((withoutGst / 10) * (selectedFineWt - returnfinewt)) +
+				((withoutGst / 10) * (selectedFineWt )) +
 				hm +
 				oc;
 
