@@ -289,6 +289,8 @@ if (fromDate && toDate) {
 					"hm",
 					"sales_wastage_wt",
 					"returnfinewt",
+					"rate_cut_by",
+					"rate_cut_type",
 					"rate_999_with_gst",
 					"rate_999_without_gst",
 					"bill_value_without_gst",
@@ -311,6 +313,8 @@ if (fromDate && toDate) {
 					oc: d.oc,
 					hm: d.hm,
 					sales_wastage_wt:d.sales_wastage_wt,
+					rate_cut_by:d.rate_cut_by,
+					rate_cut_type:d.rate_cut_type,
 					returnfinewt: d.returnfinewt,
 					rate999WGst: d.rate_999_with_gst,
 					rate999WithoutGst: d.rate_999_without_gst,
@@ -371,6 +375,8 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				<th>OC</th>
 				<th>Sales Wastage Wt</th>
 				<th>Return Fine Wt</th>
+				<th>Rate Cut By</th>
+				<th>Rate Cut Type</th>
 				<th>RATE 999 With GST</th>
 				<th>RATE 999 Without GST</th>
 				<th>BILL VALUE WITHOUT GST</th>
@@ -443,6 +449,41 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    <td>${row.oc.toFixed(2)}</td>
 			    <td>${row.sales_wastage_wt.toFixed(2)}</td>
 			    <td>${row.returnfinewt.toFixed(3)}</td>
+			    <td>
+				<select class="form-control rate-cut-by"
+						data-index="${index}">
+					<option value=""
+						${!row.rate_cut_by ? "selected" : ""}>
+					</option>
+
+					${
+						rateCutByOptions.map(opt => `
+							<option value="${opt}"
+								${row.rate_cut_by === opt ? "selected" : ""}>
+								${opt}
+							</option>
+						`).join("")
+					}
+				</select>
+			</td>
+
+			<td>
+				<select class="form-control rate-cut-type"
+						data-index="${index}">
+				            <option value=""
+        				    ${!row.rate_cut_type ? "selected" : ""}>
+        					</option>
+							<option value="Rate Cut"
+						${row.rate_cut_type=="Rate Cut" ? "selected":""}>
+						Rate Cut
+					</option>
+
+					<option value="Kim"
+						${row.rate_cut_type=="Kim" ? "selected":""}>
+						Kim
+					</option>
+				</select>
+			</td>
 
 			    <td><input type="number"
 	   class="form-control rate999wgst-input"
@@ -542,6 +583,35 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		`;
 
 		$('#vendor-table').html(html);
+		
+		$("#vendor-table .rate-cut-by, #vendor-table .rate-cut-type").on("change", function () {
+
+			let idx = $(this).data("index");
+
+			addedRows[idx].rate_cut_by = $(
+				`.rate-cut-by[data-index="${idx}"]`
+			).val();
+
+			addedRows[idx].rate_cut_type = $(
+				`.rate-cut-type[data-index="${idx}"]`
+			).val();
+
+			frappe.call({
+				method: "vgjewellry.rate_cut.update_rate_cut_by",
+				args: {
+				    summary_id: addedRows[idx].name,
+				    rate_cut_by: addedRows[idx].rate_cut_by,
+				    rate_cut_type: addedRows[idx].rate_cut_type
+				},
+				callback() {
+				    frappe.show_alert({
+				        message: "Saved",
+				        indicator: "green"
+				    });
+				}
+			});
+
+		});
 		let saveTimeout;
 		$('#vendor-table .rate999wgst-input').on('change', function () {
 			let idx = $(this).data('index');
@@ -758,6 +828,20 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 	$('#rate-cut-date-filter').val(frappe.datetime.get_today());
 
+	let rateCutByOptions = [];
+
+		frappe.call({
+			method: "frappe.client.get_list",
+			args: {
+				doctype: "Rate Cut By",
+				fields: ["rate_cut_by"],
+				limit_page_length: 1000
+			},
+			callback: function(r) {
+				rateCutByOptions = (r.message || []).map(d => d.rate_cut_by);
+				console.log(rateCutByOptions)
+			}
+		});
 	load_summary_table();
 
 	function bind_vendor_click() {
@@ -1305,52 +1389,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 	}
 	
-	/*frappe.call({
-		method: "vgjewellry.rate_cut.get_all_vendor_rate_cut",
-		freeze: true,
-        	freeze_message: __("Loading Vendors..."),
-		callback: function (r) {
-
-			if (!r.message) return;
-
-			apiData = r.message;
-
-			options = [];
-
-			Object.keys(apiData).forEach(accMstId => {
-
-				let records = apiData[accMstId];
-
-				if (records.length > 0) {
-
-					options.push({
-						label: records[0].AccName,
-						value: accMstId
-					});
-				}
-			});
-
-			// Sort
-			options.sort((a, b) =>
-				a.label.localeCompare(b.label)
-			);
-
-			// Autocomplete
-			let field = frappe.ui.form.make_control({
-				parent: $('#vendor-autocomplete'),
-				df: {
-					label: 'Vendor',
-					fieldname: 'vendor',
-					fieldtype: 'Autocomplete',
-					options: options.map(x => x.label),
-					placeholder: 'Search Vendor'
-				},
-				render_input: true
-			});
-
-			
-		}
-	});*/
+	
 			function loadArihantRate() {
 				frappe.call({
 					method: "vgjewellry.rate_cut.get_arihant_rate",
@@ -1552,6 +1591,8 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 						});
 
 						d.fields_dict.ledger_html.$wrapper.html(html);
+						d.$wrapper.find('.metal-currency-table .col-filter[data-col="7"]').val("Supplier");
+						filterLedgerTable();
 
 						function filterLedgerTable() {
 

@@ -23,7 +23,9 @@
   "diff",
   "sales_wastage_per",
   "sales_wastage_wt",
-  "rate_cut_note"
+  "rate_cut_note",
+  "rate_cut_by",
+  "rate_cut_type"
  ],
  "fields": [
   {
@@ -126,12 +128,22 @@
    "fieldname": "rate_cut_note",
    "fieldtype": "Small Text",
    "label": "Rate Cut Note"
+  },
+  {
+   "fieldname": "rate_cut_by",
+   "fieldtype": "Data",
+   "label": "Rate Cut By"
+  },
+  {
+   "fieldname": "rate_cut_type",
+   "fieldtype": "Data",
+   "label": "Rate Cut Type"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-05 11:34:23.528182",
+ "modified": "2026-07-11 13:17:30.783273",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",

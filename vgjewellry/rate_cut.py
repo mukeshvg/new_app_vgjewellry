@@ -1415,10 +1415,27 @@ def process_selected_ledger1(rows):
 
     frappe.db.commit()
     return "Saved"
+    
+@frappe.whitelist()
+def update_rate_cut_by(summary_id, rate_cut_by=None, rate_cut_type=None, **kwargs):
+    doc = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    if rate_cut_by is not None:
+        doc.rate_cut_by = rate_cut_by
+
+    if rate_cut_type is not None:
+        doc.rate_cut_type = rate_cut_type
+
+    # existing updates...
+    # doc.rate_999_with_gst = ...
+    # ...
+
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()    
 
 
 @frappe.whitelist()
-def export_rate_cut_excel():
+def export_rate_cut_excel1():
     import os
     import frappe
     from openpyxl import Workbook
@@ -1745,3 +1762,591 @@ def export_rate_cut_excel():
 
     return "/files/" + filename
 
+
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from itertools import groupby
+
+
+@frappe.whitelist()
+def export_rate_cut_excel():
+
+    wb = Workbook()
+
+    # =====================================================
+    #              CREATE SHEETS
+    # =====================================================
+
+    payment_ws = wb.active
+    payment_ws.title = "PAYMENT SHEET"
+
+    request_ws = wb.create_sheet("REQUEST SHEET")
+
+
+    headers = [
+        "RATE CUT TYPE",
+        "RATE WITHOUT GST",
+        "PARTY",
+        "FINE-999",
+        "FINE WT",
+        "NET WT",
+        "HM",
+        "OC",
+        "RATE 999 W.GST",
+        "BILL VALUE WITHOUT GST",
+        "WITH GST VALUE",
+        "BILL AMT",
+        "DIFF"
+    ]
+
+
+    # =====================================================
+    #              FETCH DATA
+    # =====================================================
+
+    all_summaries = frappe.get_all(
+        "Rate Cut Summary",
+        fields=[
+            "name",
+            "vendor",
+            "ratecut_date",
+            "rate_cut_by",
+            "rate_cut_type",
+            "fine_wt",
+            "fine_wt_selected",
+            "net_wt",
+            "oc",
+            "hm",
+            "sales_wastage_wt",
+            "returnfinewt",
+            "rate_999_with_gst",
+            "rate_999_without_gst",
+            "bill_value_without_gst",
+            "bill_value_with_gst",
+            "bill_amt",
+            "diff",
+            "rate_cut_note"
+        ],
+        order_by="rate_cut_by, ratecut_date, vendor"
+    )
+
+
+    # Payment only records where rate exists
+
+    payment_summaries = [
+        row for row in all_summaries
+        if (row.rate_999_with_gst or 0) > 0
+    ]
+
+
+    # Request contains everything
+
+    request_summaries = all_summaries
+
+
+    header_fill = PatternFill(
+        fill_type="solid",
+        start_color="DCE6F2",
+        end_color="DCE6F2"
+    )
+
+
+    red_fill = PatternFill(
+        fill_type="solid",
+        start_color="FF0000",
+        end_color="FF0000"
+    )
+        # =====================================================
+    #          CREATE REQUEST / PAYMENT SHEET
+    # =====================================================
+
+    def create_rate_sheet(ws, summaries):
+
+        current_row = 1
+
+
+        for rate_cut_by, records in groupby(
+            summaries,
+            key=lambda x: x.rate_cut_by or ""
+        ):
+
+            records = list(records)
+
+
+            # -------------------------------
+            # Rate Cut By Heading
+            # -------------------------------
+
+            ws.merge_cells(
+                start_row=current_row,
+                start_column=1,
+                end_row=current_row,
+                end_column=len(headers)
+            )
+
+            cell = ws.cell(
+                row=current_row,
+                column=1
+            )
+
+            cell.value = rate_cut_by
+
+            cell.font = Font(
+                name="Calibri",
+                size=12,
+                bold=True
+            )
+
+            cell.alignment = Alignment(
+                horizontal="center"
+            )
+
+
+            current_row += 1
+
+
+            # -------------------------------
+            # Date Heading
+            # -------------------------------
+
+            ws.merge_cells(
+                start_row=current_row,
+                start_column=1,
+                end_row=current_row,
+                end_column=len(headers)
+            )
+
+
+            date_cell = ws.cell(
+                row=current_row,
+                column=1
+            )
+
+
+            date_cell.value = frappe.utils.formatdate(
+                records[0].ratecut_date,
+                "dd.MM.yyyy"
+            )
+
+
+            date_cell.font = Font(
+                name="Calibri",
+                size=12,
+                bold=True
+            )
+
+
+            current_row += 1
+
+
+
+            # -------------------------------
+            # Table Header
+            # -------------------------------
+
+            for col, header in enumerate(headers, 1):
+
+                cell = ws.cell(
+                    row=current_row,
+                    column=col
+                )
+
+                cell.value = header
+
+
+                if header in [
+                    "RATE WITHOUT GST",
+                    "BILL VALUE WITHOUT GST"
+                ]:
+
+                    cell.fill = red_fill
+
+                    cell.font = Font(
+                        name="Calibri",
+                        size=12,
+                        bold=True,
+                        color="FFFFFF"
+                    )
+
+                else:
+
+                    cell.fill = header_fill
+
+                    cell.font = Font(
+                        name="Calibri",
+                        size=12,
+                        bold=True
+                    )
+
+
+            current_row += 1
+
+
+            # -------------------------------
+            # Data Rows
+            # -------------------------------
+
+            total_fine_999 = 0
+            for s in records:
+
+                ws.cell(current_row,1).value = s.rate_cut_type
+                ws.cell(current_row,2).value = s.rate_999_without_gst
+                ws.cell(current_row,3).value = s.vendor
+                ws.cell(current_row,4).value = s.fine_wt
+                ws.cell(current_row,5).value = s.fine_wt_selected
+                ws.cell(current_row,6).value = s.net_wt
+                ws.cell(current_row,7).value = s.hm
+                ws.cell(current_row,8).value = s.oc
+                ws.cell(current_row,9).value = s.rate_999_with_gst
+                ws.cell(current_row,10).value = s.bill_value_without_gst
+                ws.cell(current_row,11).value = s.bill_value_with_gst
+                ws.cell(current_row,12).value = s.bill_amt
+                ws.cell(current_row,13).value = s.diff
+
+                total_fine_999 += s.fine_wt or 0
+                
+                current_row += 1
+
+            ws.cell(current_row,3).value = "TOTAL"
+
+            ws.cell(current_row,3).font = Font(
+                name="Calibri",
+                size=12,
+                bold=True
+            )
+
+            ws.cell(current_row,4).value = total_fine_999
+
+
+            for col in range(3,6):
+
+                ws.cell(
+                    current_row,
+                    col
+                ).font = Font(
+                    name="Calibri",
+                    size=12,
+                    bold=True
+                )
+
+            current_row += 2
+
+
+
+    # Create sheets
+
+    create_rate_sheet(
+        payment_ws,
+        payment_summaries
+    )
+
+
+    create_rate_sheet(
+        request_ws,
+        request_summaries
+    )
+        # =====================================================
+    #              VENDOR ALPHABET SHEETS
+    # =====================================================
+
+    alpha_sheets = {}
+
+
+    vendor_headers = [
+        "Vendor",
+        "Vou No",
+        "Vou Date",
+        "Item Tran ID",
+        "Purity",
+        "Pcs",
+        "FineWt",
+        "NetWt",
+        "OC",
+        "HM",
+        "Sales Wastage Per",
+        "Sales Wastage Wt",
+        "Return FineWt",
+        "Return GrossWt",
+        "Return NetWt",
+        "Return Vou No",
+        "Return Vou Date",
+        "Return Narration"
+    ]
+
+
+    for s in all_summaries:
+
+
+        vendor = (s.vendor or "").strip()
+
+
+        if vendor:
+
+            sheet_name = vendor[0].upper()
+
+            if not sheet_name.isalpha():
+                sheet_name = "Others"
+
+        else:
+
+            sheet_name = "Others"
+
+
+
+        if sheet_name not in alpha_sheets:
+
+
+            vendor_ws = wb.create_sheet(
+                title=sheet_name
+            )
+
+
+            for col, header in enumerate(
+                vendor_headers,
+                1
+            ):
+
+                cell = vendor_ws.cell(
+                    row=1,
+                    column=col
+                )
+
+                cell.value = header
+
+                cell.font = Font(
+                    name="Calibri",
+                    size=12,
+                    bold=True
+                )
+
+
+            alpha_sheets[sheet_name] = vendor_ws
+
+
+
+        vendor_ws = alpha_sheets[sheet_name]
+
+
+
+        # Vendor Heading
+
+        last_vendor = None
+
+
+        if vendor_ws.max_row > 1:
+
+            last_vendor = vendor_ws.cell(
+                vendor_ws.max_row,
+                1
+            ).value
+
+
+
+        if last_vendor != s.vendor:
+
+
+            vendor_ws.append(
+                [
+                    f"{s.vendor} - Consignment Stock Report As On {frappe.utils.formatdate(s.ratecut_date,'dd/MM/yyyy')}"
+                ] + [""] * 17
+            )
+
+
+
+        transactions = frappe.get_all(
+            "Rate Cut Transaction",
+            filters={
+                "summary_id": s.name
+            },
+            fields=[
+                "vou_no",
+                "voucher_date",
+                "item_tran_id",
+                "purity",
+                "pcs",
+                "fine_wt",
+                "net_wt",
+                "oc",
+                "hm",
+                "sales_wastage_per",
+                "sales_wastage_wt",
+                "returnfinewt",
+                "returngrosswt",
+                "returnnetwt",
+                "returnvouno",
+                "returnvoudate",
+                "returnnarration"
+            ],
+            order_by="vou_no"
+        )
+
+
+        total_fine = 0
+        total_net = 0
+        total_oc = 0
+        total_hm = 0
+        total_wastage = 0
+        total_return_fine = 0
+        total_return_gross = 0
+        total_return_net = 0
+
+
+
+        for t in transactions:
+
+
+            total_fine += t.fine_wt or 0
+            total_net += t.net_wt or 0
+            total_oc += t.oc or 0
+            total_hm += t.hm or 0
+            total_wastage += t.sales_wastage_wt or 0
+            total_return_fine += t.returnfinewt or 0
+            total_return_gross += t.returngrosswt or 0
+            total_return_net += t.returnnetwt or 0
+
+
+
+            vendor_ws.append(
+                [
+                    "",
+                    t.vou_no,
+                    t.voucher_date,
+                    t.item_tran_id,
+                    t.purity,
+                    t.pcs,
+                    t.fine_wt,
+                    t.net_wt,
+                    t.oc,
+                    t.hm,
+                    t.sales_wastage_per,
+                    t.sales_wastage_wt,
+                    t.returnfinewt,
+                    t.returngrosswt,
+                    t.returnnetwt,
+                    t.returnvouno,
+                    t.returnvoudate,
+                    t.returnnarration
+                ]
+            )
+
+
+
+        vendor_ws.append(
+            [
+                "TOTAL",
+                "",
+                "",
+                "",
+                "",
+                "",
+                total_fine,
+                total_net,
+                total_oc,
+                total_hm,
+                "",
+                total_wastage,
+                total_return_fine,
+                total_return_gross,
+                total_return_net,
+                "",
+                "",
+                ""
+            ]
+        )
+
+
+        for cell in vendor_ws[vendor_ws.max_row]:
+
+            cell.font = Font(
+                name="Calibri",
+                size=12,
+                bold=True
+            )
+
+
+        vendor_ws.append(
+            [""] * len(vendor_headers)
+        )
+            # =====================================================
+    #          AUTO WIDTH + CALIBRI FONT
+    # =====================================================
+
+    for sheet in wb.worksheets:
+
+        for col in range(1, sheet.max_column + 1):
+
+            max_length = 0
+
+            column_letter = get_column_letter(col)
+
+
+            for row in range(1, sheet.max_row + 1):
+
+                cell = sheet.cell(
+                    row=row,
+                    column=col
+                )
+
+
+                if cell.__class__.__name__ == "MergedCell":
+                    continue
+
+
+                cell.font = Font(
+                    name="Calibri",
+                    size=12,
+                    bold=cell.font.bold,
+                    italic=cell.font.italic,
+                    color=cell.font.color
+                )
+
+
+                try:
+
+                    value = str(cell.value or "")
+
+                    if len(value) > max_length:
+                        max_length = len(value)
+
+                except:
+
+                    pass
+
+
+
+            sheet.column_dimensions[column_letter].width = min(
+                max_length + 3,
+                35
+            )
+
+
+
+    # =====================================================
+    #                    SAVE FILE
+    # =====================================================
+
+
+    filename = (
+        f"Rate_Cut_Summary_"
+        f"{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    )
+
+
+    file_path = os.path.join(
+
+        frappe.get_site_path(
+            "public",
+            "files"
+        ),
+
+        filename
+
+    )
+
+
+    wb.save(file_path)
+
+
+    return "/files/" + filename
