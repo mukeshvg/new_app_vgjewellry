@@ -128,7 +128,7 @@
   },
   {
    "fieldname": "returnnarration",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "ReturnNarration"
   },
   {
@@ -168,14 +168,14 @@
   },
   {
    "fieldname": "narration",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "narration"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-03 15:27:44.975417",
+ "modified": "2026-07-13 10:48:09.607773",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",
