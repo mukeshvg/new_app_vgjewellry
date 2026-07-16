@@ -46,7 +46,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-11 15:24:26.198664",
+ "modified": "2026-07-14 14:23:09.075791",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Variety_Master",
@@ -84,7 +84,8 @@
    "read": 1,
    "report": 1,
    "role": "Counter",
-   "share": 1
+   "share": 1,
+   "write": 1
   },
   {
    "email": 1,
