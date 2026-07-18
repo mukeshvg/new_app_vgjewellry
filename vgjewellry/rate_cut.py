@@ -17,7 +17,11 @@ import json
 from frappe.utils import flt
 from collections import defaultdict
 from frappe.utils import formatdate
-from openpyxl.styles import PatternFill
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from itertools import groupby
+
 
 #value = os.getenv('sjodbc')
 value = os.getenv('hoodbc')
@@ -1158,7 +1162,7 @@ def get_metal_currency_ledger_details(acc_mst_id):
 
     # --------------------------------------------------
     # Ledger Transactions
-    # --------------------------------------------------
+    # --------------------------------------------------rate_cut_by
 
     amount_ledger = defaultdict(list)
 
@@ -1530,342 +1534,6 @@ def update_rate_cut_by(summary_id, rate_cut_by=None, rate_cut_type=None, **kwarg
 
 
 @frappe.whitelist()
-def export_rate_cut_excel1():
-    import os
-    import frappe
-    from openpyxl import Workbook
-    from openpyxl.styles import Font
-
-    wb = Workbook()
-
-    # ---------------- Summary Sheet ---------------- #
-
-    ws = wb.active
-    ws.title = "Rate Cut Summary"
-
-    headers = [
-        "Vendor",
-        "Rate Cut Date",
-        "FineWt",
-        "Selected FineWt",
-        "NetWt",
-        "OC",
-        "HM",
-        "Sales Wastage Wt",
-        "Return FineWt",
-        "Rate999 GST",
-        "Rate999 WO GST",
-        "Bill WO GST",
-        "Bill W GST",
-        "Bill Amt",
-        "Diff",
-        "Notes"
-    ]
-
-    for c, h in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=c)
-        cell.value = h
-        cell.font = Font(bold=True)
-
-    summaries = frappe.get_all(
-        "Rate Cut Summary",
-        fields=[
-            "name",
-            "vendor",
-            "ratecut_date",
-            "fine_wt",
-            "fine_wt_selected",
-            "net_wt",
-            "oc",
-            "hm",
-            "sales_wastage_wt",
-            "returnfinewt",
-            "rate_999_with_gst",
-            "rate_999_without_gst",
-            "bill_value_without_gst",
-            "bill_value_with_gst",
-            "bill_amt",
-            "diff",
-            "rate_cut_note"
-        ],
-        order_by="vendor"
-    )
-
-    # Dictionary to hold A, B, C... sheets
-    alpha_sheets = {}
-
-    vendor_headers = [
-        "Vendor",
-        "Vou No",
-        "Vou Date",
-        "Item Tran ID",
-        "Purity",
-        "Pcs",
-        "FineWt",
-        "NetWt",
-        "OC",
-        "HM",
-        "Sales Wastage Per",
-        "Sales Wastage Wt",
-        "Return FineWt",
-        "Return GrossWt",
-        "Return NetWt",
-        "Return Vou No",
-        "Return Vou Date",
-        "Return Narration"
-    ]
-
-    for s in summaries:
-
-        # Summary Sheet
-        ws.append([
-            s.vendor,
-            s.ratecut_date,
-            s.fine_wt,
-            s.fine_wt_selected,
-            s.net_wt,
-            s.oc,
-            s.hm,
-            s.sales_wastage_wt,
-            s.returnfinewt,
-            s.rate_999_with_gst,
-            s.rate_999_without_gst,
-            s.bill_value_without_gst,
-            s.bill_value_with_gst,
-            s.bill_amt,
-            s.diff
-        ])
-
-        # ---------------- Alphabet Sheet ---------------- #
-
-        vendor = (s.vendor or "").strip()
-
-        if vendor:
-            sheet_name = vendor[0].upper()
-            if not sheet_name.isalpha():
-                sheet_name = "Others"
-        else:
-            sheet_name = "Others"
-
-        # Create alphabet sheet only once
-        if sheet_name not in alpha_sheets:
-
-            vendor_ws = wb.create_sheet(title=sheet_name)
-
-            for c, h in enumerate(vendor_headers, 1):
-                cell = vendor_ws.cell(row=1, column=c)
-                cell.value = h
-                cell.font = Font(bold=True)
-
-            alpha_sheets[sheet_name] = vendor_ws
-
-        vendor_ws = alpha_sheets[sheet_name]
-
-        # Add a vendor heading whenever vendor changes
-        current_last_vendor = None
-        if vendor_ws.max_row > 1:
-            current_last_vendor = vendor_ws.cell(vendor_ws.max_row, 1).value
-
-        if current_last_vendor != s.vendor:
-            vendor_ws.append([
-                f"{s.vendor} - Consignment Stock Report As On {formatdate(s.ratecut_date, 'dd/MM/yyyy')}",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-            ])
-
-        transactions = frappe.get_all(
-            "Rate Cut Transaction",
-            filters={"summary_id": s.name},
-            fields=[
-                "vou_no",
-                "voucher_date",
-                "item_tran_id",
-                "purity",
-                "pcs",
-                "fine_wt",
-                "net_wt",
-                "oc",
-                "hm",
-                "sales_wastage_per",
-                "sales_wastage_wt",
-                "returnfinewt",
-                "returngrosswt",
-                "returnnetwt",
-                "returnvouno",
-                "returnvoudate",
-                "returnnarration"
-            ],
-            order_by="vou_no"
-        )
-
-        # Totals
-        total_fine = 0
-        total_net = 0
-        total_oc = 0
-        total_hm = 0
-        total_wastage = 0
-        total_return_fine = 0
-        total_return_gross = 0
-        total_return_net = 0
-
-        light_colors = [
-    "FFF2CC",  # Light Yellow
-    "D9EAD3",  # Light Green
-    "D0E0E3",  # Light Blue
-    "F4CCCC",  # Light Red
-    "EAD1DC",  # Light Pink
-    "D9D2E9",  # Lavender
-    "FCE5CD",  # Light Orange
-    "CFE2F3",  # Sky Blue
-    "E2F0D9",  # Pale Green
-    "F9CB9C",  # Peach
-    ]
-
-        voucher_colors = {}
-        color_index = 0
-
-        for t in transactions:
-
-            total_fine += t.fine_wt or 0
-            total_net += t.net_wt or 0
-            total_oc += t.oc or 0
-            total_hm += t.hm or 0
-            total_wastage += t.sales_wastage_wt or 0
-            total_return_fine += t.returnfinewt or 0
-            total_return_gross += t.returngrosswt or 0
-            total_return_net += t.returnnetwt or 0
-
-            vendor_ws.append([
-                "",
-                t.vou_no,
-                t.voucher_date,
-                t.item_tran_id,
-                t.purity,
-                t.pcs,
-                t.fine_wt,
-                t.net_wt,
-                t.oc,
-                t.hm,
-                t.sales_wastage_per,
-                t.sales_wastage_wt,
-                t.returnfinewt,
-                t.returngrosswt,
-                t.returnnetwt,
-                t.returnvouno,
-                t.returnvoudate,
-                t.returnnarration
-            ])
-            voucher = t.vou_no or ""
-            if voucher not in voucher_colors:
-                voucher_colors[voucher] = light_colors[color_index % len(light_colors)]
-                color_index += 1
-
-            fill = PatternFill(
-                fill_type="solid",
-                start_color=voucher_colors[voucher],
-                end_color=voucher_colors[voucher]
-            )
-
-            row_no = vendor_ws.max_row
-
-            for cell in vendor_ws[row_no]:
-                cell.fill = fill
-
-        # Total row
-        vendor_ws.append([
-            "TOTAL",
-            "",
-            "",
-            "",
-            "",
-            "",
-            total_fine,
-            total_net,
-            total_oc,
-            total_hm,
-            "",
-            total_wastage,
-            total_return_fine,
-            total_return_gross,
-            total_return_net,
-            "",
-            "",
-            ""
-        ])
-
-
-        # Make total row bold
-        last_row = vendor_ws.max_row
-        for cell in vendor_ws[last_row]:
-            cell.font = Font(bold=True)
-
-        # Blank row
-        vendor_ws.append([""] * len(vendor_headers))
-
-        '''for t in transactions:
-            vendor_ws.append([
-                "",   # Vendor shown only once above
-                t.vou_no,
-                t.item_tran_id,
-                t.fine_wt,
-                t.net_wt,
-                t.oc,
-                t.hm,
-                t.sales_wastage_per,
-                t.sales_wastage_wt,
-                t.returnfinewt,
-                t.returngrosswt,
-                t.returnnetwt,
-                t.returnvouno,
-                t.returnvoudate,
-                t.returnnarration
-            ])
-
-        # Blank row after each vendor
-        vendor_ws.append([""] * len(vendor_headers))'''
-
-    # ---------------- Auto Width ---------------- #
-
-    for sheet in wb.worksheets:
-        for column in sheet.columns:
-            length = max(len(str(cell.value or "")) for cell in column)
-            sheet.column_dimensions[column[0].column_letter].width = min(length + 3, 35)
-
-    filename = f"Rate_Cut_Summary_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx"
-
-    file_path = os.path.join(
-        frappe.get_site_path("public", "files"),
-        filename
-    )
-
-    wb.save(file_path)
-
-    return "/files/" + filename
-
-
-
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from openpyxl.utils import get_column_letter
-from itertools import groupby
-
-
-@frappe.whitelist()
 def export_rate_cut_excel():
 
     wb = Workbook()
@@ -1924,7 +1592,7 @@ def export_rate_cut_excel():
             "diff",
             "rate_cut_note"
         ],
-        order_by="rate_cut_by, ratecut_date, vendor"
+        order_by="ratecut_date,rate_cut_by, vendor"
     )
 
 
@@ -1957,177 +1625,139 @@ def export_rate_cut_excel():
     #          CREATE REQUEST / PAYMENT SHEET
     # =====================================================
 
-    def create_rate_sheet(ws, summaries):
 
+    def create_rate_sheet(ws, summaries):
         current_row = 1
 
-
-        for rate_cut_by, records in groupby(
+        for rate_date, date_records in groupby(
             summaries,
-            key=lambda x: x.rate_cut_by or ""
+            key=lambda x: x.ratecut_date
         ):
 
-            records = list(records)
-
-
-            # -------------------------------
-            # Rate Cut By Heading
-            # -------------------------------
-
-            ws.merge_cells(
-                start_row=current_row,
-                start_column=1,
-                end_row=current_row,
-                end_column=len(headers)
-            )
-
-            cell = ws.cell(
-                row=current_row,
-                column=1
-            )
-
-            cell.value = rate_cut_by
-
-            cell.font = Font(
-                name="Calibri",
-                size=12,
-                bold=True
-            )
-
-            cell.alignment = Alignment(
-                horizontal="center"
-            )
-
-
-            current_row += 1
-
+            date_records = list(date_records)
 
             # -------------------------------
             # Date Heading
             # -------------------------------
-
-            ws.merge_cells(
+            '''ws.merge_cells(
                 start_row=current_row,
                 start_column=1,
                 end_row=current_row,
                 end_column=len(headers)
             )
 
-
-            date_cell = ws.cell(
-                row=current_row,
-                column=1
-            )
-
-
+            date_cell = ws.cell(row=current_row, column=1)
             date_cell.value = frappe.utils.formatdate(
-                records[0].ratecut_date,
+                rate_date,
                 "dd.MM.yyyy"
             )
+            date_cell.font = Font(name="Calibri", size=12, bold=True)
+            date_cell.alignment = Alignment(horizontal="center")
 
+            current_row += 1'''
 
-            date_cell.font = Font(
-                name="Calibri",
-                size=12,
-                bold=True
-            )
+            # ==========================================
+            # Group by Rate Cut By inside each Date
+            # ==========================================
+            for rate_cut_by, records in groupby(
+                date_records,
+                key=lambda x: x.rate_cut_by or ""
+            ):
 
+                records = list(records)
 
-            current_row += 1
+                # -------------------------------
+                # Rate Cut By Heading
+                # -------------------------------
+                '''ws.merge_cells(
+                    start_row=current_row,
+                    start_column=1,
+                    end_row=current_row,
+                    end_column=len(headers)
+                )'''
 
+                cell = ws.cell(row=current_row, column=3)
+                cell.value = rate_cut_by
+                cell.font = Font(name="Calibri", size=12, bold=True)
+                cell.alignment = Alignment(horizontal="center")
 
-
-            # -------------------------------
-            # Table Header
-            # -------------------------------
-
-            for col, header in enumerate(headers, 1):
-
-                cell = ws.cell(
-                    row=current_row,
-                    column=col
-                )
-
-                cell.value = header
-
-
-                if header in [
-                    "RATE WITHOUT GST",
-                    "BILL VALUE WITHOUT GST"
-                ]:
-
-                    cell.fill = red_fill
-
-                    cell.font = Font(
-                        name="Calibri",
-                        size=12,
-                        bold=True,
-                        color="FFFFFF"
-                    )
-
-                else:
-
-                    cell.fill = header_fill
-
-                    cell.font = Font(
-                        name="Calibri",
-                        size=12,
-                        bold=True
-                    )
-
-
-            current_row += 1
-
-
-            # -------------------------------
-            # Data Rows
-            # -------------------------------
-
-            total_fine_999 = 0
-            for s in records:
-
-                ws.cell(current_row,1).value = s.rate_cut_type
-                ws.cell(current_row,2).value = s.rate_999_without_gst
-                ws.cell(current_row,3).value = s.vendor
-                ws.cell(current_row,4).value = s.fine_wt
-                ws.cell(current_row,5).value = s.fine_wt_selected
-                ws.cell(current_row,6).value = s.net_wt
-                ws.cell(current_row,7).value = s.hm
-                ws.cell(current_row,8).value = s.oc
-                ws.cell(current_row,9).value = s.rate_999_with_gst
-                ws.cell(current_row,10).value = s.bill_value_without_gst
-                ws.cell(current_row,11).value = s.bill_value_with_gst
-                ws.cell(current_row,12).value = s.bill_amt
-                ws.cell(current_row,13).value = s.diff
-
-                total_fine_999 += s.fine_wt or 0
-                
                 current_row += 1
 
-            ws.cell(current_row,3).value = "TOTAL"
+                # -------------------------------
+                # Table Header
+                # -------------------------------
+                for col, header in enumerate(headers, 1):
 
-            ws.cell(current_row,3).font = Font(
-                name="Calibri",
-                size=12,
-                bold=True
-            )
+                    cell = ws.cell(row=current_row, column=col)
+                    if col == 1:
+                    # Replace RATE CUT TYPE with Date
+                        cell.value = frappe.utils.formatdate(rate_date, "dd.MM.yyyy")
+                    else:
+                        cell.value = header
 
-            ws.cell(current_row,4).value = total_fine_999
+                    if header in [
+                        "RATE WITHOUT GST",
+                        "BILL VALUE WITHOUT GST"
+                    ]:
+                        cell.fill = red_fill
+                        cell.font = Font(
+                            name="Calibri",
+                            size=12,
+                            bold=True,
+                            color="FFFFFF"
+                        )
+                    else:
+                        cell.fill = header_fill
+                        cell.font = Font(
+                            name="Calibri",
+                            size=12,
+                            bold=True
+                        )
 
+                current_row += 1
 
-            for col in range(3,6):
+                # -------------------------------
+                # Data Rows
+                # -------------------------------
+                total_fine_999 = 0
 
-                ws.cell(
-                    current_row,
-                    col
-                ).font = Font(
+                for s in records:
+
+                    ws.cell(current_row, 1).value = s.rate_cut_type
+                    ws.cell(current_row, 2).value = s.rate_999_without_gst
+                    ws.cell(current_row, 3).value = s.vendor
+                    ws.cell(current_row, 4).value = s.fine_wt
+                    ws.cell(current_row, 5).value = s.fine_wt_selected
+                    ws.cell(current_row, 6).value = s.net_wt
+                    ws.cell(current_row, 7).value = s.hm
+                    ws.cell(current_row, 8).value = s.oc
+                    ws.cell(current_row, 9).value = s.rate_999_with_gst
+                    ws.cell(current_row,10).value = s.bill_value_without_gst
+                    ws.cell(current_row,11).value = s.bill_value_with_gst
+                    ws.cell(current_row,12).value = s.bill_amt
+                    ws.cell(current_row,13).value = s.diff
+
+                    total_fine_999 += s.fine_wt or 0
+
+                    current_row += 1
+
+                ws.cell(current_row, 3).value = "TOTAL"
+                ws.cell(current_row, 3).font = Font(
                     name="Calibri",
                     size=12,
                     bold=True
                 )
 
-            current_row += 2
+                ws.cell(current_row, 4).value = total_fine_999
 
+                for col in range(3, 6):
+                    ws.cell(current_row, col).font = Font(
+                        name="Calibri",
+                        size=12,
+                        bold=True
+                    )
+
+                current_row += 2
 
 
     # Create sheets
@@ -2171,8 +1801,16 @@ def export_rate_cut_excel():
     ]
 
 
-    for s in all_summaries:
+    sorted_summaries = sorted(
+    all_summaries,
+    key=lambda x: (
+        (x.vendor or "").strip().lower(),
+        x.ratecut_date or "",
+        x.name
+    )
+)
 
+    for s in sorted_summaries:
 
         vendor = (s.vendor or "").strip()
 
@@ -2287,6 +1925,22 @@ def export_rate_cut_excel():
         total_return_gross = 0
         total_return_net = 0
 
+        light_colors = [
+    "FFF2CC",  # Light Yellow
+    "D9EAD3",  # Light Green
+    "D0E0E3",  # Light Blue
+    "F4CCCC",  # Light Red
+    "EAD1DC",  # Light Pink
+    "D9D2E9",  # Lavender
+    "FCE5CD",  # Light Orange
+    "CFE2F3",  # Sky Blue
+    "E2F0D9",  # Pale Green
+    "F9CB9C",  # Peach
+    ]
+
+        voucher_colors = {}
+        color_index = 0
+
 
 
         for t in transactions:
@@ -2325,6 +1979,22 @@ def export_rate_cut_excel():
                     t.returnnarration
                 ]
             )
+
+            voucher = t.vou_no or ""
+            if voucher not in voucher_colors:
+                voucher_colors[voucher] = light_colors[color_index % len(light_colors)]
+                color_index += 1
+
+            fill = PatternFill(
+                fill_type="solid",
+                start_color=voucher_colors[voucher],
+                end_color=voucher_colors[voucher]
+            )
+
+            row_no = vendor_ws.max_row
+
+            for cell in vendor_ws[row_no]:
+                cell.fill = fill
 
 
 

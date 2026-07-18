@@ -1056,7 +1056,6 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		    voucherColorMap[record.VouNo?? record.vou_no] = lightColors[colorIndex % lightColors.length];
 		    colorIndex++;
 		}
-
 		let rowColor = voucherColorMap[record.VouNo?? record.vou_no];
 
 			modalHtml += `
@@ -1070,7 +1069,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    <td class="vou-no">${record.VouNo ?? record.vou_no}</td>
 
 			    <td class="vou-no">
-			    ${moment(record.VouDate).format("DD-MM-YYYY")}
+			    ${moment(record.voucher_date).format("DD-MM-YYYY")}
 			    </td>
 
 			    <td>${record.GrossWt ?? record.gross_wt}</td>
@@ -1103,7 +1102,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
     <td class="vou-no">
     ${record.ReturnVouDate
     ? moment(record.ReturnVouDate).format("DD-MM-YYYY")
-    : moment(record.returnvoudate).format("DD-MM-YYYY")}
+    : ""}
     </td>
 
     <td>${record.ReturnGrossWt ?? record.returngrosswt ?? 0}</td>
@@ -1406,7 +1405,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 10000);
+			let arihantRateInterval = setInterval(loadArihantRate, 100000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
