@@ -2136,7 +2136,7 @@ $(document).on('click', '#remove-selected-rate-cut', function () {
     }
 
     frappe.confirm(
-        `Remove ${selected.length} selected rows?`,
+        `Remove <b class="mit-remove"> ${selected.length}</b> selected vendor rows?`,
         function () {
 
             frappe.call({
@@ -2157,6 +2157,18 @@ $(document).on('click', '#remove-selected-rate-cut', function () {
 
         }
     );
+    setTimeout(() => {
+
+                        $(".modal.show").each(function () {
+                                const text = $(this).find(".frappe-confirm-message").text();
+                                if (text.includes("Remove ")) {
+                                        $(this).addClass("remove-modal");
+                                }
+
+                        });
+
+                }, 200);
+	
 
 });
 $(document).on('change', '.summary-row', function () {
