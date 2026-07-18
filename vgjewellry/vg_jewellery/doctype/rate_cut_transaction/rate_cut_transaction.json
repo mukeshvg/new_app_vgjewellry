@@ -13,6 +13,7 @@
   "fine_wt",
   "net_wt",
   "oc",
+  "diamond_stone_amount",
   "hm",
   "narration",
   "original_fine_wt",
@@ -170,12 +171,17 @@
    "fieldname": "narration",
    "fieldtype": "Small Text",
    "label": "narration"
+  },
+  {
+   "fieldname": "diamond_stone_amount",
+   "fieldtype": "Float",
+   "label": "Diamond Stone Amount"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-13 10:48:09.607773",
+ "modified": "2026-07-18 15:04:39.171869",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Transaction",

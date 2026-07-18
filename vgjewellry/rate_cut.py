@@ -161,6 +161,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
         it.Purity,
         itm.TradShortName AS tradname,
         it.OtherCharge,
+        tss.Amount As DiamondAmt,
         it.SattleTradId,
         it.Narration AS ItemName,
         va.Narration,
@@ -199,6 +200,10 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
     LEFT JOIN dbo.IRTranStudded ts
         ON ts.IRTranId = it.TranID
        AND ts.StyleID = 63
+       
+   LEFT JOIN dbo.IRTranStudded tss
+        ON tss.IRTranId = it.TranID
+       AND tss.StyleID = 25    
 
     LEFT JOIN
     (
@@ -393,6 +398,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         fine_wt = flt(r.get("FineWt") or 0)
         net_wt = flt(r.get("NetWt") or 0)
         oc = flt(r.get("OtherCharge") or 0)
+        diamond_stone_amount = flt(r.get("DiamondStoneAmount") or 0)
         bill_amt = flt(r.get("BillAmt") or 0)
         hm= flt(r.get("HM") or 0)
         sales_wastage_wt= flt(r.get("WastageWt") or 0)
@@ -401,7 +407,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
         # totals
         total_fine_wt += fine_wt
         total_net_wt += net_wt
-        total_oc += oc
+        total_oc += (oc+diamond_stone_amount)
         total_bill_amt += bill_amt
         total_hm += hm
         total_sales_wastage_wt += sales_wastage_wt
@@ -415,6 +421,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
             "fine_wt": r.get("FineWt"),
             "net_wt": r.get("NetWt"),
             "oc": r.get("OtherCharge"),
+            "diamond_stone_amount": r.get("DiamondStoneAmount"),
             "hm": r.get("HM"),
             "returnfinewt": r.get('ReturnFineWt'),
             "returngrosswt": r.get('ReturnGrossWt'),
@@ -561,9 +568,12 @@ def get_arihant_rate():
       
 
 @frappe.whitelist()
-def update_ketan_finewt(summary_id, ketan_finewt):
+def update_ketan_finewt(summary_id, ketan_finewt,fine_wt_diff,bill_amt,bill_without_gst):
     doc = frappe.get_doc("Rate Cut Summary", summary_id)
     doc.fine_wt = ketan_finewt
+    doc.fine_wt_diff = fine_wt_diff
+    doc.bill_amt = bill_amt
+    doc.bill_value_without_gst = bill_without_gst
     doc.save()
 
 @frappe.whitelist()
@@ -593,6 +603,18 @@ def save_single_rate_cut(row):
 
     return "saved"
 
+@frappe.whitelist()
+def delete_multiple_rate_cut_summary(summary_ids):
+
+    if isinstance(summary_ids, str):
+        summary_ids = json.loads(summary_ids)
+
+    for summary_id in summary_ids:
+        delete_rate_cut_summary(summary_id)
+
+    frappe.db.commit()
+
+    return "deleted"
 
 @frappe.whitelist()
 def delete_rate_cut_summary(summary_id):
@@ -625,7 +647,7 @@ def update_rate_cut_row(summary_id, acc_mst_id,
                         rate999_wgst,
                         rate999_wogst,
                         bill_without_gst,
-                        bill_with_gst):
+                        bill_with_gst,bill_amt,bill_amount_without_gst,diff):
 
     doc = frappe.get_doc("Rate Cut Summary", summary_id)
 
@@ -633,6 +655,10 @@ def update_rate_cut_row(summary_id, acc_mst_id,
     doc.rate_999_without_gst = rate999_wogst
     doc.bill_value_without_gst = bill_without_gst
     doc.bill_value_with_gst = bill_with_gst
+    doc.bill_amount_without_gst = bill_amount_without_gst
+    doc.bill_amt = bill_amt
+    doc.diff = diff
+
 
     doc.save(ignore_permissions=True)
     frappe.db.commit()

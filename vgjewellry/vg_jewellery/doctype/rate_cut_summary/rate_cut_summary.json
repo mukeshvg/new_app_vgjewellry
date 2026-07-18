@@ -10,11 +10,13 @@
   "acc_mst_id",
   "fine_wt",
   "fine_wt_selected",
+  "fine_wt_diff",
   "net_wt",
   "oc",
   "hm",
   "returnfinewt",
   "bill_amt",
+  "bill_amount_without_gst",
   "is_submitted",
   "rate_999_with_gst",
   "rate_999_without_gst",
@@ -138,12 +140,22 @@
    "fieldname": "rate_cut_type",
    "fieldtype": "Data",
    "label": "Rate Cut Type"
+  },
+  {
+   "fieldname": "fine_wt_diff",
+   "fieldtype": "Float",
+   "label": "Fine Wt Diff"
+  },
+  {
+   "fieldname": "bill_amount_without_gst",
+   "fieldtype": "Float",
+   "label": "Bill Amount Without GST"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-11 13:17:30.783273",
+ "modified": "2026-07-18 12:11:05.206591",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Rate Cut Summary",

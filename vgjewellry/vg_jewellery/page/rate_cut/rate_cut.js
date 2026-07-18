@@ -15,6 +15,15 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 	$(page.body).html(`
 
 	<style>
+	input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
 	.arihant-card{
     background: linear-gradient(135deg, #111827, #1f2937);
     padding: 12px 16px;
@@ -63,6 +72,9 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
 
 .gold-995 .value{
     color: #38bdf8;
+}
+ input[type="number"] {
+  text-align: right;
 }
 	/* Make ledger modal table header fixed */
 .ledger-fixed-table thead tr:first-child  th, .metal-currency-table thead tr:first-child  th, .rate-cut-individual-table thead tr:first-child  th {
@@ -239,6 +251,11 @@ frappe.pages['rate-cut'].on_page_load = function (wrapper) {
     Export Excel
 </button>
 </div>
+<div class="col-md-2">
+    <button class="btn btn-danger ml-2" id="remove-selected-rate-cut">
+        Remove Selected
+    </button>
+</div>
 
 	</div>
 
@@ -296,6 +313,7 @@ if (fromDate && toDate) {
 					"bill_value_without_gst",
 					"bill_value_with_gst",
 					"bill_amt",
+					"bill_amount_without_gst",
 					"diff",
 					"rate_cut_note"
 				]
@@ -321,6 +339,7 @@ if (fromDate && toDate) {
 					billWithoutGst: d.bill_value_without_gst,
 					withGstValue: d.bill_value_with_gst,
 					billAmt: d.bill_amt,
+					billAmtWithoutGst:d.bill_amount_without_gst,
 					diff: d.diff,
 					rate_cut_note: d.rate_cut_note
 
@@ -350,6 +369,39 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
     load_summary_table();
 });
 
+function updateRateCutTotals() {
+
+	let totalBillAmt = 0;
+	let totalBillAmtWithoutGst = 0;
+	let totalBillValue = 0;
+	let totalBillValueWithoutGst = 0;
+	let totalDiff = 0;
+
+	addedRows.forEach(row => {
+
+		totalBillAmt += parseFloat(row.billAmt || 0);
+		totalBillAmtWithoutGst += parseFloat(row.billAmtWithoutGst || 0);
+
+		totalBillValue += parseFloat(row.withGstValue || 0);
+		totalBillValueWithoutGst += parseFloat(row.billWithoutGst || 0);
+		totalDiff += parseFloat(row.diff || 0);
+
+	});
+
+
+	$("#total-bill-value-without-gst")
+		.text(totalBillValueWithoutGst.toFixed());
+
+	$("#total-bill-value")
+		.text(totalBillValue.toFixed());
+
+	$("#total-bill-amt")
+		.text(totalBillAmt.toFixed());
+
+	$("#total-bill-amt-without-gst").text(totalBillAmtWithoutGst.toFixed());
+	$("#total-diff-bill").text(totalDiff.toFixed());
+
+}
 	function render_table() {
 
 		let totalKetanFineWt = 0;
@@ -359,6 +411,13 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		let totalHM = 0;
 		let totalReturnFinewt = 0;
 		let totalSales_Wastage_Wt = 0;
+		let totalFineWtDiff = 0;
+		let totalBillAmt = 0;
+		let totalBillAmtWithoutGst = 0;
+		
+		let totalBillValue= 0;
+		let totalBillValueWithoutGst = 0;
+		let totalDiff =0;
 
 		let html = `
 
@@ -366,10 +425,12 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			<thead>
 			    <tr>
-				<th>Ratecut Date</th>
+				<th> <input type="checkbox" id="select-all-summary">
+Ratecut Date</th>
 				<th>Vendor</th>
 				<th>Fine Wt (Ketan Sir)</th>
 				<th>Fine Wt Selected</th>
+				<th>Fine Wt Diff</th>
 				<th>Net Wt</th>
 				<th>HM</th>
 				<th>OC</th>
@@ -381,7 +442,8 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				<th>RATE 999 Without GST</th>
 				<th>BILL VALUE WITHOUT GST</th>
 				<th>WITH GST VALUE</th>
-				<th>BILL AMT</th>
+				<th>BILL AMT (Vikrant)</th>
+				<th>BILL AMT WITHOUT GST (Vikrant)</th>
 				<th>Diff</th>
 				<th>Notes</th>
 				<!--<th>Save</th>-->
@@ -407,13 +469,29 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				parseFloat(row.oc || 0);
 			totalHM +=
 				parseFloat(row.hm || 0);
+				
+		   	totalBillAmt += parseFloat(row.billAmt || 0);
+		    totalBillAmtWithoutGst += parseFloat(row.billAmtWithoutGst || 0);
+		    
+		    totalBillValue += parseFloat(row.withGstValue || 0);
+		    totalBillValueWithoutGst += parseFloat(row.billWithoutGst || 0);
 
 			totalReturnFinewt += parseFloat(row.returnfinewt || 0)
 			totalSales_Wastage_Wt += parseFloat(row.sales_wastage_wt || 0)
-
+			let fineWt = parseFloat(row.ketanFineWt || 0);
+			let selectedFineWt = parseFloat(row.selectedFineWt || 0);
+			let fineWtDiff = fineWt - selectedFineWt;
+			let diff =  parseFloat(row.billAmtWithoutGst || 0) -  parseFloat(row.billWithoutGst || 0);
+			totalFineWtDiff += fineWtDiff;
+			totalDiff+=(parseFloat(row.billAmtWithoutGst || 0) - parseFloat(row.billWithoutGst || 0));
 			html += `
 			<tr>
-				<td>${row.ratecut_date
+				<td>
+				<input type="checkbox"
+           class="summary-row"
+           data-index="${index}"
+           data-name="${row.name}">
+				${row.ratecut_date
 						? moment(row.ratecut_date).format("DD-MM-YYYY")
 						: ''}</td>
 
@@ -431,11 +509,14 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
            value="${row.ketanFineWt || 0}"
            step="0.001">
 			    </td>
+                            <td style="text-align:right">
+                                ${row.selectedFineWt.toFixed(3)}
+                            </td>
 
-			    <td>
-				${row.selectedFineWt.toFixed(3)}
-			    </td>
-
+			    <td class="finewt-diff-cell" style="text-align:right">
+    			${fineWtDiff.toFixed(3)}
+				</td>
+				
 			    <td>
 			    <input type="number"
            class="form-control nnetwt-input"
@@ -444,11 +525,11 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
            step="0.01">
 			    </td>
 
-			    <td>${row.hm}</td>
+			    <td style="text-align:right">${row.hm}</td>
 
-			    <td>${row.oc.toFixed(2)}</td>
-			    <td>${row.sales_wastage_wt.toFixed(2)}</td>
-			    <td>${row.returnfinewt.toFixed(3)}</td>
+			    <td style="text-align:right">${row.oc.toFixed(2)}</td>
+			    <td style="text-align:right">${row.sales_wastage_wt.toFixed(2)}</td>
+			    <td style="text-align:right">${row.returnfinewt.toFixed(3)}</td>
 			    <td>
 				<select class="form-control rate-cut-by"
 						data-index="${index}">
@@ -487,9 +568,9 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			    <td><input type="number"
 	   class="form-control rate999wgst-input"
-	   data-index="${index}"
+	   data-index="${index}" 
 	   value="${row.rate999WGst || ''}"
-	   step="0.01"></td>
+	   ></td>
 
 			    <td> <input type="number" readonly
 	   class="form-control rate999wogst-input"
@@ -509,13 +590,24 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 	   value="${row.withGstValue.toFixed()  || ''}"
 	   step="0.01"></td>
 
-			    <td><input type="number"
+			    <td><input type="number" readonly
 	   class="form-control billamt-input"
 	   data-index="${index}"
 	   value="${row.billAmt.toFixed()  || ''}"
 	   step="0.01"></td>
-
-			    <td class="diff-cell"> ${(row.diff || 0).toFixed()}</td>
+<td>
+<input type="number" readonly
+class="form-control billamtwithoutgst-input"
+data-index="${index}"
+value="${row.billAmtWithoutGst.toFixed()  || ''}"
+step="0.01">
+</td>
+			    <td class="diff-cell" style="text-align:right">
+<input type="number" readonly
+class="form-control diff-cell-input"
+data-index="${index}"
+value="${row.diff.toFixed()  || ''}"
+step="0.01">
 			    <td><input type="text" 
 	   class="form-control rate_cut_note-input"
 	   data-index="${index}"
@@ -549,30 +641,32 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			<td></td>
 			<td>TOTAL</td>
 
-			<td>
+			<td id="total-ketan-finewt" style="text-align:right">
 			    ${totalKetanFineWt.toFixed(3)}
 			</td>
 
-			<td>
+			<td style="text-align:right">
 			    ${totalSelectedFineWt.toFixed(3)}
 			</td>
-
-			<td>
+			<td style="text-align:right" id="total-finewt-diff">${totalFineWtDiff.toFixed(3)}</td>
+			<td style="text-align:right">
 			    ${totalNetWt.toFixed(3)}
 			</td>
 
-			<td>${totalHM.toFixed(3)}</td>
+			<td style="text-align:right">${totalHM.toFixed(3)}</td>
 
-			<td>${totalOC.toFixed(2)}</td>
-			<td>${totalSales_Wastage_Wt.toFixed(2)}</td>
-			<td>${totalReturnFinewt.toFixed(3)}</td>
+			<td style="text-align:right">${totalOC.toFixed(2)}</td>
+			<td style="text-align:right">${totalSales_Wastage_Wt.toFixed(2)}</td>
+			<td style="text-align:right">${totalReturnFinewt.toFixed(3)}</td>
 			<td></td>
 			<td></td>
 			<td></td>
 			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
+			<td style="text-align:right" id="total-bill-value-without-gst">${totalBillValueWithoutGst.toFixed()}</td>
+			<td style="text-align:right" id="total-bill-value" >${totalBillValue.toFixed()}</td>
+			<td style="text-align:right" id="total-bill-amt">${totalBillAmt.toFixed()}</td>
+			<td style="text-align:right" id="total-bill-amt-without-gst">${totalBillAmtWithoutGst.toFixed()}</td>
+			<td style="text-align:right" id="total-diff-bill">${totalDiff.toFixed()}</td>
 			<td></td>
 		    </tr>
 		`;
@@ -631,6 +725,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			// Calculate Bill Value Without GST
 			let selectedFineWt =
 				parseFloat(addedRows[idx].selectedFineWt) || 0;
+				
 
 			let returnfinewt = parseFloat(addedRows[idx].returnfinewt) || 0;
 
@@ -656,7 +751,19 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			$(`.withgstvalue-input[data-index="${idx}"]`)
 				.val(withGstValue.toFixed());
-
+				
+		   let ketanFineWt =parseFloat(addedRows[idx].ketanFineWt) || 0;
+		   let billAmountWithoutGst =  ((withoutGst / 10) * (ketanFineWt )) + hm +	oc;
+		   let billAmountwithGstValue =  billAmountWithoutGst * 1.03;
+		   
+		   addedRows[idx].billAmtWithoutGst =billAmountWithoutGst;
+		   addedRows[idx].billAmt = billAmountwithGstValue;
+			$(`.billamt-input[data-index="${idx}"]`).val(billAmountwithGstValue.toFixed());
+		$(`.billamtwithoutgst-input[data-index="${idx}"]`).val(billAmountWithoutGst.toFixed());	
+			let diff_total_value=billAmountWithoutGst - billWithoutGst
+		$(`.diff-cell-input[data-index="${idx}"]`).val(diff_total_value.toFixed());	
+		addedRows[idx].diff = diff_total_value;	
+		updateRateCutTotals();
 			clearTimeout(saveTimeout);
 			saveTimeout = setTimeout(() => {
 				frappe.call({
@@ -667,7 +774,13 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 						rate999_wgst: gstRate,
 						rate999_wogst: withoutGst,
 						bill_without_gst: billWithoutGst,
-						bill_with_gst: withGstValue
+						bill_with_gst: withGstValue,
+						bill_amt:billAmountwithGstValue,
+						bill_amount_without_gst:billAmountWithoutGst,
+						diff:diff_total_value
+						
+						
+						
 					},
 					callback: function (r) {
 						frappe.show_alert({
@@ -687,15 +800,79 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 			// update local data
 			addedRows[idx].ketanFineWt = value;
+			let selected = parseFloat(addedRows[idx].selectedFineWt) || 0;
+
+let diff = value - selected;
+
+$(this)
+    .closest('tr')
+    .find('.finewt-diff-cell')
+    .text(diff.toFixed(3));
+
 
 			// optional: auto recalc dependent fields if needed
 			let selectedFineWt = parseFloat(addedRows[idx].selectedFineWt || 0);
 			let netWt = parseFloat(addedRows[idx].netWt || 0);
 
+let totalDiff = 0;
+let totalKetan=0;
+
+	addedRows.forEach(row => {
+
+		let ketan = parseFloat(row.ketanFineWt || 0);
+		let selectedWt = parseFloat(row.selectedFineWt || 0);
+
+		totalDiff += ketan - selectedWt;
+				totalKetan += ketan;
+
+
+	});
+
+	$('#total-ketan-finewt')
+		.text(totalKetan.toFixed(3));
+
+	$('#total-finewt-diff')
+		.text(totalDiff.toFixed(3));
 			// example recalculation (if you want logic)
 			// addedRows[idx].netWt = selectedFineWt - value;
 
 			// optional: auto save to backend
+			
+			let rateWithGst =
+		parseFloat(addedRows[idx].rate999WGst) || 0;
+
+	let rateWithoutGst =
+		parseFloat(addedRows[idx].rate999WithoutGst) || 0;
+
+
+	let billAmt =
+		value * rateWithGst;
+
+
+	let billWithoutGst =
+		value * rateWithoutGst;
+
+
+	addedRows[idx].billAmt = billAmt;
+	addedRows[idx].billWithoutGst = billWithoutGst;
+
+
+	$(`.billamt-input[data-index="${idx}"]`)
+		.val(billAmt.toFixed());
+
+
+	$(`.billwithoutgstamt-input[data-index="${idx}"]`)
+		.val(billWithoutGst.toFixed());
+
+let diff_bill = billAmountWithoutGst - billWithoutGst;
+
+addedRows[idx].diff = diff;
+
+$(this)
+    .closest("tr")
+    .find(".diff-cell")
+    .text(diff_bill.toFixed());
+	
 			clearTimeout(window.ketanFineWtTimer);
 
 			window.ketanFineWtTimer = setTimeout(() => {
@@ -704,7 +881,10 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 					method: "vgjewellry.rate_cut.update_ketan_finewt",
 					args: {
 						summary_id: addedRows[idx].name,
-						ketan_finewt: value
+						ketan_finewt: value,
+						fine_wt_diff: diff,
+						bill_amt:billAmt,
+						bill_without_gst:billWithoutGst
 					},
 					callback: function () {
 						frappe.show_alert({
@@ -927,8 +1107,8 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 	<b>Total OC:</b>
 	<span id="total-oc" style="margin-right:20px">0.00</span>
-
-	   
+	<b>Total Dimanod Stone Amt:</b>
+	<span id="total-diamond_stone_amount" style="margin-right:20px">0.00</span>
 
 	<b>Total HM:</b>
 	<span id="total-hm">0.00</span>
@@ -975,6 +1155,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 				    <th>Sales Wastage %</th>
 				    <th>Sales Wastage Wt</th>
 				    <th>OC</th>
+				    <th>Diamond/Stone Amt</th>
 				    <th>HM</th>
 				    <th>Narration</th>
 				    <th>Return Vou No</th>
@@ -1003,6 +1184,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="8" placeholder="Wastage %"></th>
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="9" placeholder="Wastage Wt"></th>
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="10" placeholder="OC"></th>
+			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="19" placeholder="Dia/Stone Amt"></th>
 
 			    <th><input type="text" class="form-control form-control-sm vendor-filter" data-col="11" placeholder="HM"></th>
 
@@ -1072,7 +1254,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    ${moment(record.voucher_date).format("DD-MM-YYYY")}
 			    </td>
 
-			    <td>${record.GrossWt ?? record.gross_wt}</td>
+			    <td style="text-align:right">${record.GrossWt ?? record.gross_wt}</td>
 
 			    <td>
 				<input type="number" class="form-control snetwt-input" data-id="${record.ItemTranID}" value="${saved.net_wt ?? record.NetWt ?? record.net_wt}" step="0.001">
@@ -1081,14 +1263,21 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			    <input type="number"  class="form-control finewt-input" data-id="${record.ItemTranID}" value="${saved.fine_wt ?? record.FineWt ?? record.fine_wt}" step="0.001">
 			    </td>
 			    <td>${record.tradname ?? record.purity}</td>
-			    <td>${record.Pcs ?? record.pcs}</td>
-			    <td>${record.WastagePer ?? record.sales_wastage_per}</td>
-			    <td>${record.WastageWt ?? record.sales_wastage_wt ?? 0}</td>
+			    <td style="text-align:right">${record.Pcs ?? record.pcs}</td>
+			    <td style="text-align:right">${record.WastagePer ?? record.sales_wastage_per}</td>
+			    <td style="text-align:right">${record.WastageWt ?? record.sales_wastage_wt ?? 0}</td>
 			    <td><input type="number"
 	   class="form-control oc-input"
 	   data-id="${record.ItemTranID}"
 	   value="${saved.oc ?? record.OtherCharge ?? record.oc}"
 	   step="0.01"></td>
+	   <td>
+<input type="number"
+   class="form-control diamond-stone-amount-input"
+   data-id="${record.ItemTranID}"
+   value="${saved.diamond_stone_amount ?? record.DiamondAmt ?? 0}"
+   step="0.001">
+</td>
 			    <td><input type="number"
 	   class="form-control hm-input"
 	   data-id="${record.ItemTranID}"
@@ -1105,9 +1294,9 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
     : ""}
     </td>
 
-    <td>${record.ReturnGrossWt ?? record.returngrosswt ?? 0}</td>
+    <td style="text-align:right">${record.ReturnGrossWt ?? record.returngrosswt ?? 0}</td>
 
-    <td>${record.ReturnNetWt ?? record.returnnetwt ?? 0}</td>
+    <td style="text-align:right">${record.ReturnNetWt ?? record.returnnetwt ?? 0}</td>
 
     <td><input type="number"
                class="form-control returnfinewt-input"
@@ -1128,27 +1317,28 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			<tr style="font-weight:bold;background:#f5f5f5;">
 			    <td colspan="3" style="text-align:right;">Total</td>
 
-			    <td id="tfoot-grosswt">0.000</td>
-			    <td id="tfoot-netwt">0.000</td>
-			    <td id="tfoot-finewt">0.000</td>
+			    <td style="text-align:right" id="tfoot-grosswt">0.000</td>
+			    <td style="text-align:right" id="tfoot-netwt">0.000</td>
+			    <td id="tfoot-finewt" style="text-align:right">0.000</td>
 
 			    <td></td>
-			    <td id="tfoot-pcs">0</td>
+			    <td id="tfoot-pcs" style="text-align:right">0</td>
 
 			    <td></td>
 
-			    <td id="tfoot-wastagewt">0.000</td>
+			    <td id="tfoot-wastagewt" style="text-align:right">0.000</td>
 
-			    <td id="tfoot-oc">0.00</td>
-			    <td id="tfoot-hm">0.00</td>
+			    <td id="tfoot-oc" style="text-align:right">0.00</td>
+			    <td id="tfoot-diamond_stone_amount" style="text-align:right">0.00</td>
+			    <td id="tfoot-hm" style="text-align:right">0.00</td>
 
 			    <td></td>
 			    <td></td>
 			    <td></td>
 
-			    <td id="tfoot-returngross">0.000</td>
-			    <td id="tfoot-returnnet">0.000</td>
-			    <td id="tfoot-returnfine">0.000</td>
+			    <td id="tfoot-returngross" style="text-align:right">0.000</td>
+			    <td id="tfoot-returnnet" style="text-align:right">0.000</td>
+			    <td id="tfoot-returnfine" style="text-align:right">0.000</td>
 
 			    <td></td>
 			</tr>
@@ -1177,6 +1367,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		    let pcs = 0;
 		    let wastage = 0;
 		    let oc = 0;
+		    let diamond_stone_amount = 0;
 		    let hm = 0;
 		    let returnGross = 0;
 		    let returnNet = 0;
@@ -1197,14 +1388,16 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			wastage += parseFloat(td.eq(9).text()) || 0;
 
 			oc += parseFloat(td.eq(10).find("input").val()) || 0;
+			
+			diamond_stone_amount += parseFloat(td.eq(11).find("input").val()) || 0;
 
-			hm += parseFloat(td.eq(11).find("input").val()) || 0;
+			hm += parseFloat(td.eq(12).find("input").val()) || 0;
 
-			returnGross += parseFloat(td.eq(15).text()) || 0;
+			returnGross += parseFloat(td.eq(16).text()) || 0;
 
-			returnNet += parseFloat(td.eq(16).text()) || 0;
+			returnNet += parseFloat(td.eq(17).text()) || 0;
 
-			returnFine += parseFloat(td.eq(17).find("input").val()) || 0;
+			returnFine += parseFloat(td.eq(18).find("input").val()) || 0;
 		    });
 
 		    d.$wrapper.find("#tfoot-grosswt").text(gross.toFixed(3));
@@ -1213,6 +1406,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		    d.$wrapper.find("#tfoot-pcs").text(pcs);
 		    d.$wrapper.find("#tfoot-wastagewt").text(wastage.toFixed(3));
 		    d.$wrapper.find("#tfoot-oc").text(oc.toFixed(2));
+		    d.$wrapper.find("#tfoot-diamond_stone_amount").text(diamond_stone_amount.toFixed(2));
 		    d.$wrapper.find("#tfoot-hm").text(hm.toFixed(2));
 		    d.$wrapper.find("#tfoot-returngross").text(returnGross.toFixed(3));
 		    d.$wrapper.find("#tfoot-returnnet").text(returnNet.toFixed(3));
@@ -1224,6 +1418,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			let totalFineWt = 0;
 			let totalNetWt = 0;
 			let totalOC = 0;
+			let totalDiamondStoneAmount = 0;
 			let totalHM = 0;
 
 			d.$wrapper.find('.txn-check:checked').each(function () {
@@ -1232,6 +1427,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 
 				totalFineWt += parseFloat(d.$wrapper.find(`.finewt-input[data-id="${id}"]`).val()) || 0;
 				totalNetWt += parseFloat(d.$wrapper.find(`.snetwt-input[data-id="${id}"]`).val()) || 0;
+				totalDiamondStoneAmount += parseFloat(d.$wrapper.find(`.diamond-stone-amount-input[data-id="${id}"]`).val()) || 0;
 
 
 				totalOC += parseFloat(
@@ -1267,6 +1463,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			d.$wrapper.find('#total-snetwt').text(totalNetWt.toFixed(3));
 
 			d.$wrapper.find('#total-oc').text(totalOC.toFixed(2));
+			d.$wrapper.find('#total-diamond_stone_amount').text(totalDiamondStoneAmount.toFixed(2));
 			d.$wrapper.find('#total-hm').text(totalHM.toFixed(2));
 		}
 		function filterVendorTable() {
@@ -1309,7 +1506,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		d.$wrapper.on("keyup", ".vendor-filter", filterVendorTable);
 		d.$wrapper.on(
 			'change',
-			'.txn-check, .finewt-input, .oc-input, .hm-input, .returnfinewt-input ',
+			'.txn-check, .finewt-input, .oc-input,.diamond-stone-wt-input, .hm-input, .returnfinewt-input ',
 			function () {
         		updateTotals();
        			 updateTableTotals();
@@ -1331,9 +1528,8 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 						d.$wrapper.find(`.finewt-input[data-id="${id}"]`).val()
 					) || 0;
 
-					let oc = parseFloat(
-						d.$wrapper.find(`.oc-input[data-id="${id}"]`).val()
-					) || 0;
+					let oc = parseFloat(d.$wrapper.find(`.oc-input[data-id="${id}"]`).val()) || 0;
+					let diamond_stone_amount = parseFloat(d.$wrapper.find(`.diamond-stone-amount-input[data-id="${id}"]`).val()) || 0;
 
 					let hm = parseFloat(
 						d.$wrapper.find(`.hm-input[data-id="${id}"]`).val()
@@ -1347,6 +1543,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 						...row,
 						FineWt: fineWt,
 						OtherCharge: oc,
+						DiamondStoneAmount: diamond_stone_amount,
 						HM: hm,
 						ReturnFineWt: returnfinewt
 					});
@@ -1901,6 +2098,7 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 			// Modal
 
 
+
 	$(document).on('click', '.save-row-btn', function () {
 
 		let idx = $(this).data('index');
@@ -1919,6 +2117,55 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		});
 
 	});
+$(document).on('change', '#select-all-summary', function () {
+    $('.summary-row')
+        .prop('checked', $(this).is(':checked'));
+
+});
+$(document).on('click', '#remove-selected-rate-cut', function () {
+
+    let selected = [];
+
+    $('.summary-row:checked').each(function () {
+        selected.push($(this).data('name'));
+    });
+
+    if (!selected.length) {
+        frappe.msgprint("Please select at least one row.");
+        return;
+    }
+
+    frappe.confirm(
+        `Remove ${selected.length} selected rows?`,
+        function () {
+
+            frappe.call({
+                method: "vgjewellry.rate_cut.delete_multiple_rate_cut_summary",
+                args: {
+                    summary_ids: selected
+                },
+                callback: function () {
+
+                    frappe.show_alert({
+                        message: "Rows removed successfully",
+                        indicator: "green"
+                    });
+
+                    load_summary_table();
+                }
+            });
+
+        }
+    );
+
+});
+$(document).on('change', '.summary-row', function () {
+    $('#select-all-summary').prop(
+        'checked',
+        $('.summary-row').length === $('.summary-row:checked').length
+    );
+
+});
 	$(document).on('click', '.remove-row-btn', function () {
 
 		let idx = $(this).data('index');
@@ -1955,4 +2202,4 @@ $("#rate-cut-done, #rate-cut-not-done").on("change", function () {
 		}, 200);
 
 	});
-};
+};	
