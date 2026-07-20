@@ -284,6 +284,7 @@ if (fromDate && toDate) {
     if (done && !notDone) {
         filters.rate_999_with_gst = [">", 0];
     }
+ console.log(done,notDone);
 
     // If only "Not Done" is checked
     if (!done && notDone) {
