@@ -267,6 +267,8 @@ input[type="number"] {
 		let filters = {
         	is_submitted: 0
     	};
+		    let or_filters = [];
+
 		let fromDate = $('#rate-cut-from-date').val();
 let toDate = $('#rate-cut-to-date').val();
 
@@ -288,13 +290,19 @@ if (fromDate && toDate) {
 
     // If only "Not Done" is checked
     if (!done && notDone) {
-        filters.rate_999_with_gst = ["in", ["", null, 0]];
+	     or_filters = [
+            ["Rate Cut Summary", "rate_999_with_gst", "=", 0],
+            ["Rate Cut Summary", "rate_999_with_gst", "is", "not set"]
+        ];
+        //filters.rate_999_with_gst = ["in", ["", null, 0]];
     }
 console.log(filters);
 		frappe.call({
 			method: "frappe.client.get_list",
 			args: {
 				doctype: "Rate Cut Summary",
+				            or_filters: or_filters,
+
 				filters: filters,
 				fields: [
 					"name",
