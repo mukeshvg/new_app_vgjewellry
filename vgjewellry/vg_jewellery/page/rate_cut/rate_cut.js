@@ -301,6 +301,7 @@ if (fromDate && toDate) {
 					"acc_mst_id",
 					"fine_wt",
 					"fine_wt_selected",
+					"fine_wt_diff",
 					"net_wt",
 					"oc",
 					"hm",
@@ -327,6 +328,7 @@ if (fromDate && toDate) {
 					accMstId: d.acc_mst_id,
 					ketanFineWt: d.fine_wt,
 					selectedFineWt: d.fine_wt_selected,
+					fineWtDiff:d.fine_wt_diff,
 					netWt: d.net_wt,
 					oc: d.oc,
 					hm: d.hm,
@@ -479,7 +481,9 @@ function updateRateCutTotals() {
 			totalSales_Wastage_Wt += parseFloat(row.sales_wastage_wt || 0)
 			let fineWt = parseFloat(row.ketanFineWt || 0);
 			let selectedFineWt = parseFloat(row.selectedFineWt || 0);
-			let fineWtDiff = selectedFineWt - fineWt;
+			//let fineWtDiff = selectedFineWt - fineWt;
+			let fineWtDiff = row.fineWtDiff;
+
 			let diff =  parseFloat(row.billWithoutGst || 0) -  parseFloat(row.billAmtWithoutGst || 0);
 			totalFineWtDiff += fineWtDiff;
 			totalDiff+=(parseFloat( row.billWithoutGst || 0) - parseFloat( row.billAmtWithoutGst  || 0));

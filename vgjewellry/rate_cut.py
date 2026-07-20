@@ -450,6 +450,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     summary_doc.hm = total_hm
     summary_doc.returnfinewt = total_returnfinewt
     summary_doc.sales_wastage_wt = total_sales_wastage_wt
+    summary_doc.fine_wt_diff  = summary_doc.fine_wt - total_fine_wt
 
     summary_doc.save(ignore_permissions=True)
 
@@ -697,7 +698,7 @@ def update_rate_cut_row(summary_id, acc_mst_id,
     )
     frappe.db.commit()
 
-    return "ok"
+    return "ok"+str(doc.fine_wt_diff)
 
 @frappe.whitelist()
 def update_bill_and_diff(summary_id, bill_amt, diff):
