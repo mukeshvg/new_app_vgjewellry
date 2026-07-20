@@ -450,7 +450,7 @@ def save_selected_transactions(summary_id,vendor, acc_mst_id, rows):
     summary_doc.hm = total_hm
     summary_doc.returnfinewt = total_returnfinewt
     summary_doc.sales_wastage_wt = total_sales_wastage_wt
-    summary_doc.fine_wt_diff  = summary_doc.fine_wt - total_fine_wt
+    summary_doc.fine_wt_diff  = total_fine_wt- summary_doc.fine_wt 
 
     summary_doc.save(ignore_permissions=True)
 
@@ -576,6 +576,7 @@ def update_ketan_finewt(summary_id, ketan_finewt,fine_wt_diff,bill_amt,bill_with
     doc.bill_amt = bill_amt
     doc.bill_value_without_gst = bill_without_gst
     doc.save()
+    update_daily_rate_cut(summary_id)
     # Update Daily Rate Cut
     '''update_daily_rate_cut(
         fine_weight_difference=doc.fine_wt_diff,
@@ -610,13 +611,36 @@ def save_single_rate_cut(row):
     return "saved"
 
 
-def update_daily_rate_cut(fine_weight_difference, amount):
-    current_date = today()
+def update_daily_rate_cut(summary_id):
+    from frappe.utils import flt
 
-    # Check if today's record already exists
+    # Get the summary document
+    summary = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    # Replace 'date' with your actual date field name
+    summary_date = summary.ratecut_date
+
+    # Get all summaries for the same date having Rate 999 With GST > 0
+    summaries = frappe.get_all(
+        "Rate Cut Summary",
+        filters={
+            "ratecut_date": summary_date,
+            "rate_999_with_gst": (">", 0)
+        },
+        fields=["fine_wt_diff", "diff"]
+    )
+
+    total_fine_wt = 0
+    total_amount = 0
+
+    for row in summaries:
+        total_fine_wt += flt(row.fine_wt_diff)
+        total_amount += flt(row.diff)
+
+    # Check if Daily Rate Cut exists
     existing = frappe.get_all(
         "Daily Rate Cut",
-        filters={"rate_cut_date": current_date},
+        filters={"rate_cut_date": summary_date},
         fields=["name"],
         limit=1
     )
@@ -625,12 +649,13 @@ def update_daily_rate_cut(fine_weight_difference, amount):
         daily_doc = frappe.get_doc("Daily Rate Cut", existing[0].name)
     else:
         daily_doc = frappe.new_doc("Daily Rate Cut")
-        daily_doc.rate_cut_date = current_date
+        daily_doc.rate_cut_date = summary_date
 
-    daily_doc.fine_weight_difference = fine_weight_difference or 0
-    daily_doc.amount = amount or 0
+    daily_doc.fine_weight_difference = total_fine_wt
+    daily_doc.amount = total_amount
 
     daily_doc.save(ignore_permissions=True)
+
 
 @frappe.whitelist()
 def delete_multiple_rate_cut_summary(summary_ids):
@@ -647,6 +672,11 @@ def delete_multiple_rate_cut_summary(summary_ids):
 
 @frappe.whitelist()
 def delete_rate_cut_summary(summary_id):
+    # Get summary document first
+    summary = frappe.get_doc("Rate Cut Summary", summary_id)
+
+    # Replace with your actual date field
+    summary_date = summary.ratecut_date
 
     transactions = frappe.get_all(
         "Rate Cut Transaction",
@@ -667,9 +697,45 @@ def delete_rate_cut_summary(summary_id):
         force=1
     )
 
+    update_daily_rate_cut_by_date(summary_date)
+
     frappe.db.commit()
 
     return "deleted"
+
+from frappe.utils import flt
+
+def update_daily_rate_cut_by_date(summary_date):
+
+    # Get all summaries for the given date where Rate 999 With GST > 0
+    summaries = frappe.get_all(
+        "Rate Cut Summary",
+        filters={
+            "ratecut_date": summary_date,   # Replace 'date' with your actual date field if different
+            "rate_999_with_gst": (">", 0)
+        },
+        fields=["fine_wt_diff", "diff"]
+    )
+
+    total_fine_wt = sum(flt(row.fine_wt_diff) for row in summaries)
+    total_amount = sum(flt(row.diff) for row in summaries)
+
+    # Check if Daily Rate Cut exists for the date
+    existing = frappe.db.exists(
+        "Daily Rate Cut",
+        {"rate_cut_date": summary_date}
+    )
+
+    if existing:
+        daily_doc = frappe.get_doc("Daily Rate Cut", existing)
+    else:
+        daily_doc = frappe.new_doc("Daily Rate Cut")
+        daily_doc.rate_cut_date = summary_date
+
+    daily_doc.fine_weight_difference = total_fine_wt
+    daily_doc.amount = total_amount
+
+    daily_doc.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def update_rate_cut_row(summary_id, acc_mst_id,
@@ -690,15 +756,13 @@ def update_rate_cut_row(summary_id, acc_mst_id,
 
 
     doc.save(ignore_permissions=True)
+    frappe.db.commit()
     
     # Update Daily Rate Cut
-    update_daily_rate_cut(
-        fine_weight_difference=doc.fine_wt_diff,
-        amount=doc.diff
-    )
-    frappe.db.commit()
+    update_daily_rate_cut(summary_id)
+    
 
-    return "ok"+str(doc.fine_wt_diff)
+    return "ok"
 
 @frappe.whitelist()
 def update_bill_and_diff(summary_id, bill_amt, diff):
