@@ -482,7 +482,7 @@ function updateRateCutTotals() {
 			let fineWtDiff = selectedFineWt - fineWt;
 			let diff =  parseFloat(row.billWithoutGst || 0) -  parseFloat(row.billAmtWithoutGst || 0);
 			totalFineWtDiff += fineWtDiff;
-			totalDiff+=(parseFloat(row.billAmtWithoutGst || 0) - parseFloat(row.billWithoutGst || 0));
+			totalDiff+=(parseFloat( row.billWithoutGst || 0) - parseFloat( row.billAmtWithoutGst  || 0));
 			html += `
 			<tr>
 				<td>
