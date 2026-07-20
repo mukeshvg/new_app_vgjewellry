@@ -289,7 +289,8 @@ if (fromDate && toDate) {
     // If only "Not Done" is checked
     if (!done && notDone) {
         filters.rate_999_with_gst = ["in", ["", null, 0]];
-    }	
+    }
+console.log(filters);
 		frappe.call({
 			method: "frappe.client.get_list",
 			args: {
