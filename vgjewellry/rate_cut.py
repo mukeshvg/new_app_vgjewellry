@@ -576,10 +576,10 @@ def update_ketan_finewt(summary_id, ketan_finewt,fine_wt_diff,bill_amt,bill_with
     doc.bill_value_without_gst = bill_without_gst
     doc.save()
     # Update Daily Rate Cut
-    update_daily_rate_cut(
+    '''update_daily_rate_cut(
         fine_weight_difference=doc.fine_wt_diff,
         amount=doc.diff
-    )
+    )'''
 
 @frappe.whitelist()
 def update_netwt(summary_id, net_wt):
@@ -605,11 +605,6 @@ def save_single_rate_cut(row):
     doc.diff = row.get("diff")
 
     doc.save(ignore_permissions=True)
-    # Update Daily Rate Cut
-    update_daily_rate_cut(
-        fine_weight_difference=doc.fine_wt_diff,
-        amount=doc.diff
-    )
 
     return "saved"
 
@@ -694,6 +689,12 @@ def update_rate_cut_row(summary_id, acc_mst_id,
 
 
     doc.save(ignore_permissions=True)
+    
+    # Update Daily Rate Cut
+    update_daily_rate_cut(
+        fine_weight_difference=doc.fine_wt_diff,
+        amount=doc.diff
+    )
     frappe.db.commit()
 
     return "ok"
