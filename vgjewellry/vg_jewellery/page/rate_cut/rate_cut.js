@@ -425,8 +425,8 @@ function updateRateCutTotals() {
 
 			<thead>
 			    <tr>
-				<th> <input type="checkbox" id="select-all-summary">
-Ratecut Date</th>
+				<th> <input type="checkbox" id="select-all-summary">Ratecut Date</th>
+				<th>RATE 999 Without GST</th>
 				<th>Vendor</th>
 				<th>Fine Wt (Ketan Sir)</th>
 				<th>Fine Wt Selected</th>
@@ -439,7 +439,6 @@ Ratecut Date</th>
 				<th>Rate Cut By</th>
 				<th>Rate Cut Type</th>
 				<th>RATE 999 With GST</th>
-				<th>RATE 999 Without GST</th>
 				<th>BILL VALUE WITHOUT GST</th>
 				<th>WITH GST VALUE</th>
 				<th>BILL AMT (Vikrant)</th>
@@ -480,8 +479,8 @@ Ratecut Date</th>
 			totalSales_Wastage_Wt += parseFloat(row.sales_wastage_wt || 0)
 			let fineWt = parseFloat(row.ketanFineWt || 0);
 			let selectedFineWt = parseFloat(row.selectedFineWt || 0);
-			let fineWtDiff = fineWt - selectedFineWt;
-			let diff =  parseFloat(row.billAmtWithoutGst || 0) -  parseFloat(row.billWithoutGst || 0);
+			let fineWtDiff = selectedFineWt - fineWt;
+			let diff =  parseFloat(row.billWithoutGst || 0) -  parseFloat(row.billAmtWithoutGst || 0);
 			totalFineWtDiff += fineWtDiff;
 			totalDiff+=(parseFloat(row.billAmtWithoutGst || 0) - parseFloat(row.billWithoutGst || 0));
 			html += `
@@ -494,6 +493,11 @@ Ratecut Date</th>
 				${row.ratecut_date
 						? moment(row.ratecut_date).format("DD-MM-YYYY")
 						: ''}</td>
+			    <td> <input type="number" readonly
+	   class="form-control rate999wogst-input"
+	   data-index="${index}"
+	   value="${row.rate999WithoutGst.toFixed() || ''}"
+	   step="0.01"></td>
 
 			    <td>
 				<span class="vendor-link"
@@ -572,11 +576,6 @@ Ratecut Date</th>
 	   value="${row.rate999WGst || ''}"
 	   ></td>
 
-			    <td> <input type="number" readonly
-	   class="form-control rate999wogst-input"
-	   data-index="${index}"
-	   value="${row.rate999WithoutGst.toFixed() || ''}"
-	   step="0.01"></td>
 
 			    <td><input type="number" readonly
 	   class="form-control billwithoutgst-input"
@@ -639,6 +638,7 @@ step="0.01">
 			background:#ffff00;
 		    ">
 			<td></td>
+			<td></td>
 			<td>TOTAL</td>
 
 			<td id="total-ketan-finewt" style="text-align:right">
@@ -658,7 +658,6 @@ step="0.01">
 			<td style="text-align:right">${totalOC.toFixed(2)}</td>
 			<td style="text-align:right">${totalSales_Wastage_Wt.toFixed(2)}</td>
 			<td style="text-align:right">${totalReturnFinewt.toFixed(3)}</td>
-			<td></td>
 			<td></td>
 			<td></td>
 			<td></td>
@@ -753,14 +752,14 @@ step="0.01">
 				.val(withGstValue.toFixed());
 				
 		   let ketanFineWt =parseFloat(addedRows[idx].ketanFineWt) || 0;
-		   let billAmountWithoutGst =  ((withoutGst / 10) * (ketanFineWt )) + hm +	oc;
+		   let billAmountWithoutGst =  ((withoutGst / 10) * (ketanFineWt )) + hm + oc;
 		   let billAmountwithGstValue =  billAmountWithoutGst * 1.03;
 		   
 		   addedRows[idx].billAmtWithoutGst =billAmountWithoutGst;
 		   addedRows[idx].billAmt = billAmountwithGstValue;
 			$(`.billamt-input[data-index="${idx}"]`).val(billAmountwithGstValue.toFixed());
 		$(`.billamtwithoutgst-input[data-index="${idx}"]`).val(billAmountWithoutGst.toFixed());	
-			let diff_total_value=billAmountWithoutGst - billWithoutGst
+			let diff_total_value= billWithoutGst -billAmountWithoutGst
 		$(`.diff-cell-input[data-index="${idx}"]`).val(diff_total_value.toFixed());	
 		addedRows[idx].diff = diff_total_value;	
 		updateRateCutTotals();
@@ -802,7 +801,7 @@ step="0.01">
 			addedRows[idx].ketanFineWt = value;
 			let selected = parseFloat(addedRows[idx].selectedFineWt) || 0;
 
-let diff = value - selected;
+let diff = selected - value;
 
 $(this)
     .closest('tr')
@@ -864,7 +863,7 @@ let totalKetan=0;
 	$(`.billwithoutgstamt-input[data-index="${idx}"]`)
 		.val(billWithoutGst.toFixed());
 
-let diff_bill = billAmountWithoutGst - billWithoutGst;
+let diff_bill =  billWithoutGst - billAmountWithoutGst;
 
 addedRows[idx].diff = diff;
 
