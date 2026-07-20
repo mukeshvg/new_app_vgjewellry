@@ -49,6 +49,21 @@ and trm.TDate = ? """
     columnNames_val = [column[0] for column in cursor_val.description]
     gold_rate=0
     silver_rate=0
+    daily_rate_cut = frappe.db.sql("""
+    SELECT
+        COALESCE(SUM(fine_weight_difference), 0) AS fine_weight_difference,
+        COALESCE(SUM(amount), 0) AS amount
+    FROM `tabDaily Rate Cut`
+    WHERE rate_cut_date BETWEEN %s AND %s
+""", (from_date, to_date), as_dict=True)
+
+    rate_cut_weight = 0
+    rate_cut_amount = 0
+
+    if daily_rate_cut:
+        rate_cut_weight = daily_rate_cut[0]["fine_weight_difference"] or 0
+        rate_cut_amount = daily_rate_cut[0]["amount"] or 0
+
     for record in res_val:
         data_val.append( dict( zip( columnNames_val , record ) ) )
     for d in data_val:
@@ -367,6 +382,10 @@ GROUP BY
         }
         
 
+    all_data["24kt"]["rate_cut"] = {
+    "weight": format_indian_number(rate_cut_weight),
+    "amount": format_indian_number_no_decimal(rate_cut_amount)
+}
 
     fine_data["net"]["weight"]=fine_data["today"]["weight"]-fine_data["old"]["weight"]
     fine_data["net"]["amount"]=format_indian_number_no_decimal(fine_data["today"]["amount"]-fine_data["old"]["amount"])
@@ -458,7 +477,16 @@ GROUP BY m.VouId
     response = requests.request("GET", url, headers=headers, data=payload)   
     dt = response.text
     #match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", response)
-    match = re.search(r"GOLD 999 WITH GST IMP-IND\s*-\s*(\d+)", dt)
+    #match = re.search(r"GOLD 999 WITH GST IMP-IND\s*-\s*(\d+)", dt)
+    match = re.search(r"GOLD 999 WITH GST IMP-IND.*?(\d+)", dt)
+    if not match:
+        match = re.search(r"GOLD 999 WITH GST\s*-\s*(\d+)", dt)
+    if not match:
+        match = re.search(r"GOLD\s*9999\s*\(4NINE\)\s*WITH GST\s*-\s*(\d+)", dt)
+    if not match:
+        match = re.search(r"GOLD\s*9999\s*\(\s*4\s*NINE\s*\)\s*WITH\s*GST\s*\t-\t(\d+)",dt, re.IGNORECASE)
+    if not match:
+        match = re.search(r"GOLD\s*995\s*WITH\s*GST\s+(\d+)", dt,re.IGNORECASE)
 
     if match:
         arihant_gold_rate = int(match.group(1))/10

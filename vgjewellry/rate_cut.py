@@ -575,6 +575,11 @@ def update_ketan_finewt(summary_id, ketan_finewt,fine_wt_diff,bill_amt,bill_with
     doc.bill_amt = bill_amt
     doc.bill_value_without_gst = bill_without_gst
     doc.save()
+    # Update Daily Rate Cut
+    update_daily_rate_cut(
+        fine_weight_difference=doc.fine_wt_diff,
+        amount=doc.diff
+    )
 
 @frappe.whitelist()
 def update_netwt(summary_id, net_wt):
@@ -600,8 +605,36 @@ def save_single_rate_cut(row):
     doc.diff = row.get("diff")
 
     doc.save(ignore_permissions=True)
+    # Update Daily Rate Cut
+    update_daily_rate_cut(
+        fine_weight_difference=doc.fine_wt_diff,
+        amount=doc.diff
+    )
 
     return "saved"
+
+
+def update_daily_rate_cut(fine_weight_difference, amount):
+    current_date = today()
+
+    # Check if today's record already exists
+    existing = frappe.get_all(
+        "Daily Rate Cut",
+        filters={"rate_cut_date": current_date},
+        fields=["name"],
+        limit=1
+    )
+
+    if existing:
+        daily_doc = frappe.get_doc("Daily Rate Cut", existing[0].name)
+    else:
+        daily_doc = frappe.new_doc("Daily Rate Cut")
+        daily_doc.rate_cut_date = current_date
+
+    daily_doc.fine_weight_difference = fine_weight_difference or 0
+    daily_doc.amount = amount or 0
+
+    daily_doc.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def delete_multiple_rate_cut_summary(summary_ids):

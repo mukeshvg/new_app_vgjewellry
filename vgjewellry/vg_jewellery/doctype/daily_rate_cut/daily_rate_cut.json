@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-07-20 11:19:19.266287",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "rate_cut_date",
+  "fine_weight_difference",
+  "amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "rate_cut_date",
+   "fieldtype": "Date",
+   "label": "Rate Cut Date"
+  },
+  {
+   "fieldname": "fine_weight_difference",
+   "fieldtype": "Float",
+   "label": "Fine Weight Difference"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Float",
+   "label": "Amount"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-20 11:20:43.573578",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Daily Rate Cut",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

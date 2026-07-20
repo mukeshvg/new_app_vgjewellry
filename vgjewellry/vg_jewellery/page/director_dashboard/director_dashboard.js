@@ -862,13 +862,15 @@ function ktDetailCard(title, kd) {
 
 	function sectionBlock(name, data) {
 
-		if (name === 'Purchase') {
+			if (name === 'Purchase' || name === 'Rate Cut') {
+		let label = name === 'Purchase' ? 'Old Gold' : 'Rate Cut';
+	
 	return `
 	<div class="kt-subsection">
 		<div class="kt-subtitle">${name}</div>
 
 		<div class="val-row">
-			<div class="val-label">Old Gold</div>
+			<div class="val-label">${label}</div>
 			<div class="val-amt">${formatAmt(data?.amt_other)}</div>
 			<div class="val-wt">${formatWt(data?.wt_other)}</div>
 		</div>
@@ -908,6 +910,7 @@ function ktDetailCard(title, kd) {
 
 			${sectionBlock('Sale', kd?.sale)}
 			${sectionBlock('Purchase', kd?.purchase)}
+			${title === '24 KT' ? sectionBlock('Rate Cut', kd?.rate_cut) : ''}
 			${sectionBlock('Net', kd?.net)}
 
 		</div>
@@ -941,6 +944,10 @@ function mapKTData(raw) {
 		purchase: {
   amt_other: raw.old?.amount,
   wt_other: raw.old?.weight
+		},
+		rate_cut: {
+			amt_other: raw.rate_cut?.amount,
+			wt_other: raw.rate_cut?.weight
 		},
 		net: {
 			amt_ketan: raw.net?.cash_receipt,

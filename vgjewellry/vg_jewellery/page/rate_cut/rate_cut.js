@@ -844,12 +844,11 @@ let totalKetan=0;
 		parseFloat(addedRows[idx].rate999WithoutGst) || 0;
 
 
-	let billAmt =
-		value * rateWithGst;
+	let billAmt =	value * rateWithGst;
 
 
-	let billWithoutGst =
-		value * rateWithoutGst;
+	let billAmountWithoutGst =value * rateWithoutGst;
+	let billWithoutGst = selectedFineWt * rateWithoutGst;
 
 
 	addedRows[idx].billAmt = billAmt;
@@ -861,7 +860,7 @@ let totalKetan=0;
 
 
 	$(`.billwithoutgstamt-input[data-index="${idx}"]`)
-		.val(billWithoutGst.toFixed());
+		.val(billAmountWithoutGst.toFixed());
 
 let diff_bill =  billWithoutGst - billAmountWithoutGst;
 
