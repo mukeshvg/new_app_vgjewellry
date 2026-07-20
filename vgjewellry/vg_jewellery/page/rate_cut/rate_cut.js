@@ -1601,7 +1601,7 @@ $(this)
 			loadArihantRate();
 
 			// Auto refresh every 5 seconds
-			let arihantRateInterval = setInterval(loadArihantRate, 100000);
+			let arihantRateInterval = setInterval(loadArihantRate, 10000);
 
 			// Manual refresh button
 			$('#arihant-rate-btn').on('click', loadArihantRate);
