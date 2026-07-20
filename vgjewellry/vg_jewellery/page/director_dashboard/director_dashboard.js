@@ -627,6 +627,34 @@ frappe.pages['director-dashboard'].on_page_load = function(wrapper) {
 	// ================= OVERVIEW CARD (24KT summary) =================
 
 	function sumAllKT(data, field) {
+    const keys = ['24kt', '22kt', '18kt', 'di'];
+    let total = 0;
+
+    keys.forEach(k => {
+        let val = data?.[k]?.net?.[field];
+
+        if (!val) return;
+
+        val = Number(String(val).replace(/,/g, ''));
+
+        // Subtract rate cut weight only for 24kt weight
+        if (k === "24kt" && field === "kt") {
+            let rateCut = data?.["24kt"]?.rate_cut?.weight || 0;
+            rateCut = Number(String(rateCut).replace(/,/g, ''));
+		console.log(val,rateCut)
+            if (!isNaN(rateCut)) {
+                val -= rateCut;
+            }
+        }
+
+        if (!isNaN(val)) {
+            total += val;
+        }
+    });
+    return total;
+}
+	function sumAllKT_old(data, field) {
+		console.log(data);
 	const keys = ['24kt', '22kt', '18kt', 'di'];
 
 	let total = 0;
@@ -772,7 +800,7 @@ function renderSummary() {
 }
 
 	function renderSummary1() {
-		const overview = build24KTOverview();
+	const overview = build24KTOverview();
 	const d = FINE_DATA || {};
 	const m = getMethod(); 
 
