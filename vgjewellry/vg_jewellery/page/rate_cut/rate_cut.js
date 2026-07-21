@@ -296,7 +296,6 @@ if (fromDate && toDate) {
         ];
         //filters.rate_999_with_gst = ["in", ["", null, 0]];
     }
-console.log(filters);
 		frappe.call({
 			method: "frappe.client.get_list",
 			args: {
@@ -1263,7 +1262,8 @@ $(this)
 			    <td class="vou-no">${record.VouNo ?? record.vou_no}</td>
 
 			    <td class="vou-no">
-			    ${moment(record.voucher_date).format("DD-MM-YYYY")}
+			    ${record.VouDate? moment(record.VouDate).format("DD-MM-YYYY"):
+			    moment(record.voucher_date).format("DD-MM-YYYY")}
 			    </td>
 
 			    <td style="text-align:right">${record.GrossWt ?? record.gross_wt}</td>
