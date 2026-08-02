@@ -1,0 +1,1421 @@
+frappe.provide("vg.quotation_bank");
+
+frappe.pages["quotation-bank"].on_page_load = function (wrapper) {
+
+    new QuotationBank(wrapper);
+
+};
+
+class QuotationBank {
+
+    constructor(wrapper) {
+
+        this.wrapper = $(wrapper);
+        this.page = frappe.ui.make_app_page({
+            parent: wrapper,
+            title: "Quotation Bank",
+            single_column: true
+        });
+
+        // Data
+        this.products = [];
+        this.filtered_products = [];
+        this.selected_products = new Set();
+
+        // Pagination
+        this.page_no = 0;
+        this.page_length = 40;
+        this.loading = false;
+        this.has_more = true;
+
+        // Search
+        this.search = "";
+
+        // Filters
+        this.filters = {
+            vendor: [],
+            metal: [],
+            item: [],
+            diamond_wt: [],
+            design_no: []
+        };
+	this.filter_options = {};
+        this.make();
+
+        this.bind_events();
+	this.load_filters();    
+    
+
+        this.load_data();
+    }
+
+    make() {
+
+        this.page.main.html(`
+
+<div class="quotation-bank">
+
+    <!-- Toolbar -->
+
+    <div class="qb-toolbar">
+
+        <div class="qb-search"></div>
+
+        <div class="qb-filters"></div>
+
+        <div class="qb-actions"></div>
+	  <button class="btn btn-primary btn-sm" id="apply-filter">
+            <i class="fa fa-filter"></i> Apply Filter
+        </button>
+
+        <button class="btn btn-default btn-sm" id="clear-filter">
+            Clear
+        </button>
+
+    </div>
+
+    <!-- Summary -->
+
+    <div class="qb-summary">
+    <div class="qb-summary-item stock-summary">
+        <span>Stock:</span>
+        <b class="stock-count">0</b>
+        <span>Pcs</span>
+        <span>| Dia:</span>
+        <b class="stock-dia-wt">0.000</b>
+    </div>
+
+
+    <div class="qb-summary-item sale-summary">
+        <span>Sale:</span>
+        <b class="sale-count">0</b>
+        <span>Pcs</span>
+        <span>| Dia:</span>
+        <b class="sale-dia-wt">0.000</b>
+    </div>
+        <span class="selected-count">
+
+            0 Selected
+
+        </span>
+
+    </div>
+
+    <!-- Product Grid -->
+
+    <div class="product-grid"></div>
+
+    <!-- Loading -->
+
+    <div class="loading-area"></div>
+
+</div>
+
+        `);
+
+        this.make_toolbar();
+
+    }
+	make_toolbar() {
+
+        const me = this;
+
+        // Search
+
+        this.search_box = this.page.add_field({
+            label: "Search",
+            fieldname: "search",
+            fieldtype: "Data",
+            placeholder: "Vendor / Item / Design"
+        });
+
+        $(".qb-search").append(
+            this.search_box.$wrapper
+        );
+
+        // Vendor
+
+        /*this.vendor_filter = this.page.add_field({
+
+            label: "Vendor",
+
+            fieldname: "vendor",
+
+            fieldtype: "MultiSelectList",
+
+            get_data(txt) {
+
+                return me.get_filter_options(
+                    "vendor",
+                    txt
+                );
+
+            }
+
+        });*/
+
+	this.diamond_filter = this.page.add_field({
+
+    label: "Diamond Wt",
+
+    fieldname: "diamond_wt",
+
+    fieldtype: "MultiSelectList",
+
+    get_data(txt) {
+
+        return me.get_filter_options(
+            "diamond_wt",
+            txt
+        );
+
+    }
+
+});	
+
+
+        // Metal
+
+        this.metal_filter = this.page.add_field({
+
+            label: "Metal",
+
+            fieldname: "metal",
+
+            fieldtype: "MultiSelectList",
+
+            get_data(txt) {
+
+                return me.get_filter_options(
+                    "metal",
+                    txt
+                );
+
+            }
+
+        });
+
+
+        // Item
+
+        this.item_filter = this.page.add_field({
+
+            label: "Item",
+
+            fieldname: "item",
+
+            fieldtype: "MultiSelectList",
+
+            get_data(txt) {
+
+                return me.get_filter_options(
+                    "item",
+                    txt
+                );
+
+            }
+
+        });
+this.date_range = this.page.add_field({
+
+    label: "Date Range",
+
+    fieldname: "date_range",
+
+    fieldtype: "DateRange"
+
+});
+
+
+
+        $(".qb-filters").append(
+            this.item_filter.$wrapper
+        );
+        $(".qb-filters").append(
+            this.metal_filter.$wrapper
+        );
+        $(".qb-filters").append(
+            this.diamond_filter.$wrapper
+        );
+	$(".qb-filters").append(
+    	this.date_range.$wrapper
+	);
+
+        // Design
+
+        /*this.design_filter = this.page.add_field({
+
+            label: "Design",
+
+            fieldname: "design_no",
+
+            fieldtype: "MultiSelectList",
+
+            get_data(txt) {
+
+                return me.get_filter_options(
+                    "design_no",
+                    txt
+                );
+
+            }
+
+        });
+
+        $(".qb-filters").append(
+            this.design_filter.$wrapper
+        );*/
+
+        // Buttons
+
+        this.page.add_inner_button("Refresh", () => {
+
+            this.refresh();
+
+        });
+
+        this.page.add_inner_button("Select All", () => {
+
+            this.select_all();
+
+        });
+
+        this.page.add_inner_button("Clear", () => {
+
+            this.clear_selection();
+
+        });
+
+        this.page.add_inner_button("Add To Cart", () => {
+
+            this.add_to_cart();
+
+        });
+
+    }
+load_filters() {
+
+    const me = this;
+
+    frappe.call({
+        method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.get_filter_options",
+        callback(r) {
+
+            if (!r.message) return;
+
+            me.filter_options = r.message;
+		console.log(r.message)
+		me.filter_options.diamond_wt = [
+
+"0-0.100",
+"0.101-0.200",
+"0.201-0.300",
+"0.301-0.400",
+"0.401-0.500",
+"0.501-0.700",
+"0.701-1.000",
+"1.001-1.250",
+"1.251-1.500",
+"1.501-1.750",
+"1.751-2.000",
+"2.001-2.250",
+"2.251-2.500",
+"2.501-3.000",
+"3.001-3.500",
+"3.501-4.000",
+"4.001-5.000",
+"5.001-6.000",
+"6.001-7.000",
+"7.001-8.000",
+"8.001-9.000",
+"9.001-10.000",
+"10.001-12.000",
+"12.001-15.000",
+"15.001-17.000",
+"17.001-20.000",
+"20.001-25.000",
+"25.001-30.000",
+"30.001-40.000",
+"40.001-50.000",
+"50.001-60.000",
+"60.001-70.000",
+"70.001-80.000",
+"80.001-90.000",
+"90.001-100.000",
+        "100.001-999.000"
+];
+
+        }
+    });
+
+}
+	load_data(reset = true) {
+
+    if (this.loading) return;
+
+    const me = this;
+
+    this.loading = true;
+
+    if (reset) {
+        this.page_no = 0;
+        this.products = [];
+        this.filtered_products = [];
+        this.has_more = true;
+    }
+
+    $(".loading-area").html(`
+        <div class="text-center p-4">
+            <i class="fa fa-spinner fa-spin"></i>
+            Loading Quotations...
+        </div>
+    `);
+
+    frappe.call({
+
+        method:
+        "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.get_quotations",
+
+        args: {
+
+            start: me.page_no * me.page_length,
+
+            page_length: me.page_length,
+
+            search: me.search,
+
+            filters: me.filters
+
+        },
+
+        freeze: false,
+
+        callback(r) {
+
+            me.loading = false;
+
+            $(".loading-area").empty();
+
+            if (!r.message) return;
+
+            let rows = r.message.quotations || [];
+
+            if (rows.length < me.page_length) {
+                me.has_more = false;
+            }
+
+	    me.image_server_url = r.image_server_url	
+            me.current_stock = r.message.current_stock || [];
+
+    me.sale_data = r.message.sale_data || [];		
+
+            if (reset) {
+                me.products = rows;
+            } else {
+                me.products.push(...rows);
+            
+	    }
+
+		    let summary = r.message.summary || {};
+
+
+    $(".stock-count")
+        .html(summary.stock_count || 0);
+
+
+    $(".stock-dia-wt")
+        .html(
+            Number(summary.stock_diamond_wt || 0)
+            .toFixed(3)
+        );
+
+
+    $(".sale-count")
+        .html(summary.sale_count || 0);
+
+
+    $(".sale-dia-wt")
+        .html(
+            Number(summary.sale_diamond_wt || 0)
+            .toFixed(3)
+        );
+
+
+            me.filtered_products = [...me.products];
+
+            me.render_cards();
+
+        }
+
+    });
+
+}
+
+render_cards() {
+
+    const me = this;
+
+    let html = "";
+
+    if (!this.filtered_products.length) {
+
+        $(".product-grid").html(`
+            <div class="text-center p-5">
+                <img src="/assets/frappe/images/ui-states/empty-state.svg"
+                     style="width:180px;margin-bottom:15px;">
+                <h4>No Quotations Found</h4>
+            </div>
+        `);
+
+        $(".selected-count").html("0 Selected");
+        return;
+    }
+
+    this.filtered_products.forEach(function (d) {
+
+        const selected = me.selected_products.has(d.name);
+
+        html += `
+
+<div class="qb-card ${selected ? 'selected' : ''}"
+     data-name="${d.name}">
+
+    <div class="qb-image">
+
+        <img class="preview-image"
+             data-image="${d.image || ''}"
+             loading="lazy"
+             src="${d.image || '/assets/frappe/images/ui-states/default-avatar.png'}">
+
+    </div>
+
+    <!--<div class="qb-header">
+
+        <div class="qb-item">
+            ${d.item || ""}
+        </div>
+
+        <div class="qb-design">
+            ${d.design_no || ""}
+        </div>
+
+    </div>-->
+
+    <div class="qb-body">
+<table class="table table-borderless qb-table">
+
+    <tr><td>Item</td><td>${d.item || ""}</td></tr>
+    <tr><td>Design</td><td>${d.design_no || ""}</td></tr>
+    <tr><td>Metal</td><td>${d.metal || ""}</td></tr>
+
+    <tr><td>Gross</td><td>${Number(d.gr_wt || 0).toFixed(3)}</td></tr>
+    <tr><td>Net</td><td>${Number(d.net_wt || 0).toFixed(3)}</td></tr>
+
+    <tr><td>Dia Shape</td><td>${[d.dia_shape1,d.dia_shape2].filter(Boolean).join(", ") || "-"}</td></tr>
+
+    <tr><td>Dia Size</td><td>${[d.dia_size1,d.dia_size2].filter(Boolean).join(", ") || "-"}</td></tr>
+
+    <tr><td>Dia Pcs</td><td>${[d.dia_pcs1,d.dia_pcs2].filter(v => v > 0).join(", ") || "0"}</td></tr>
+
+    <tr><td>Dia Wt</td><td>${[d.dia_wt1,d.dia_wt2].filter(v => v > 0).join(", ") || "0.000"}</td></tr>
+
+    <tr><td>Stone</td><td>${d.stone_pcs || 0} (${Number(d.stone_wt || 0).toFixed(3)})</td></tr>
+
+</table>
+        <div class="qb-total">
+
+            ${frappe.format(
+                d.total_amt || 0,
+                {fieldtype:"Currency"}
+            )}
+
+        </div>
+
+    </div>
+
+<div class="qb-footer">
+
+    <button
+        class="btn btn-default btn-xs preview-btn"
+        data-name="${d.name}">
+
+        <i class="fa fa-search-plus"></i>
+
+        Quick View
+
+    </button>
+
+    <button
+        class="btn btn-success btn-xs add-cart-btn"
+        data-name="${d.name}">
+
+        <i class="fa fa-shopping-cart"></i>
+
+        Cart
+
+    </button>
+
+    <button
+        class="btn ${selected?"btn-primary":"btn-outline-primary"} btn-xs select-btn"
+        data-name="${d.name}">
+
+        ${selected?"Selected":"Select"}
+
+    </button>
+
+</div>
+   <!-- <div class="qb-footer">
+
+        <button
+            class="btn btn-xs btn-default preview-btn"
+            data-name="${d.name}">
+
+            <i class="fa fa-search-plus"></i>
+
+            Preview
+
+        </button>
+
+        <button
+            class="btn btn-xs ${selected ? 'btn-success' : 'btn-primary'} select-btn"
+            data-name="${d.name}">
+
+            ${selected ? "Selected" : "Select"}
+
+        </button>
+
+    </div>-->
+
+</div>
+
+`;
+
+    });
+
+    $(".product-grid").html(html);
+
+    $(".selected-count").html(
+
+        `${this.selected_products.size} Selected from ${this.filtered_products.length}`
+
+    );
+
+}
+render_cards1() {
+
+    const me = this;
+
+    let html = "";
+
+    if (!this.filtered_products.length) {
+
+        $(".product-grid").html(`
+            <div class="text-center p-5">
+                <h4>No Quotations Found</h4>
+            </div>
+        `);
+
+        return;
+    }
+
+    this.filtered_products.forEach(function(d){
+
+        const selected = me.selected_products.has(d.name);
+
+        html += `
+
+<div class="qb-card ${selected ? 'selected' : ''}" data-name="${d.name}">
+
+    <div class="qb-image">
+
+        <img src="${d.image || '/assets/frappe/images/ui-states/default-avatar.png'}">
+
+    </div>
+
+    <div class="qb-body">
+
+        <div class="qb-row">
+
+            <span>Item</span>
+
+            <b>${d.item || ""}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Vendor</span>
+
+            <b>${d.vendor || ""}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Design</span>
+
+            <b>${d.design_no || ""}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Metal</span>
+
+            <b>${d.metal || ""}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Gross Wt</span>
+
+            <b>${d.gr_wt || 0}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Net Wt</span>
+
+            <b>${d.net_wt || 0}</b>
+
+        </div>
+
+        <div class="qb-row">
+
+            <span>Total</span>
+
+            <b>${format_currency(d.total_amt || 0)}</b>
+
+        </div>
+
+    </div>
+
+    <div class="qb-footer">
+
+        <button class="btn btn-xs btn-default preview-btn"
+            data-name="${d.name}">
+
+            Preview
+
+        </button>
+
+        <button class="btn btn-xs btn-primary select-btn"
+            data-name="${d.name}">
+
+            ${selected ? "Selected" : "Select"}
+
+        </button>
+
+    </div>
+
+</div>
+
+`;
+
+    });
+
+    $(".product-grid").html(html);
+
+    $(".selected-count").html(
+
+        `${this.selected_products.size} Selected`
+
+    );
+
+}
+
+
+bind_events() {
+
+    const me = this;
+
+	    function refresh() {
+
+        me.search = me.search_box.get_value() || "";
+
+        me.filters.vendor =
+            me.vendor_filter.get_value();
+
+        me.filters.metal =
+            me.metal_filter.get_value();
+
+        me.filters.item =
+            me.item_filter.get_value();
+
+        me.filters.design_no =
+            me.design_filter.get_value();
+
+        me.load_data(true);
+
+    }
+
+    me.search_box.$input.on(
+        "keyup",
+        frappe.utils.debounce(refresh,400)
+    );
+
+    /*me.vendor_filter.$input.on(
+        "change",
+        refresh
+    );
+
+    me.metal_filter.$input.on(
+        "change",
+        refresh
+    );
+
+    me.item_filter.$input.on(
+        "keyup",
+        frappe.utils.debounce(refresh,400)
+    );
+
+    me.design_filter.$input.on(
+        "keyup",
+        frappe.utils.debounce(refresh,400)
+    );*/
+
+	$(document).on("click", "#apply-filter", () => {
+
+    this.search = this.search_box.get_value() || "";
+
+    //this.filters.vendor = this.vendor_filter.get_value() || [];
+    this.filters.diamond_wt = this.diamond_filter.get_value() || [];		
+    this.filters.metal = this.metal_filter.get_value() || [];
+    this.filters.item = this.item_filter.get_value() || [];
+    //this.filters.design_no = this.design_filter.get_value() || [];
+    let range = this.date_range.get_value() || [];
+
+
+	this.filters.from_date = range[0];
+	this.filters.to_date = range[1];
+
+    this.load_data(true);
+
+});
+	$(document).on("click", "#clear-filter", () => {
+
+    this.search_box.set_value("");
+
+   // this.vendor_filter.set_value([]);
+   this.diamond_filter.set_value([]);
+    this.metal_filter.set_value([]);
+    this.item_filter.set_value([]);
+    //this.design_filter.set_value([]);
+
+    this.filters = {
+        vendor: [],
+        metal: [],
+        item: [],
+        design_no: []
+    };
+
+    this.load_data(true);
+
+});
+    // Search
+
+    this.search_box.$input.on("keyup", frappe.utils.debounce(function () {
+
+        me.search = $(this).val();
+
+        me.load_data(true);
+
+    }, 400));
+
+    // Infinite Scroll
+
+    $(window).on("scroll.quotation_bank", function () {
+
+        if (!me.has_more) return;
+
+        if (me.loading) return;
+
+        let bottom =
+            $(window).scrollTop() +
+            $(window).height();
+
+        if (bottom >= $(document).height() - 200) {
+
+            me.page_no++;
+
+            me.load_data(false);
+
+        }
+
+    });
+	$(document).on("click",".select-btn",function(e){
+
+    e.stopPropagation();
+
+    me.toggle_selection(
+
+        $(this).data("name")
+
+    );
+
+});
+
+$(document).on("click",".preview-btn",function(e){
+
+    e.stopPropagation();
+
+    me.preview_product(
+
+        $(this).data("name")
+
+    );
+
+});
+
+$(document).on("click",".qb-card",function(){
+
+    me.toggle_selection(
+
+        $(this).data("name")
+
+    );
+
+});
+
+$(document).on("mousemove",".qb-preview-image",function(e){
+
+    const rect=this.getBoundingClientRect();
+
+    const x=((e.clientX-rect.left)/rect.width)*100;
+
+    const y=((e.clientY-rect.top)/rect.height)*100;
+
+    $(this).css({
+
+        "transform":"scale(2)",
+
+        "transform-origin":`${x}% ${y}%`
+
+    });
+
+});
+
+$(document).on("mouseleave",".qb-preview-image",function(){
+
+    $(this).css({
+
+        transform:"scale(1)"
+
+    });
+
+});
+$(document).on("click",".add-cart-btn",function(e){
+
+    e.stopPropagation();
+
+    const name=$(this).data("name");
+
+    frappe.show_alert({
+
+        message:`${name} added to cart`,
+
+        indicator:"green"
+
+    });
+
+});
+
+$(document).on("click",".stock-summary",function(){
+
+    me.show_stock_sale_modal(
+        "Current Stock",
+        me.current_stock
+    );
+
+});
+
+
+$(document).on("click",".sale-summary",function(){
+
+    me.show_stock_sale_modal(
+        "Sale Data",
+        me.sale_data
+    );
+
+});
+}
+
+show_stock_sale_modal(title, data){
+
+
+    if(!data || !data.length){
+
+        frappe.msgprint("No data found");
+
+        return;
+
+    }
+
+
+    let html = `
+
+    <div class="stock-image-grid">
+
+    `;
+
+
+    data.forEach(d => {
+
+
+        html += `
+
+        <div class="stock-image-card">
+
+
+            <img src="http://192.168.1.5:51/${d.ImagePath1 || '/assets/frappe/images/ui-states/default-avatar.png'}">
+
+
+            <div class="stock-detail">
+
+                <div>
+                    Net WT:
+                    <b>
+                    ${Number(d.NetWt || 0).toFixed(3)}
+                    </b>
+                </div>
+
+
+                <div>
+                    Diamond WT:
+                    <b>
+                    ${Number(d.DiamondWt || 0).toFixed(3)}
+                    </b>
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+        `;
+
+    });
+
+
+    html += `</div>`;
+
+
+    let dialog = new frappe.ui.Dialog({
+
+        title:title,
+
+        size:"extra-large",
+
+        fields:[
+            {
+                fieldtype:"HTML",
+                fieldname:"grid"
+            }
+        ]
+
+    });
+
+
+    dialog.show();
+
+
+    dialog.fields_dict.grid.$wrapper.html(html);
+
+}
+    refresh() {
+	    this.load_data(true);
+    }
+
+select_all() {
+
+    this.filtered_products.forEach(d => {
+
+        this.selected_products.add(d.name);
+
+    });
+}
+
+clear_selection() {
+
+    this.selected_products.clear();
+
+    this.render_cards();
+
+}
+
+add_to_cart() {
+
+    if (!this.selected_products.size) {
+
+        frappe.msgprint("Please select quotation(s).");
+
+        return;
+
+    }
+
+    frappe.msgprint(
+        `${this.selected_products.size} quotation(s) selected.`
+    );
+
+}
+
+get_filter_options(field, txt) {
+
+    let data = this.filter_options?.[field] || [];
+
+    txt = (txt || "").toLowerCase();
+
+    return data
+        .filter(d => !txt || d.toLowerCase().includes(txt))
+        .map(d => ({
+            value: d,
+            description: d
+        }));
+}
+
+get_filter_options1(field, txt) {
+
+    let values = [];
+
+    this.products.forEach(d => {
+
+        if (d[field]) {
+
+            values.push(d[field]);
+
+        }
+
+    });
+
+    values = [...new Set(values)];
+
+    values.sort();
+
+    return values
+        .filter(d => {
+
+            if (!txt) return true;
+
+            return d
+                .toLowerCase()
+                .includes(txt.toLowerCase());
+
+        })
+        .map(d => ({
+            value: d,
+            description: d
+        }));
+
+}
+toggle_selection(name){
+
+    if(this.selected_products.has(name)){
+
+        this.selected_products.delete(name);
+
+    }else{
+
+        this.selected_products.add(name);
+
+    }
+
+    this.render_cards();
+
+}
+preview_product(name) {
+
+    const row = this.products.find(d => d.name === name);
+
+    if (!row) return;
+
+    const dialog = new frappe.ui.Dialog({
+        title: `${row.item || ""} - ${row.design_no || ""}`,
+        size: "extra-large",
+        fields: [
+            {
+                fieldtype: "HTML",
+                fieldname: "details"
+            }
+        ]
+    });
+
+    dialog.show();
+
+    dialog.fields_dict.details.$wrapper.html(`
+
+<div class="qb-dialog">
+
+    <div class="qb-dialog-left">
+
+        <img
+            src="${row.image || "/assets/frappe/images/ui-states/default-avatar.png"}"
+            class="dialog-main-image">
+
+    </div>
+
+    <div class="qb-dialog-right">
+
+        <table class="table table-bordered">
+
+            <tr><th colspan="2">Basic Details</th></tr>
+
+            <tr>
+                <td>Vendor</td>
+                <td>${row.vendor || ""}</td>
+            </tr>
+
+            <tr>
+                <td>Vendor Code</td>
+                <td>${row.vendor_code || ""}</td>
+            </tr>
+
+            <tr>
+                <td>Item</td>
+                <td>${row.item || ""}</td>
+            </tr>
+
+            <tr>
+                <td>Design</td>
+                <td>${row.design_no || ""}</td>
+            </tr>
+
+            <tr>
+                <td>Metal</td>
+                <td>${row.metal || ""}</td>
+            </tr>
+
+            <tr>
+                <td>Gross Weight</td>
+                <td>${Number(row.gr_wt || 0).toFixed(3)}</td>
+            </tr>
+
+            <tr>
+                <td>Net Weight</td>
+                <td>${Number(row.net_wt || 0).toFixed(3)}</td>
+            </tr>
+
+        </table>
+
+        <table class="table table-bordered">
+
+            <tr>
+
+                <th colspan="5">
+
+                    Diamond 1
+
+                </th>
+
+            </tr>
+
+            <tr>
+
+                <th>Shape</th>
+
+                <th>Size</th>
+
+                <th>Pcs</th>
+
+                <th>Wt</th>
+
+                <th>Amt</th>
+
+            </tr>
+
+            <tr>
+
+                <td>${row.dia_shape1 || ""}</td>
+
+                <td>${row.dia_size1 || ""}</td>
+
+                <td>${row.dia_pcs1 || 0}</td>
+
+                <td>${row.dia_wt1 || 0}</td>
+
+                <td>${frappe.format(row.dia_amt1 || 0,{fieldtype:"Currency"})}</td>
+
+            </tr>
+
+        </table>
+
+        <table class="table table-bordered">
+
+            <tr>
+
+                <th colspan="5">
+
+                    Diamond 2
+
+                </th>
+
+            </tr>
+
+            <tr>
+
+                <th>Shape</th>
+
+                <th>Size</th>
+
+                <th>Pcs</th>
+
+                <th>Wt</th>
+
+                <th>Amt</th>
+
+            </tr>
+
+            <tr>
+
+                <td>${row.dia_shape2 || ""}</td>
+
+                <td>${row.dia_size2 || ""}</td>
+
+                <td>${row.dia_pcs2 || 0}</td>
+
+                <td>${row.dia_wt2 || 0}</td>
+
+                <td>${frappe.format(row.dia_amt2 || 0,{fieldtype:"Currency"})}</td>
+
+            </tr>
+
+        </table>
+
+        <table class="table table-bordered">
+
+            <tr>
+
+                <th colspan="2">
+
+                    Stone
+
+                </th>
+
+            </tr>
+
+            <tr>
+
+                <td>Pcs</td>
+
+                <td>${row.stone_pcs || 0}</td>
+
+            </tr>
+
+            <tr>
+
+                <td>Weight</td>
+
+                <td>${row.stone_wt || 0}</td>
+
+            </tr>
+
+            <tr>
+
+                <td>Amount</td>
+
+                <td>${frappe.format(row.stone_amt || 0,{fieldtype:"Currency"})}</td>
+
+            </tr>
+
+        </table>
+
+        <div class="dialog-total">
+
+            Total :
+            ${frappe.format(row.total_amt || 0,{fieldtype:"Currency"})}
+
+        </div>
+
+    </div>
+
+</div>
+
+`);
+
+}
+preview_product2(name) {
+
+    let row = this.products.find(d => d.name === name);
+
+    if (!row) return;
+
+    let dialog = new frappe.ui.Dialog({
+
+        title: row.item,
+
+        size: "extra-large",
+
+        fields: [
+
+            {
+                fieldtype: "HTML",
+                fieldname: "preview"
+            }
+
+        ]
+
+    });
+
+    dialog.show();
+
+    dialog.fields_dict.preview.$wrapper.html(`
+
+<div class="qb-preview">
+
+    <img src="${row.image}"
+         class="qb-preview-image">
+
+</div>
+
+`);
+
+}
+preview_product1(name){
+
+    let row=this.products.find(d=>d.name==name);
+
+    if(!row) return;
+
+    let dialog=new frappe.ui.Dialog({
+
+        title:row.item,
+
+        size:"extra-large",
+
+        fields:[
+
+            {
+
+                fieldtype:"HTML",
+
+                fieldname:"image"
+
+            }
+
+        ]
+
+    });
+
+    dialog.show();
+
+    dialog.fields_dict.image.$wrapper.html(`
+
+        <div style="text-align:center">
+
+            <img
+                src="${row.image}"
+                style="
+                    max-width:100%;
+                    max-height:80vh;
+                    object-fit:contain;
+                ">
+
+        </div>
+
+    `);
+
+}
+}
+
