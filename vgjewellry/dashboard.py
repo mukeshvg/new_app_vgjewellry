@@ -470,6 +470,8 @@ GROUP BY m.VouId
 
     current_ts_ms = int(datetime.now().timestamp() * 1000)
     url = f"https://bcast.arihantspot.com:7768/VOTSBroadcastStreaming/Services/xml/GetLiveRateByTemplateID/arihant?_={current_ts_ms}"
+    url = f"https://bcast.arihantspot.in/VOTSBroadcastStreaming/Services/xml/GetLiveRateByTemplateID/arihant?_={current_ts_ms}"
+
 
     payload = {}
     headers = {}
