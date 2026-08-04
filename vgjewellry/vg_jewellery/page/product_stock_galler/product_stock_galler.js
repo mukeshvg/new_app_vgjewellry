@@ -326,7 +326,7 @@ show_image_dialog(images) {
 
                 <div class="card stock-image">
 
-                    <img class="stock-image" src="http://103.249.120.178:51/${src}"
+                    <img class="stock-image" src="http://192.168.1.5:51/${src}"
                          style="width:100%;height:220px;object-fit:contain;">
 
                     <div class="card-body">
