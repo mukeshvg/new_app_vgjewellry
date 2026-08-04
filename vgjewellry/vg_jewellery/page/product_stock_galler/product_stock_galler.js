@@ -382,6 +382,144 @@ show_image_dialog(images) {
 
 show_full_image(src) {
 
+    let d = new frappe.ui.Dialog({
+        title: "Image Preview",
+        size: "extra-large",
+        fields: [
+            {
+                fieldtype: "HTML",
+                fieldname: "preview"
+            }
+        ]
+    });
+
+    d.show();
+
+    d.fields_dict.preview.$wrapper.html(`
+        <style>
+
+            .image-viewer{
+                width:100%;
+                height:80vh;
+                background:#000;
+                overflow:hidden;
+                position:relative;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                touch-action:none;
+            }
+
+            #zoomImage{
+                position:absolute;
+                left:50%;
+                top:50%;
+                transform:translate(-50%,-50%) scale(1);
+                transform-origin:center center;
+
+                max-width:100%;
+                max-height:100%;
+
+                width:auto;
+                height:auto;
+
+                object-fit:contain;
+
+                user-select:none;
+                -webkit-user-drag:none;
+                touch-action:none;
+            }
+
+            .viewer-toolbar{
+                display:flex;
+                justify-content:center;
+                gap:10px;
+                margin-bottom:10px;
+            }
+
+        </style>
+
+        <div class="viewer-toolbar">
+
+            <button class="btn btn-primary btn-sm" id="zoomIn">+</button>
+
+            <button class="btn btn-primary btn-sm" id="zoomOut">-</button>
+
+            <button class="btn btn-secondary btn-sm" id="zoomReset">
+                Reset
+            </button>
+
+        </div>
+
+        <div class="image-viewer" id="viewer">
+
+            <img id="zoomImage" src="${src}" draggable="false">
+
+        </div>
+    `);
+
+    const wrapper = d.fields_dict.preview.$wrapper;
+
+    const viewer = wrapper.find("#viewer")[0];
+
+    const image = wrapper.find("#zoomImage")[0];
+
+    image.onload = () => {
+
+        const vw = viewer.clientWidth;
+        const vh = viewer.clientHeight;
+
+        const iw = image.naturalWidth;
+        const ih = image.naturalHeight;
+
+        const scale = Math.min(vw / iw, vh / ih);
+
+        image.style.width = (iw * scale) + "px";
+        image.style.height = (ih * scale) + "px";
+
+        image.style.maxWidth = "none";
+        image.style.maxHeight = "none";
+
+        this.enable_touch_zoom(viewer, image);
+
+    };
+
+    wrapper.find("#zoomIn").on("click", () => {
+
+        image.scale = (image.scale || 1) + .25;
+
+        image.style.transform =
+            `translate(calc(-50% + ${image.tx || 0}px),
+                       calc(-50% + ${image.ty || 0}px))
+             scale(${image.scale})`;
+
+    });
+
+    wrapper.find("#zoomOut").on("click", () => {
+
+        image.scale = Math.max(1, (image.scale || 1) - .25);
+
+        image.style.transform =
+            `translate(calc(-50% + ${image.tx || 0}px),
+                       calc(-50% + ${image.ty || 0}px))
+             scale(${image.scale})`;
+
+    });
+
+    wrapper.find("#zoomReset").on("click", () => {
+
+        image.scale = 1;
+        image.tx = 0;
+        image.ty = 0;
+
+        image.style.transform =
+            "translate(-50%,-50%) scale(1)";
+
+    });
+
+}
+show_full_image2(src) {
+
     let dialog = new frappe.ui.Dialog({
         title: "Image Preview",
         size: "extra-large",
@@ -420,6 +558,7 @@ show_full_image(src) {
                 cursor:grab;
                 -webkit-user-drag:none;
                 user-select:none;
+		object-fit:
             }
 
             .viewer-toolbar{
