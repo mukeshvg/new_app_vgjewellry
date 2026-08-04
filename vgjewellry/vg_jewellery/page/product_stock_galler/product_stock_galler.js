@@ -280,7 +280,10 @@ make_weight_filter() {
     });
 
 });
-	    $(document).on("click",".stock-image",function(){
+	    $(document).off("click", ".stock-image");
+	    $(document).on("click",".stock-image",function(e){
+e.preventDefault();
+    e.stopPropagation();
 
     me.show_full_image($(this).attr("src"));
 
