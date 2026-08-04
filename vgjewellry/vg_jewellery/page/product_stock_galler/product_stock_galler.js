@@ -376,7 +376,132 @@ show_image_dialog(images) {
     d.fields_dict.images.$wrapper.html(html);
 
 }
-show_full_image(image) {
+
+show_full_image(src) {
+
+    let dialog = new frappe.ui.Dialog({
+        title: "Image Preview",
+        size: "extra-large",
+        fields: [
+            {
+                fieldtype: "HTML",
+                fieldname: "preview"
+            }
+        ]
+    });
+
+    dialog.show();
+
+    dialog.fields_dict.preview.$wrapper.html(`
+        <style>
+
+            .image-viewer{
+                position:relative;
+                width:100%;
+                height:80vh;
+                background:#000;
+                overflow:hidden;
+                border-radius:8px;
+                touch-action:none;
+                user-select:none;
+            }
+
+            .image-viewer img{
+                position:absolute;
+                left:50%;
+                top:50%;
+                transform:translate(-50%,-50%) scale(1);
+                transform-origin:center center;
+                max-width:none;
+                max-height:none;
+                cursor:grab;
+                -webkit-user-drag:none;
+                user-select:none;
+            }
+
+            .viewer-toolbar{
+                display:flex;
+                justify-content:center;
+                gap:10px;
+                margin-bottom:10px;
+            }
+
+            .viewer-toolbar button{
+                width:42px;
+                height:42px;
+                border:none;
+                border-radius:50%;
+                background:#007bff;
+                color:#fff;
+                font-size:20px;
+                cursor:pointer;
+            }
+
+            .viewer-toolbar button:hover{
+                background:#0056b3;
+            }
+
+        </style>
+
+        <div class="viewer-toolbar">
+
+            <button id="zoomIn">+</button>
+
+            <button id="zoomOut">−</button>
+
+            <button id="zoomReset">⟳</button>
+
+        </div>
+
+        <div class="image-viewer" id="viewer">
+
+            <img
+                id="zoomImage"
+                src="${src}"
+                draggable="false"
+            >
+
+        </div>
+    `);
+
+    const wrapper = dialog.fields_dict.preview.$wrapper;
+
+    const container = wrapper.find("#viewer")[0];
+    const image = wrapper.find("#zoomImage")[0];
+
+    this.enable_touch_zoom(container, image);
+
+    wrapper.find("#zoomIn").on("click", () => {
+
+        image.scale = (image.scale || 1) + 0.25;
+
+        image.style.transform =
+            `translate(calc(-50% + ${image.tx||0}px),calc(-50% + ${image.ty||0}px)) scale(${image.scale})`;
+
+    });
+
+    wrapper.find("#zoomOut").on("click", () => {
+
+        image.scale = Math.max(1,(image.scale||1)-0.25);
+
+        image.style.transform =
+            `translate(calc(-50% + ${image.tx||0}px),calc(-50% + ${image.ty||0}px)) scale(${image.scale})`;
+
+    });
+
+    wrapper.find("#zoomReset").on("click", () => {
+
+        image.scale = 1;
+        image.tx = 0;
+        image.ty = 0;
+
+        image.style.transform =
+            "translate(-50%,-50%) scale(1)";
+
+    });
+
+}
+show_full_image1(image) {
 
     let d = new frappe.ui.Dialog({
         title: "Image Preview",
@@ -427,6 +552,185 @@ setTimeout(() => {
 }
 
 enable_touch_zoom(container, image) {
+
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+
+    let pointers = [];
+
+    let startDistance = 0;
+    let startScale = 1;
+
+    let startX = 0;
+    let startY = 0;
+
+    let startTx = 0;
+    let startTy = 0;
+
+    let lastTap = 0;
+
+    function update() {
+
+        image.scale = scale;
+        image.tx = tx;
+        image.ty = ty;
+
+        image.style.transform =
+            `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
+
+    }
+
+    function distance(a, b) {
+
+        return Math.sqrt(
+            Math.pow(a.clientX - b.clientX, 2) +
+            Math.pow(a.clientY - b.clientY, 2)
+        );
+
+    }
+
+    container.onpointerdown = function(e) {
+
+        container.setPointerCapture(e.pointerId);
+
+        pointers.push(e);
+
+        // Double Tap
+        let now = Date.now();
+
+        if (now - lastTap < 250) {
+
+            if (scale == 1) {
+
+                scale = 2;
+
+            } else {
+
+                scale = 1;
+                tx = 0;
+                ty = 0;
+
+            }
+
+            update();
+        }
+
+        lastTap = now;
+
+        if (pointers.length == 1) {
+
+            startX = e.clientX;
+            startY = e.clientY;
+
+            startTx = tx;
+            startTy = ty;
+
+        }
+
+        if (pointers.length == 2) {
+
+            startDistance = distance(
+                pointers[0],
+                pointers[1]
+            );
+
+            startScale = scale;
+
+        }
+
+    };
+
+    container.onpointermove = function(e) {
+
+        for (let i = 0; i < pointers.length; i++) {
+
+            if (pointers[i].pointerId == e.pointerId) {
+
+                pointers[i] = e;
+                break;
+
+            }
+
+        }
+
+        // One Finger Pan
+        if (pointers.length == 1) {
+
+            tx = startTx + (e.clientX - startX);
+            ty = startTy + (e.clientY - startY);
+
+            update();
+
+        }
+
+        // Pinch Zoom
+        if (pointers.length == 2) {
+
+            let newDistance = distance(
+                pointers[0],
+                pointers[1]
+            );
+
+            scale = startScale * (newDistance / startDistance);
+
+            if (scale < 1)
+                scale = 1;
+
+            if (scale > 8)
+                scale = 8;
+
+            update();
+
+        }
+
+    };
+
+    container.onpointerup = function(e) {
+
+        pointers = pointers.filter(
+            p => p.pointerId !== e.pointerId
+        );
+
+    };
+
+    container.onpointercancel = function(e) {
+
+        pointers = pointers.filter(
+            p => p.pointerId !== e.pointerId
+        );
+
+    };
+
+    container.onpointerleave = function(e) {
+
+        pointers = pointers.filter(
+            p => p.pointerId !== e.pointerId
+        );
+
+    };
+
+    // Mouse Wheel Zoom
+    container.onwheel = function(e) {
+
+        e.preventDefault();
+
+        scale += e.deltaY < 0 ? 0.2 : -0.2;
+
+        if (scale < 1)
+            scale = 1;
+
+        if (scale > 8)
+            scale = 8;
+
+        update();
+
+    };
+
+    update();
+
+}
+enable_touch_zoom2(container, image) {
 
     if (!container || !image) {
         console.log("Viewer not found.");
