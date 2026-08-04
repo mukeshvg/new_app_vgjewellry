@@ -320,7 +320,7 @@ show_image_dialog(images) {
     images.forEach(img => {
 
         let src = img.ImagePath1 || "/assets/frappe/images/ui-placeholder.svg";
-	     let image_url = "/stock-images/" +
+	     let image_url = "/external-image/" +
         src.split("/").map(encodeURIComponent).join("/");
    
 
