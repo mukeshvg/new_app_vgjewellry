@@ -327,7 +327,7 @@ show_image_dialog(images) {
                 <div class="card stock-image">
 
                     <img class="stock-image"
-		         src="/api/method/vgjewellry.vg_jewellery.page.product_stock_galler.product_stock_galler.get_image?path=${encodeURIComponent(src)}"
+		         src="/api/method/vgjewellry.vg_jewellery.page.product_stock_galler.product_stock_galler.get_image?image=${encodeURIComponent(src)}"
 
                          style="width:100%;height:220px;object-fit:contain;">
 
