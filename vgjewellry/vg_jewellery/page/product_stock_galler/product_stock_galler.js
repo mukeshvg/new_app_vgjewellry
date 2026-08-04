@@ -420,7 +420,7 @@ show_full_image(image) {
         </div>
     `);
 setTimeout(() => {
-        this.enable_touch_zoom();
+       // this.enable_touch_zoom();
     }, 500);
 
 
@@ -901,8 +901,8 @@ render_table(data) {
             "Item",
             "Variety",
             "Weight Range",
-            "Ideal Weight",
-            "Stock Weight",
+            //"Ideal Weight",
+            //"Stock Weight",
             "Stock Pcs",
             "Target Pcs"
         ],
@@ -912,8 +912,8 @@ render_table(data) {
             d.item,
             d.variety,
             d.weight_range,
-            d.ideal_weight,
-            d.stock_weight,
+            //d.ideal_weight,
+            //d.stock_weight,
 	    `<button class="btn btn-xs btn-primary stock-pcs-btn"
 	        data-branch-id="${d.branch_id}"
         data-item-id="${d.item_id}"
