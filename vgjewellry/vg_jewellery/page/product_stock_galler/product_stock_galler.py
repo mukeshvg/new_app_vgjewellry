@@ -598,6 +598,7 @@ def get_image(image):
     image = quote(image, safe="/")
 
     url = f"http://103.249.120.178:51/{image}"
+    url = f"http://192.168.1.5:51/{image}"
 
     r = requests.get(url)
 
