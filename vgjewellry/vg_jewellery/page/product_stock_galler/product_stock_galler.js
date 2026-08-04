@@ -320,6 +320,9 @@ show_image_dialog(images) {
     images.forEach(img => {
 
         let src = img.ImagePath1 || "/assets/frappe/images/ui-placeholder.svg";
+	     let image_url = "/stock-images/" +
+        src.split("/").map(encodeURIComponent).join("/");
+   
 
         html += `
             <div class="col-md-3 mb-3">
@@ -327,7 +330,8 @@ show_image_dialog(images) {
                 <div class="card stock-image">
 
                     <img class="stock-image"
-		         src="/api/method/vgjewellry.vg_jewellery.page.product_stock_galler.product_stock_galler.get_image?image=${encodeURIComponent(src)}"
+			             src="${image_url}"
+
 
                          style="width:100%;height:220px;object-fit:contain;">
 
