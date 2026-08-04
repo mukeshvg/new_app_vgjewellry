@@ -380,7 +380,7 @@ show_image_dialog(images) {
 
 }
 
-show_full_image(src) {
+show_full_image_nto(src) {
 
     let d = new frappe.ui.Dialog({
         title: "Image Preview",
@@ -518,7 +518,7 @@ show_full_image(src) {
     });
 
 }
-show_full_image2(src) {
+show_full_image(src) {
 
     let dialog = new frappe.ui.Dialog({
         title: "Image Preview",
