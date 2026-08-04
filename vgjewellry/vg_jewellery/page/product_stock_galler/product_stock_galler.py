@@ -595,20 +595,17 @@ from urllib.parse import quote
 @frappe.whitelist(allow_guest=True)
 def get_image(image):
 
-    # Encode spaces and special characters, keep folder separators
     image = quote(image, safe="/")
 
     url = f"http://103.249.120.178:51/{image}"
 
-    r = requests.get(url, stream=True)
+    r = requests.get(url)
 
     if r.status_code != 200:
         frappe.throw("Image not found")
 
-    frappe.local.response.filename = image.split("/")[-1]
-    frappe.local.response.filecontent = r.content
-    frappe.local.response.type = "binary"
-
-    content_type = r.headers.get("Content-Type", "image/jpeg")
-    frappe.local.response.headers["Content-Type"] = content_type
+    frappe.response["type"] = "binary"
+    frappe.response["filecontent"] = r.content
+    frappe.response["filename"] = image.split("/")[-1]
+    frappe.response["content_type"] = r.headers.get("Content-Type", "image/jpeg")
 
