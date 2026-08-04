@@ -4,13 +4,26 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-08-04 07:40:14.028792",
+ "modified": "2026-08-04 14:21:51.780985",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "product-stock-galler",
  "owner": "Administrator",
  "page_name": "product-stock-galler",
- "roles": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Purchase Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
