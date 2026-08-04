@@ -589,18 +589,26 @@ def get_stock_images(branch_id, item_id, variety_id, weight_range):
 
 
 import requests
-from frappe.utils.response import Response
+import frappe
+from urllib.parse import quote
 
 @frappe.whitelist(allow_guest=True)
-def get_image(path):
+def get_image(image):
 
-    url = f"http://103.249.120.178:51/{path}"
+    # Encode spaces and special characters, keep folder separators
+    image = quote(image, safe="/")
+
+    url = f"http://103.249.120.178:51/{image}"
 
     r = requests.get(url, stream=True)
 
-    response = Response()
+    if r.status_code != 200:
+        frappe.throw("Image not found")
 
-    response.data = r.content
-    response.mimetype = r.headers.get("Content-Type", "image/jpeg")
+    frappe.local.response.filename = image.split("/")[-1]
+    frappe.local.response.filecontent = r.content
+    frappe.local.response.type = "binary"
 
-    return response
+    content_type = r.headers.get("Content-Type", "image/jpeg")
+    frappe.local.response.headers["Content-Type"] = content_type
+
