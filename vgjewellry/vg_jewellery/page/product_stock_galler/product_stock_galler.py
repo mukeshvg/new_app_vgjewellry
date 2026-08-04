@@ -586,3 +586,21 @@ def get_stock_images(branch_id, item_id, variety_id, weight_range):
     con.close()
 
     return result
+
+
+import requests
+from frappe.utils.response import Response
+
+@frappe.whitelist(allow_guest=True)
+def get_image(path):
+
+    url = f"http://103.249.120.178:51/{path}"
+
+    r = requests.get(url, stream=True)
+
+    response = Response()
+
+    response.data = r.content
+    response.mimetype = r.headers.get("Content-Type", "image/jpeg")
+
+    return response
