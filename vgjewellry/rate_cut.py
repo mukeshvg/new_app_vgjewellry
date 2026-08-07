@@ -142,7 +142,150 @@ WHERE RN = 1
 def get_vendor_rate_cut(acc_mst_id,summary_id):
     con = connect()
     cursor=con.cursor()
-    qry ='''
+
+    qry ='''WITH CTE AS
+(
+    SELECT
+        it.ItemTranID,
+        it.VouNo,
+        it.VouID,
+        it.VouDate,
+        it.TranID,
+        it.OpVouType,
+        it.ItemTradMstID,
+        it.GrossWt,
+        it.NetWt,
+        it.Pcs,
+        it.WastagePer,
+        (it.FineWt + it.WastageWeight) AS FineWt,
+        it.Purity,
+        itm.TradShortName AS tradname,
+        it.OtherCharge,
+        tss.Amount AS DiamondAmt,
+        it.SattleTradId,
+        it.Narration AS ItemName,
+        va.Narration,
+        va.IRMstID,
+        vam.AccMstID,
+        vam.AccSubID,
+        am.AccName,
+        ts.Amount AS HM,
+
+        return_it.ReturnPcs,
+        return_it.ReturnVouNo,
+        return_it.ReturnGrossWt,
+        return_it.ReturnNetWt,
+        return_it.ReturnFineWt,
+        return_it.ReturnOtherCharge,
+
+        /*
+           Get Narration from IRMst
+           using ReturnVouNo
+        */
+        STUFF
+        (
+            (
+                SELECT
+                    ', ' + i.Narration
+                FROM dbo.IRMst i
+                WHERE i.YearID = 16
+                  AND CHARINDEX
+                  (
+                      ',' + LTRIM(RTRIM(i.VouNo)) + ',',
+                      ',' + return_it.ReturnVouNo + ','
+                  ) > 0
+                FOR XML PATH(''), TYPE
+            ).value('.', 'NVARCHAR(MAX)'),
+            1,
+            2,
+            ''
+        ) AS ReturnNarration,
+
+        (
+    SELECT TOP 1 i.VouDate
+    FROM dbo.IRMst i
+    WHERE i.YearID = 16
+      AND CHARINDEX
+      (
+          ',' + LTRIM(RTRIM(i.VouNo)) + ',',
+          ',' + return_it.ReturnVouNo + ','
+      ) > 0
+) AS ReturnVouDate,
+
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY it.ItemTranID
+            ORDER BY vam.AccMstID
+        ) AS RN
+
+    FROM dbo.ItemTransaction it
+
+    INNER JOIN dbo.IRMst va
+        ON it.VouNo = va.VouNo
+       AND va.YearID = 16
+
+    INNER JOIN dbo.VouActionMst vam
+        ON it.VouID = vam.VID
+
+    LEFT JOIN dbo.AccMaster am
+        ON am.AccMstID = vam.AccMstID
+
+    LEFT JOIN dbo.ItemTradMst itm
+        ON itm.ItemTradMstID = it.ItemTradMstID
+
+    LEFT JOIN dbo.IRTranStudded ts
+        ON ts.IRTranId = it.TranID
+       AND ts.StyleID = 63
+
+    LEFT JOIN dbo.IRTranStudded tss
+        ON tss.IRTranId = it.TranID
+       AND tss.StyleID = 25
+
+    LEFT JOIN
+    (
+        SELECT
+            r.OpVouTranId,
+
+            SUM(r.Pcs) AS ReturnPcs,
+            SUM(r.GrossWt) AS ReturnGrossWt,
+            SUM(r.NetWt) AS ReturnNetWt,
+            SUM(r.FineWt) AS ReturnFineWt,
+            SUM(r.OtherCharge) AS ReturnOtherCharge,
+
+            STUFF
+            (
+                (
+                    SELECT
+                        ', ' + r1.VouNo
+                    FROM dbo.ItemTransaction r1
+                    WHERE r1.OpVouTranId = r.OpVouTranId
+                      AND r1.YearID = 16
+                    FOR XML PATH(''), TYPE
+                ).value('.', 'NVARCHAR(MAX)'),
+                1,
+                2,
+                ''
+            ) AS ReturnVouNo
+
+        FROM dbo.ItemTransaction r
+
+        WHERE r.YearID = 16
+
+        GROUP BY r.OpVouTranId
+
+    ) return_it
+        ON return_it.OpVouTranId = it.TranID
+
+    WHERE it.VouNo LIKE 'HARM /%'
+      AND it.YearID = 16
+      AND vam.VouType = 'AAR'
+      AND vam.AccMstID = ?
+)
+
+SELECT *
+FROM CTE
+WHERE RN = 1;'''
+    qry1 ='''
     WITH CTE AS
 (
     SELECT
