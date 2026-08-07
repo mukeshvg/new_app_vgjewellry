@@ -1,0 +1,33 @@
+.quotation-cart-page{
+
+    padding:20px;
+
+}
+
+.quotation-cart-page table{
+
+    background:white;
+
+}
+
+.quotation-cart-page thead{
+
+    background:#343a40;
+
+    color:white;
+
+}
+
+.quotation-cart-page tbody tr:hover{
+
+    background:#f5f5f5;
+
+    cursor:pointer;
+
+}
+
+.btn-view{
+
+    width:70px;
+
+}

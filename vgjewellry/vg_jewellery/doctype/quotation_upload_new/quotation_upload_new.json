@@ -1,0 +1,134 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2026-08-06 08:26:45.811037",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "vendor_code",
+  "vendor",
+  "image",
+  "item",
+  "vendor_design_number",
+  "metal",
+  "gr_wt",
+  "net_wt",
+  "gold_value",
+  "stone_pcs",
+  "stone_wt",
+  "stone_rate",
+  "stone_amount",
+  "labour_rate",
+  "total_labour",
+  "total_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "vendor_code",
+   "fieldtype": "Data",
+   "label": "Vendor Code"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Data",
+   "label": "Vendor"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item"
+  },
+  {
+   "fieldname": "vendor_design_number",
+   "fieldtype": "Data",
+   "label": "Vendor Design Number"
+  },
+  {
+   "fieldname": "metal",
+   "fieldtype": "Data",
+   "label": "Metal"
+  },
+  {
+   "fieldname": "gr_wt",
+   "fieldtype": "Float",
+   "label": "Gr Wt"
+  },
+  {
+   "fieldname": "net_wt",
+   "fieldtype": "Float",
+   "label": "Net Wt"
+  },
+  {
+   "fieldname": "gold_value",
+   "fieldtype": "Float",
+   "label": "Gold Value"
+  },
+  {
+   "fieldname": "stone_pcs",
+   "fieldtype": "Int",
+   "label": "Stone Pcs"
+  },
+  {
+   "fieldname": "stone_wt",
+   "fieldtype": "Float",
+   "label": "Stone Wt"
+  },
+  {
+   "fieldname": "stone_rate",
+   "fieldtype": "Float",
+   "label": "Stone Rate"
+  },
+  {
+   "fieldname": "stone_amount",
+   "fieldtype": "Float",
+   "label": "Stone Amount"
+  },
+  {
+   "fieldname": "labour_rate",
+   "fieldtype": "Float",
+   "label": "Labour Rate"
+  },
+  {
+   "fieldname": "total_labour",
+   "fieldtype": "Float",
+   "label": "Total Labour"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Float",
+   "label": "Total Amount"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-06 09:32:24.495524",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Quotation Upload New",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

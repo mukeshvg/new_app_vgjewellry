@@ -45,7 +45,7 @@ class QuotationBank {
         this.bind_events();
 	this.load_filters();    
     
-
+	this.load_cart_count();
         this.load_data();
     }
 
@@ -291,8 +291,32 @@ this.date_range = this.page.add_field({
             this.add_to_cart();
 
         });
+       this.page.add_inner_button(`
+    <i class="fa fa-shopping-cart"></i>
+    Cart (<span id="cart-count">0</span>)
+`, () => {
+
+    frappe.set_route("vg-quotation-cart");
+
+});
 
     }
+
+load_cart_count() {
+
+    frappe.call({
+
+        method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.get_cart_count",
+
+        callback: (r) => {
+
+            $("#cart-count").text(r.message || 0);
+
+        }
+
+    });
+
+}
 load_filters() {
 
     const me = this;
@@ -511,13 +535,13 @@ render_cards() {
     <tr><td>Gross</td><td>${Number(d.gr_wt || 0).toFixed(3)}</td></tr>
     <tr><td>Net</td><td>${Number(d.net_wt || 0).toFixed(3)}</td></tr>
 
-    <tr><td>Dia Shape</td><td>${[d.dia_shape1,d.dia_shape2].filter(Boolean).join(", ") || "-"}</td></tr>
+    <tr><td>Dia Shape</td><td>${d.diamond_shape|| "-"}</td></tr>
 
-    <tr><td>Dia Size</td><td>${[d.dia_size1,d.dia_size2].filter(Boolean).join(", ") || "-"}</td></tr>
+    <tr><td>Dia Size</td><td>${d.diamond_size || "-"}</td></tr>
 
-    <tr><td>Dia Pcs</td><td>${[d.dia_pcs1,d.dia_pcs2].filter(v => v > 0).join(", ") || "0"}</td></tr>
+    <tr><td>Dia Pcs</td><td>${d.total_diamond_pcs || "0"}</td></tr>
 
-    <tr><td>Dia Wt</td><td>${[d.dia_wt1,d.dia_wt2].filter(v => v > 0).join(", ") || "0.000"}</td></tr>
+    <tr><td>Dia Wt</td><td>${d.total_diamond_wt || "0.000"}</td></tr>
 
     <tr><td>Stone</td><td>${d.stone_pcs || 0} (${Number(d.stone_wt || 0).toFixed(3)})</td></tr>
 
@@ -1047,19 +1071,147 @@ clear_selection() {
 }
 
 add_to_cart() {
+	alert("wee");
+    if (!this.selected_products.size) {
+        frappe.msgprint("Please select quotation(s).");
+        return;
+    }
+
+    let dialog = new frappe.ui.Dialog({
+        title: "Add to Cart",
+        size: "small",
+        fields: [
+            {
+                fieldtype: "Link",
+                fieldname: "branch",
+                label: "Branch",
+                options: "Branch",
+                reqd: 1
+            },
+            {
+                fieldtype: "Small Text",
+                fieldname: "remark",
+                label: "Remark"
+            }
+        ],
+        primary_action_label: "Add to Cart",
+        primary_action: (values) => {
+
+            dialog.hide();
+
+            frappe.call({
+                method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.add_to_cart",
+                freeze: true,
+                args: {
+                    quotation_ids: Array.from(this.selected_products),
+                    branch: values.branch,
+                    remark: values.remark
+                },
+                callback: (r) => {
+
+                    if (!r.message) return;
+
+                    let msg = "";
+
+                    if (r.message.added.length) {
+                        msg += `
+                            <div style="color:green">
+                                ${r.message.added.length} product(s) added to cart.
+                            </div>
+                        `;
+                    }
+
+                    if (r.message.skipped.length) {
+                        msg += `
+                            <div style="color:red">
+                                ${r.message.skipped.length} product(s) already in cart.
+                            </div>
+                        `;
+                    }
+
+                    frappe.msgprint({
+                        title: "Cart Status",
+                        indicator: "green",
+                        message: msg
+                    });
+
+                    this.selected_products.clear();
+
+                    $(".qb-card").removeClass("selected");
+
+                    $(".select-btn")
+                        .removeClass("btn-primary")
+                        .addClass("btn-outline-primary")
+                        .text("Select");
+
+                    $(".selected-count").html(
+                        `0 Selected from ${this.filtered_products.length}`
+                    );
+
+                    this.load_cart_count();
+
+                }
+            });
+
+        }
+    });
+
+    dialog.show();
+}
+
+add_to_cart1() {
 
     if (!this.selected_products.size) {
 
         frappe.msgprint("Please select quotation(s).");
 
         return;
-
     }
 
-    frappe.msgprint(
-        `${this.selected_products.size} quotation(s) selected.`
-    );
+    frappe.call({
+        method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.add_to_cart",
+        args: {
+            quotation_ids: Array.from(this.selected_products)
+        },
+        freeze: true,
+        callback: (r) => {
 
+            if (!r.message) return;
+
+            let msg = "";
+
+            if (r.message.added.length) {
+                msg += `<div style="color:green">
+                    ${r.message.added.length} product(s) added to cart.
+                </div>`;
+            }
+
+            if (r.message.skipped.length) {
+                msg += `<div style="color:red">
+                    ${r.message.skipped.length} product(s) already in cart.
+                </div>`;
+            }
+
+            frappe.msgprint({
+                title: "Cart Status",
+                message: msg,
+                indicator: "green"
+            });
+	   this.selected_products.clear();	
+	   $(".qb-card").removeClass("selected");
+    $(".select-btn")
+        .removeClass("btn-primary")
+        .addClass("btn-outline-primary")
+        .text("Select");
+
+    // Update selected counter
+    $(".selected-count").html(
+        `0 Selected from ${this.filtered_products.length}`
+    );
+		    this.load_cart_count();
+
+        }
+    });
 }
 
 get_filter_options(field, txt) {
@@ -1143,6 +1295,48 @@ preview_product(name) {
     });
 
     dialog.show();
+    
+    let diamond_html = "";
+
+if (row.diamond_details && row.diamond_details.length) {
+
+    diamond_html = `
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th colspan="6">Diamond Details</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Shape</th>
+                    <th>Size</th>
+                    <th>Pcs</th>
+                    <th>Wt</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    row.diamond_details.forEach((d, i) => {
+
+        diamond_html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${d.diamond_shape || d.shape || ""}</td>
+                <td>${d.diamond_size || d.size || ""}</td>
+                <td>${d.diamond_pcs || d.pcs || 0}</td>
+                <td>${Number(d.diamond_wt || d.wt || 0).toFixed(3)}</td>
+                <td>${frappe.format(d.diamond_amount || d.amount || 0, {fieldtype: "Currency"})}</td>
+            </tr>
+        `;
+    });
+
+    diamond_html += `
+            </tbody>
+        </table>
+    `;
+}
 
     dialog.fields_dict.details.$wrapper.html(`
 
@@ -1199,89 +1393,10 @@ preview_product(name) {
 
         </table>
 
-        <table class="table table-bordered">
+        ${diamond_html}
 
-            <tr>
 
-                <th colspan="5">
-
-                    Diamond 1
-
-                </th>
-
-            </tr>
-
-            <tr>
-
-                <th>Shape</th>
-
-                <th>Size</th>
-
-                <th>Pcs</th>
-
-                <th>Wt</th>
-
-                <th>Amt</th>
-
-            </tr>
-
-            <tr>
-
-                <td>${row.dia_shape1 || ""}</td>
-
-                <td>${row.dia_size1 || ""}</td>
-
-                <td>${row.dia_pcs1 || 0}</td>
-
-                <td>${row.dia_wt1 || 0}</td>
-
-                <td>${frappe.format(row.dia_amt1 || 0,{fieldtype:"Currency"})}</td>
-
-            </tr>
-
-        </table>
-
-        <table class="table table-bordered">
-
-            <tr>
-
-                <th colspan="5">
-
-                    Diamond 2
-
-                </th>
-
-            </tr>
-
-            <tr>
-
-                <th>Shape</th>
-
-                <th>Size</th>
-
-                <th>Pcs</th>
-
-                <th>Wt</th>
-
-                <th>Amt</th>
-
-            </tr>
-
-            <tr>
-
-                <td>${row.dia_shape2 || ""}</td>
-
-                <td>${row.dia_size2 || ""}</td>
-
-                <td>${row.dia_pcs2 || 0}</td>
-
-                <td>${row.dia_wt2 || 0}</td>
-
-                <td>${frappe.format(row.dia_amt2 || 0,{fieldtype:"Currency"})}</td>
-
-            </tr>
-
-        </table>
+        
 
         <table class="table table-bordered">
 
@@ -1333,88 +1448,6 @@ preview_product(name) {
 </div>
 
 `);
-
-}
-preview_product2(name) {
-
-    let row = this.products.find(d => d.name === name);
-
-    if (!row) return;
-
-    let dialog = new frappe.ui.Dialog({
-
-        title: row.item,
-
-        size: "extra-large",
-
-        fields: [
-
-            {
-                fieldtype: "HTML",
-                fieldname: "preview"
-            }
-
-        ]
-
-    });
-
-    dialog.show();
-
-    dialog.fields_dict.preview.$wrapper.html(`
-
-<div class="qb-preview">
-
-    <img src="${row.image}"
-         class="qb-preview-image">
-
-</div>
-
-`);
-
-}
-preview_product1(name){
-
-    let row=this.products.find(d=>d.name==name);
-
-    if(!row) return;
-
-    let dialog=new frappe.ui.Dialog({
-
-        title:row.item,
-
-        size:"extra-large",
-
-        fields:[
-
-            {
-
-                fieldtype:"HTML",
-
-                fieldname:"image"
-
-            }
-
-        ]
-
-    });
-
-    dialog.show();
-
-    dialog.fields_dict.image.$wrapper.html(`
-
-        <div style="text-align:center">
-
-            <img
-                src="${row.image}"
-                style="
-                    max-width:100%;
-                    max-height:80vh;
-                    object-fit:contain;
-                ">
-
-        </div>
-
-    `);
 
 }
 }

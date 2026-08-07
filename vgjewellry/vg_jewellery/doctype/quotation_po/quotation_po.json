@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-08-03 09:28:23.210678",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "po_no",
+  "jewellery_type",
+  "vendor",
+  "vendor_delivery_date",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "po_no",
+   "fieldtype": "Data",
+   "label": "Po No"
+  },
+  {
+   "fieldname": "jewellery_type",
+   "fieldtype": "Data",
+   "label": "Jewellery Type"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Data",
+   "label": "Vendor"
+  },
+  {
+   "fieldname": "vendor_delivery_date",
+   "fieldtype": "Date",
+   "label": "Vendor Delivery Date"
+  },
+  {
+   "default": "1",
+   "fieldname": "status",
+   "fieldtype": "Int",
+   "label": "Status"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-03 09:34:07.112005",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Quotation PO",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

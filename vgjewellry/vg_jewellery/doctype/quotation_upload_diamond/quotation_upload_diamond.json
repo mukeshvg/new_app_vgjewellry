@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-08-06 08:45:37.680600",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "quotation_number",
+  "diamond_shape",
+  "diamond_size",
+  "diamond_pcs",
+  "diamond_wt",
+  "diamond_rate",
+  "diamond_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "quotation_number",
+   "fieldtype": "Link",
+   "label": "Quotation Number",
+   "options": "Quotation Upload New"
+  },
+  {
+   "fieldname": "diamond_shape",
+   "fieldtype": "Data",
+   "label": "Diamond Shape"
+  },
+  {
+   "fieldname": "diamond_size",
+   "fieldtype": "Data",
+   "label": "Diamond Size"
+  },
+  {
+   "fieldname": "diamond_pcs",
+   "fieldtype": "Int",
+   "label": "Diamond Pcs"
+  },
+  {
+   "fieldname": "diamond_wt",
+   "fieldtype": "Float",
+   "label": "Diamond Wt"
+  },
+  {
+   "fieldname": "diamond_rate",
+   "fieldtype": "Float",
+   "label": "Diamond Rate"
+  },
+  {
+   "fieldname": "diamond_amount",
+   "fieldtype": "Float",
+   "label": "Diamond Amount"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-06 08:47:44.309430",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Quotation Upload Diamond",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
