@@ -417,7 +417,7 @@ WHERE RN = 1;
             row["NetWt"]= row["NetWt"]- row["ReturnNetWt"]
             row["FineWt"]= row["FineWt"]- row["ReturnFineWt"]
             row["Pcs"]= row["Pcs"]- row["ReturnPcs"]
-            return_other_charge= float(row["ReturnOtherCharge"])- float(row["ReturnPcs"] * 45)
+            return_other_charge= float(row["ReturnOtherCharge"]) + float(row["ReturnPcs"] * 45)
             if return_other_charge < 0:
                 return_other_charge =0
         if row["NetWt"]== 0 or row['NetWt'] <0:
