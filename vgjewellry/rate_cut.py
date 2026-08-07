@@ -176,6 +176,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
         return_it.ReturnGrossWt,
         return_it.ReturnNetWt,
         return_it.ReturnFineWt,
+        return_it.ReturnOtherCharge,
 
         ROW_NUMBER() OVER
         (
@@ -213,6 +214,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
             SUM(r.GrossWt) AS ReturnGrossWt,
             SUM(r.NetWt) AS ReturnNetWt,
             SUM(r.FineWt) AS ReturnFineWt,
+            SUM(r.OtherCharge) AS ReturnOtherCharge,
 
             STUFF
             (
@@ -242,89 +244,6 @@ SELECT *
 FROM CTE
 WHERE RN = 1;	
     '''
-    qry1= '''
-    WITH CTE AS
-(
-    SELECT
-        it.ItemTranID,
-        it.VouNo,
-        it.VouID,
-        it.VouDate,
-        it.TranID,
-        it.OpVouType,
-        it.ItemTradMstID,
-        it.GrossWt,
-        it.NetWt,
-        it.Pcs,
-        it.WastagePer,
-        (it.FineWt+it.WastageWeight) as FineWt,
-        it.Purity,
-        itm.TradShortName as tradname,
-        it.OtherCharge,
-        it.SattleTradId,
-        it.Narration as ItemName,
-        va.Narration,
-        va.IRMstID ,
-        vam.AccMstID,
-        vam.AccSubID,
-        am.AccName,
-        ts.Amount as HM,
-
-        return_it.Pcs AS ReturnPcs,
-        return_it.VouNo AS ReturnVouNo,
-        return_it.VouDate AS ReturnVouDate,
-        return_it.GrossWt AS ReturnGrossWt,
-        return_ir.NetWt AS ReturnNetWt,
-        return_it.FineWt AS ReturnFineWt,
-        return_ir.Narration AS ReturnNarration,
-
-
-
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY it.ItemTranID
-            ORDER BY vam.AccMstID
-        ) AS RN
-
-    FROM dbo.ItemTransaction it
-
-    INNER JOIN dbo.IRMst va
-        ON it.VouNo = va.VouNo
-
-    INNER JOIN dbo.VouActionMst vam
-        ON it.VouID = vam.VId
-
-    LEFT JOIN dbo.AccMaster am
-        ON am.AccMstID = vam.AccMstID
-
-    LEFT JOIN dbo.ItemTradMst itm On itm.ItemTradMstID= it.ItemTradMstID    
-
-    Left Join dbo.IRTranStudded as ts
-       on it.TranID=ts.IRTranId  and    ts.StyleID = 63
-
-    LEFT JOIN dbo.ItemTransaction return_it
-        ON return_it.OpVouMstId = it.VouID
-        AND return_it.OpVouTranId = it.TranID
-
-    -- Get details of that voucher
-    LEFT JOIN dbo.IRMst return_ir
-        ON return_ir.VouNo = return_it.VouNo
-       AND return_ir.YearID = 16
-
-
-    WHERE it.VouNo LIKE 'HARM /%'
-        AND it.YearID = 16
-        --	AND it.OpVouTranId = 0
-        --AND it.OpVouType = ''
-        AND vam.VouType = 'AAR'
-        AND vam.AccMstID = ?
-        And va.YearID=16
-)
-
-SELECT *
-FROM CTE
-WHERE RN = 1
-    '''
     values = (acc_mst_id)
     cursor.execute(qry,(values))
     res = cursor.fetchall()
@@ -349,11 +268,15 @@ WHERE RN = 1
         if row["ItemTranID"] in completed_item_tran_ids:
         	continue
         acc_mst_id = str(row["AccMstID"])
+        return_other_charge =0
         if row.get("OpVouType") !="":
             row["GrossWt"]= row["GrossWt"]- row["ReturnGrossWt"]
             row["NetWt"]= row["NetWt"]- row["ReturnNetWt"]
             row["FineWt"]= row["FineWt"]- row["ReturnFineWt"]
             row["Pcs"]= row["Pcs"]- row["ReturnPcs"]
+            return_other_charge= float(row["ReturnOtherCharge"])- float(row["ReturnPcs"] * 45)
+            if return_other_charge < 0:
+                return_other_charge =0
         if row["NetWt"]== 0 or row['NetWt'] <0:
             continue
         row["HM"]= float( row.get("Pcs")* 45 or 0)
@@ -361,7 +284,7 @@ WHERE RN = 1
             row["WastagePer"] = float(row.get("WastagePer"))-0.33
         row["WastageWt"] = round((float(row.get("NetWt")) * float(row["WastagePer"]) / 100),3)   
         if float(row["OtherCharge"]) > 0 :
-            row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] )
+            row["OtherCharge"]= float(row["OtherCharge"]) -float( row["HM"] ) - float(return_other_charge)
         grouped_data[acc_mst_id].append(row)
     cursor.close();
     con.close();
