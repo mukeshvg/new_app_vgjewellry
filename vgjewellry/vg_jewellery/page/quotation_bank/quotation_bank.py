@@ -772,10 +772,152 @@ def get_filter_options():
 
     return filters
 
-import frappe
 
 @frappe.whitelist()
-def add_to_cart(quotation_ids):
+def add_to_cart(quotation_ids, branch, remark=None):
+
+    # --------------------------------------------------
+    # Parse quotation IDs
+    # quotation_ids are IDs/names of Quotation Upload New
+    # --------------------------------------------------
+    quotation_ids = frappe.parse_json(quotation_ids)
+
+    # Remove null / empty values
+    quotation_ids = [
+        quotation_id
+        for quotation_id in quotation_ids
+        if quotation_id
+    ]
+
+    added = []
+    skipped = []
+
+    # --------------------------------------------------
+    # Process each quotation
+    # --------------------------------------------------
+    for quotation_id in quotation_ids:
+
+        # --------------------------------------------------
+        # 1. Get quotation from Quotation Upload New
+        # --------------------------------------------------
+        quotation = frappe.db.get_value(
+            "Quotation Upload New",
+            quotation_id,
+            ["name", "vendor"],
+            as_dict=True
+        )
+
+        if not quotation:
+            skipped.append({
+                "quotation_id": quotation_id,
+                "reason": "Quotation Upload New not found"
+            })
+            continue
+
+        # --------------------------------------------------
+        # 2. Check whether ACTIVE Quotation Cart exists
+        # --------------------------------------------------
+        cart_name = frappe.db.get_value(
+            "Quotation Cart",
+            {
+                "quotation_id": quotation_id,
+                "status": 1
+            },
+            "name"
+        )
+
+        # --------------------------------------------------
+        # 3. Create Quotation Cart if it does not exist
+        # --------------------------------------------------
+        if not cart_name:
+
+            cart = frappe.get_doc({
+                "doctype": "Quotation Cart",
+                "quotation_id": quotation_id,
+                "vendor": quotation.vendor or "",
+                "status": 1
+            })
+
+            cart.insert(ignore_permissions=True)
+
+            # IMPORTANT:
+            # Save generated Quotation Cart name
+            cart_name = cart.name
+
+        # --------------------------------------------------
+        # 4. Check if same item + same branch
+        #    already exists in this cart
+        # --------------------------------------------------
+        existing_item = frappe.db.exists(
+            "Quotation Cart Item",
+            {
+                "quotation_number": cart_name,
+                "item": quotation_id,
+                "branch": branch
+            }
+        )
+
+        # --------------------------------------------------
+        # 5. Already exists -> SKIP
+        # --------------------------------------------------
+        if existing_item:
+
+            skipped.append({
+                "quotation_id": quotation_id,
+                "branch": branch,
+                "cart_name": cart_name,
+                "reason": "Item already exists in cart"
+            })
+
+            continue
+
+        # --------------------------------------------------
+        # 6. Create Quotation Cart Item
+        # --------------------------------------------------
+        cart_item = frappe.get_doc({
+            "doctype": "Quotation Cart Item",
+
+            # Link to Quotation Cart
+            "quotation_number": cart_name,
+
+            # quotation_id is from Quotation Upload New
+            "item": quotation_id,
+
+            # Selected branch
+            "branch": branch,
+
+            # User remark
+            "remark": remark or ""
+        })
+
+        cart_item.insert(ignore_permissions=True)
+
+        # --------------------------------------------------
+        # 7. Add success response
+        # --------------------------------------------------
+        added.append({
+            "quotation_id": quotation_id,
+            "branch": branch,
+            "cart_name": cart_name,
+            "cart_item": cart_item.name
+        })
+
+    # --------------------------------------------------
+    # Commit transaction
+    # --------------------------------------------------
+    frappe.db.commit()
+
+    # --------------------------------------------------
+    # Return result
+    # --------------------------------------------------
+    return {
+        "added": added,
+        "skipped": skipped
+    }
+
+
+@frappe.whitelist()
+def add_to_cart1(quotation_ids):
 
     quotation_ids = frappe.parse_json(quotation_ids)
 
@@ -798,11 +940,12 @@ def add_to_cart(quotation_ids):
             continue
 
         quotation = frappe.db.get_value(
-            "Quotation Upload",
+            "Quotation Upload New",
             quotation_id,
             ["vendor"],
             as_dict=True
         )
+
 
         doc = frappe.get_doc({
             "doctype": "Quotation Cart",
@@ -910,3 +1053,24 @@ def get_stock_images(branch_id, item_id, variety_id, weight_range):
     con.close()
 
     return result    
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def branch_query(doctype, txt, searchfield, start, page_len, filters):
+
+    return frappe.db.sql("""
+        SELECT
+            branch_id,
+            CONCAT(branch_code, ' - ', branch_name) AS description
+        FROM `tabOrnate_Branch_Master`
+        WHERE
+            branch_id LIKE %(txt)s
+            OR branch_code LIKE %(txt)s
+            OR branch_name LIKE %(txt)s
+        ORDER BY branch_name
+        LIMIT %(start)s, %(page_len)s
+    """, {
+        "txt": f"%{txt}%",
+        "start": start,
+        "page_len": page_len
+    })

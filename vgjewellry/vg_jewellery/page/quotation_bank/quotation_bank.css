@@ -526,3 +526,20 @@
     color:#198754;
 
 }
+
+/* Branch field */
+.modal [data-fieldname="branch"] {
+    position: relative;
+    z-index: 1000 !important;
+}
+
+/* Remark below Branch */
+.modal [data-fieldname="remark"] {
+    position: relative;
+    z-index: 1 !important;
+}
+
+/* Frappe 15 Link autocomplete */
+.modal .awesomplete > ul {
+    z-index: 99999 !important;
+}

@@ -222,243 +222,624 @@ view_po(name) {
     });
 
 }
+
 render_po_dialog(data) {
 
-    let po = data.po;
-    let items = data.items;
+    let po = data.po || {};
+    let items = data.items || [];
 
     let total_net = 0;
     let total_dia = 0;
+    let total_stone = 0;
+
 
     let html = `
 
 <div class="po-dialog">
 
-<div class="row mb-3">
+    <!-- =====================================================
+         PO HEADER
+         ===================================================== -->
 
-<div class="col-md-4">
-<b>PO Number :</b> ${po.name}
-</div>
+    <div class="row mb-3">
 
-<div class="col-md-4">
-<b>Vendor :</b> ${po.vendor}
-</div>
+        <div class="col-md-3">
 
-<div class="col-md-4">
-<b>Delivery Date :</b>
-${frappe.datetime.str_to_user(po.vendor_delivery_date)}
-</div>
+            <b>PO Number :</b>
 
-</div>
+            <div style="
+                font-size:16px;
+                font-weight:600;
+            ">
 
-<table class="table table-bordered">
+                ${po.name || ""}
 
-<thead>
+            </div>
 
-<tr>
+        </div>
 
-<th>Sr</th>
-<th>Image</th>
-<th>Item</th>
-<th>Metal</th>
-<th>Net Wt</th>
-<th>Gr Wt</th>
-<th>Dia Wt</th>
-<th>Total</th>
 
-</tr>
+        <div class="col-md-3">
 
-</thead>
+            <b>Vendor :</b>
 
-<tbody>
+            <div style="
+                font-size:16px;
+                font-weight:600;
+            ">
+
+                ${po.vendor || ""}
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <b>Branch :</b>
+
+            <div style="
+                font-size:16px;
+                font-weight:600;
+            ">
+
+                ${data.branch_name || "-"}
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <b>Delivery Date :</b>
+
+            <div style="
+                font-size:16px;
+                font-weight:600;
+            ">
+
+                ${
+                    po.vendor_delivery_date
+                    ? frappe.datetime.str_to_user(
+                        po.vendor_delivery_date
+                    )
+                    : "-"
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ITEMS TABLE
+         ===================================================== -->
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+
+            <tr>
+
+                <th width="50">Sr.</th>
+
+                <th width="110">Image</th>
+
+                <th>Item</th>
+
+                <th width="90">Metal</th>
+
+                <th width="90">Net Wt</th>
+
+                <th width="90">Gr Wt</th>
+
+                <th width="90">Qty</th>
+
+                <th width="250">Remark</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
 `;
+
 
     items.forEach((d, i) => {
 
-        let dia =
-            Number(d.dia_wt1 || 0) +
-            Number(d.dia_wt2 || 0);
+        /*
+         * =====================================================
+         * DIAMOND TOTAL
+         * =====================================================
+         */
 
-        total_net += Number(d.net_wt || 0);
-        total_dia += dia;
+        let item_dia_wt = 0;
+
+
+        /*
+         * New diamond_details array
+         */
+
+        if (
+            d.diamond_details &&
+            d.diamond_details.length
+        ) {
+
+            d.diamond_details.forEach(dia => {
+
+                item_dia_wt += Number(
+                    dia.diamond_wt || 0
+                );
+
+            });
+
+        } else {
+
+            /*
+             * Backward compatibility
+             * with dia_wt1 / dia_wt2
+             */
+
+            item_dia_wt =
+                Number(d.dia_wt1 || 0) +
+                Number(d.dia_wt2 || 0);
+
+        }
+
+
+        /*
+         * Stone
+         */
+
+        let stone_wt =
+            Number(d.stone_wt || 0);
+
+
+        /*
+         * Totals
+         */
+
+        total_net +=
+            Number(d.net_wt || 0);
+
+        total_dia +=
+            item_dia_wt;
+
+        total_stone +=
+            stone_wt;
+
+
+        /*
+         * =====================================================
+         * DIAMOND DETAILS HTML
+         * =====================================================
+         */
+
+        let diamond_html = "";
+
+
+        if (
+            d.diamond_details &&
+            d.diamond_details.length
+        ) {
+
+            diamond_html = `
+
+                <table
+                    class="table table-bordered table-sm"
+                    style="
+                        margin:0;
+                        background:white;
+                    "
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Shape</th>
+                            <th>Size</th>
+                            <th>Pcs</th>
+                            <th>Wt</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+            `;
+
+
+            d.diamond_details.forEach(dia => {
+
+                diamond_html += `
+
+                    <tr>
+
+                        <td>
+                            ${dia.diamond_shape || "-"}
+                        </td>
+
+                        <td>
+                            ${dia.diamond_size || "-"}
+                        </td>
+
+                        <td>
+                            ${dia.diamond_pcs || 0}
+                        </td>
+
+                        <td>
+                            ${Number(
+                                dia.diamond_wt || 0
+                            ).toFixed(3)}
+                        </td>
+
+                        <td>
+                            ${frappe.format(
+                                dia.diamond_rate || 0,
+                                {
+                                    fieldtype: "Currency"
+                                }
+                            )}
+                        </td>
+
+                        <td>
+                            ${frappe.format(
+                                dia.diamond_amount || 0,
+                                {
+                                    fieldtype: "Currency"
+                                }
+                            )}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            });
+
+
+            diamond_html += `
+
+                    </tbody>
+
+                </table>
+
+            `;
+
+        } else {
+
+            diamond_html = `
+
+                <div class="text-muted"
+                     style="padding:10px;">
+
+                    No Diamond Details
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+         * =====================================================
+         * STONE DETAILS HTML
+         * =====================================================
+         */
+
+        let stone_html = `
+
+            <table
+                class="table table-bordered table-sm"
+                style="
+                    margin:0;
+                    background:white;
+                "
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th>Pcs</th>
+                        <th>Wt</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+                            ${d.stone_pcs || 0}
+                        </td>
+
+                        <td>
+                            ${stone_wt.toFixed(3)}
+                        </td>
+
+                        <td>
+                            ${frappe.format(
+                                d.stone_rate || 0,
+                                {
+                                    fieldtype: "Currency"
+                                }
+                            )}
+                        </td>
+
+                        <td>
+                            ${frappe.format(
+                                d.stone_amount || 0,
+                                {
+                                    fieldtype: "Currency"
+                                }
+                            )}
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        `;
+
+
+        /*
+         * =====================================================
+         * MAIN PRODUCT ROW
+         * =====================================================
+         */
 
         html += `
 
-<tr>
+            <tr>
 
-<td>${i + 1}</td>
+                <td>
 
-<td>
-<img
-src="${d.image}"
-style="width:90px;height:90px;object-fit:contain;">
-</td>
+                    ${i + 1}
 
-<td>${d.item}</td>
-
-<td>${d.metal}</td>
-
-<td>${d.net_wt}</td>
-
-<td>${d.gr_wt}</td>
-
-<td>${dia.toFixed(3)}</td>
-
-<td>${d.net_wt}</td>
-
-</tr>
-
-<tr>
-
-<td colspan="8">
+                </td>
 
 
-<div class="row">
+                <td>
 
-<div class="col-md-6">
+                    <img
+                        src="${
+                            d.image ||
+                            "/assets/frappe/images/ui-states/default-avatar.png"
+                        }"
+                        style="
+                            width:90px;
+                            height:90px;
+                            object-fit:contain;
+                        "
+                    >
 
-<table class="table table-bordered table-sm">
+                </td>
 
-<tr>
 
-<th colspan="5">
+                <td>
 
-Diamond 1
+                    <b>
+                        ${d.item || ""}
+                    </b>
 
-</th>
+                    <br>
 
-</tr>
+                    <span class="text-muted">
 
-<tr>
+                        ${
+                            d.vendor_design_number ||
+                            d.design_no ||
+                            ""
+                        }
 
-<th>Shape</th>
-<th>Size</th>
-<th>Pcs</th>
-<th>Wt</th>
-<th>Amt</th>
+                    </span>
 
-</tr>
+                </td>
 
-<tr>
 
-<td>${d.dia_shape1 || ""}</td>
-<td>${d.dia_size1 || ""}</td>
-<td>${d.dia_pcs1 || 0}</td>
-<td>${d.dia_wt1 || 0}</td>
-<td>${frappe.format(d.dia_amt1 || 0,{fieldtype:"Currency"})}</td>
+                <td>
 
-</tr>
+                    ${d.metal || ""}
 
-</table>
+                </td>
 
-</div>
 
-${
-(d.dia_pcs2 || d.dia_wt2) ?
+                <td>
 
-`
+                    ${Number(
+                        d.net_wt || 0
+                    ).toFixed(3)}
 
-<div class="col-md-6">
+                </td>
 
-<table class="table table-bordered table-sm">
 
-<tr>
+                <td>
 
-<th colspan="5">
+                    ${Number(
+                        d.gr_wt || 0
+                    ).toFixed(3)}
 
-Diamond 2
+                </td>
 
-</th>
 
-</tr>
+                <td>
 
-<tr>
+                    ${d.qty || 1}
 
-<th>Shape</th>
-<th>Size</th>
-<th>Pcs</th>
-<th>Wt</th>
-<th>Amt</th>
+                </td>
 
-</tr>
 
-<tr>
+                <td>
 
-<td>${d.dia_shape2 || ""}</td>
-<td>${d.dia_size2 || ""}</td>
-<td>${d.dia_pcs2 || 0}</td>
-<td>${d.dia_wt2 || 0}</td>
-<td>${frappe.format(d.dia_amt2 || 0,{fieldtype:"Currency"})}</td>
+                    ${d.remark || "-"}
 
-</tr>
+                </td>
 
-</table>
+            </tr>
 
-</div>
 
-`
+            <!-- =================================================
+                 SECOND ROW : DIAMOND + STONE
+                 ================================================= -->
 
-: ""
+            <tr style="background:#fafafa;">
 
-}
+                <td></td>
 
-</div>
 
-<b>Remark :</b> ${d.remark || "-"}
+                <td></td>
 
-<br><br>
-</td>
 
-</tr>
+                <td colspan="3">
 
-`;
+                    <div style="
+                        font-weight:600;
+                        margin-bottom:6px;
+                        color:#495057;
+                    ">
+
+                        <i class="fa fa-diamond"></i>
+
+                        Diamond Details
+
+                    </div>
+
+                    ${diamond_html}
+
+                </td>
+
+
+                <td colspan="3">
+
+                    <div style="
+                        font-weight:600;
+                        margin-bottom:6px;
+                        color:#495057;
+                    ">
+
+                        <i class="fa fa-circle"></i>
+
+                        Stone Details
+
+                    </div>
+
+                    ${stone_html}
+
+                </td>
+
+            </tr>
+
+        `;
 
     });
 
+
+    /*
+     * =====================================================
+     * FOOTER TOTALS
+     * =====================================================
+     */
+
     html += `
 
-</tbody>
+        </tbody>
 
-<tfoot>
+    </table>
 
-<tr>
 
-<th colspan="4" class="text-right">
+    <div
+        class="mt-3"
+        style="
+            display:flex;
+            gap:15px;
+            align-items:center;
+            flex-wrap:wrap;
+            font-size:16px;
+            font-weight:600;
+        "
+    >
 
-Total
+        <div style="
+            background:#f8f9fa;
+            padding:12px 18px;
+            border:1px solid #ddd;
+            border-radius:6px;
+        ">
 
-</th>
+            Total Net Wt :
 
-<th>
+            <span style="color:#0d6efd;">
 
-${total_net.toFixed(3)}
+                ${total_net.toFixed(3)}
 
-</th>
+            </span>
 
-<th></th>
+        </div>
 
-<th>
 
-${total_dia.toFixed(3)}
+        <div style="
+            background:#f8f9fa;
+            padding:12px 18px;
+            border:1px solid #ddd;
+            border-radius:6px;
+        ">
 
-</th>
+            Total Diamond Wt :
 
-<th>
+            <span style="color:#198754;">
 
-${total_net.toFixed(3)}
+                ${total_dia.toFixed(3)}
 
-</th>
+            </span>
 
-</tr>
+        </div>
 
-</tfoot>
 
-</table>
+        <div style="
+            background:#f8f9fa;
+            padding:12px 18px;
+            border:1px solid #ddd;
+            border-radius:6px;
+        ">
+
+            Total Stone Wt :
+
+            <span style="color:#fd7e14;">
+
+                ${total_stone.toFixed(3)}
+
+            </span>
+
+        </div>
+
+    </div>
+
 
 </div>
+
 `;
 
-    return html;
 
+    return html;
 }
+
+
 }

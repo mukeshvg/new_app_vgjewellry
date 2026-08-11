@@ -935,14 +935,15 @@ $(document).on("click",".add-cart-btn",function(e){
     e.stopPropagation();
 
     const name=$(this).data("name");
+    me.add_to_cart(name)	
 
-    frappe.show_alert({
+    /*frappe.show_alert({
 
         message:`${name} added to cart`,
 
         indicator:"green"
 
-    });
+    });*/
 
 });
 
@@ -1070,22 +1071,44 @@ clear_selection() {
 
 }
 
-add_to_cart() {
-	alert("wee");
+add_to_cart(quotation_id =null) {
+
+	    let quotation_ids = [];
+
+    // Individual Add to Cart
+    if (quotation_id) {
+
+        quotation_ids = [quotation_id];
+
+    }
+    // Bulk Add to Cart
+    else {
+
+        if (!this.selected_products.size) {
+            frappe.msgprint("Please select quotation(s).");
+            return;
+        }
+
+        quotation_ids = Array.from(this.selected_products);
+    }
+
+	/*this.selected_products.add($(this).data("name"));
+
     if (!this.selected_products.size) {
         frappe.msgprint("Please select quotation(s).");
         return;
-    }
+    }*/
 
     let dialog = new frappe.ui.Dialog({
         title: "Add to Cart",
         size: "small",
+
         fields: [
             {
                 fieldtype: "Link",
                 fieldname: "branch",
                 label: "Branch",
-                options: "Branch",
+                options: "Ornate_Branch_Master",
                 reqd: 1
             },
             {
@@ -1094,29 +1117,42 @@ add_to_cart() {
                 label: "Remark"
             }
         ],
+
         primary_action_label: "Add to Cart",
+
         primary_action: (values) => {
+
+            if (!values.branch) {
+                frappe.msgprint("Please select Branch");
+                return;
+            }
 
             dialog.hide();
 
             frappe.call({
                 method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.add_to_cart",
+
                 freeze: true,
+
                 args: {
-                    quotation_ids: Array.from(this.selected_products),
+                    quotation_ids: quotation_ids,
                     branch: values.branch,
-                    remark: values.remark
+                    remark: values.remark || ""
                 },
+
                 callback: (r) => {
 
-                    if (!r.message) return;
+                    if (!r.message) {
+                        return;
+                    }
 
                     let msg = "";
 
                     if (r.message.added.length) {
                         msg += `
                             <div style="color:green">
-                                ${r.message.added.length} product(s) added to cart.
+                                ${r.message.added.length}
+                                product(s) added to cart.
                             </div>
                         `;
                     }
@@ -1124,7 +1160,8 @@ add_to_cart() {
                     if (r.message.skipped.length) {
                         msg += `
                             <div style="color:red">
-                                ${r.message.skipped.length} product(s) already in cart.
+                                ${r.message.skipped.length}
+                                product(s) already in cart.
                             </div>
                         `;
                     }
@@ -1149,70 +1186,55 @@ add_to_cart() {
                     );
 
                     this.load_cart_count();
-
                 }
             });
-
         }
     });
+
+    // Branch custom query
+    dialog.fields_dict.branch.get_query = function () {
+        return {
+            query: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.branch_query"
+        };
+    };
 
     dialog.show();
-}
 
-add_to_cart1() {
+    // ----------------------------------------------------
+    // Dialog overflow
+    // ----------------------------------------------------
 
-    if (!this.selected_products.size) {
-
-        frappe.msgprint("Please select quotation(s).");
-
-        return;
-    }
-
-    frappe.call({
-        method: "vgjewellry.vg_jewellery.page.quotation_bank.quotation_bank.add_to_cart",
-        args: {
-            quotation_ids: Array.from(this.selected_products)
-        },
-        freeze: true,
-        callback: (r) => {
-
-            if (!r.message) return;
-
-            let msg = "";
-
-            if (r.message.added.length) {
-                msg += `<div style="color:green">
-                    ${r.message.added.length} product(s) added to cart.
-                </div>`;
-            }
-
-            if (r.message.skipped.length) {
-                msg += `<div style="color:red">
-                    ${r.message.skipped.length} product(s) already in cart.
-                </div>`;
-            }
-
-            frappe.msgprint({
-                title: "Cart Status",
-                message: msg,
-                indicator: "green"
-            });
-	   this.selected_products.clear();	
-	   $(".qb-card").removeClass("selected");
-    $(".select-btn")
-        .removeClass("btn-primary")
-        .addClass("btn-outline-primary")
-        .text("Select");
-
-    // Update selected counter
-    $(".selected-count").html(
-        `0 Selected from ${this.filtered_products.length}`
-    );
-		    this.load_cart_count();
-
-        }
+    dialog.$wrapper.find(".modal-dialog").css({
+        "overflow": "visible"
     });
+
+    dialog.$wrapper.find(".modal-content").css({
+        "overflow": "visible"
+    });
+
+    dialog.$wrapper.find(".modal-body").css({
+        "overflow": "visible"
+    });
+
+    // ----------------------------------------------------
+    // Branch above Remark
+    // ----------------------------------------------------
+
+    dialog.$wrapper
+        .find('[data-fieldname="branch"]')
+        .css({
+            "position": "relative",
+            "z-index": "1000"
+        });
+
+    dialog.$wrapper
+        .find('[data-fieldname="remark"]')
+        .css({
+            "position": "relative",
+            "z-index": "1"
+        });
 }
+
 
 get_filter_options(field, txt) {
 
