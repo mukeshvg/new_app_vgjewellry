@@ -10,6 +10,7 @@
   "vendor",
   "vendor_delivery_date",
   "status",
+  "is_mail_send",
   "branch"
  ],
  "fields": [
@@ -44,12 +45,18 @@
    "fieldtype": "Link",
    "label": "Branch",
    "options": "Ornate_Branch_Master"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_mail_send",
+   "fieldtype": "Int",
+   "label": "Is mail send"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-11 09:06:12.403050",
+ "modified": "2026-08-11 17:09:55.821009",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Quotation PO",

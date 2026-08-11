@@ -194,7 +194,7 @@ view_po(name) {
 	    frappe.call({
     method: "vgjewellry.vg_jewellery.page.vg_quotation_po.vg_quotation_po.generate_pdf",
     args: {
-        po: name
+        po_no: name
     },
     freeze: true,
     callback: function(r) {
@@ -213,6 +213,55 @@ view_po(name) {
             });
 
             dialog.show();
+            
+            dialog.$wrapper.find(".modal-footer").prepend(`
+    <button
+        class="btn btn-primary btn-send-po-mail"
+        style="margin-right:auto;"
+    >
+        <i class="fa fa-envelope"></i>
+        Send Mail
+    </button>
+`);
+
+dialog.$wrapper.find(".btn-send-po-mail").on("click", function() {
+
+    frappe.confirm(
+        "Are you sure you want to send this Purchase Order by email?",
+        function() {
+
+            frappe.call({
+                method: "vgjewellry.vg_jewellery.page.vg_quotation_po.vg_quotation_po.send_pending_po_emails",
+                args: {
+                    po_no: name
+                },
+                freeze: true,
+                freeze_message: "Sending Purchase Order...",
+
+                callback: function(r) {
+
+                    if (
+                        r.message &&
+                        r.message.success
+                    ) {
+
+                        frappe.msgprint({
+                            title: "Mail Sent",
+                            message:
+                                "Purchase Order sent successfully to " +
+                                r.message.email,
+                            indicator: "green"
+                        });
+
+                    }
+
+                }
+            });
+
+        }
+    );
+
+});
 
             dialog.fields_dict.details.$wrapper.html(
                 this.render_po_dialog(data)
