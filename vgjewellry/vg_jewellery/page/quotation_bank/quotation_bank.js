@@ -1395,7 +1395,7 @@ if (row.diamond_details && row.diamond_details.length) {
 
             <tr>
                 <td>Design</td>
-                <td>${row.design_no || ""}</td>
+                <td>${row.vendor_design_number || ""}</td>
             </tr>
 
             <tr>
