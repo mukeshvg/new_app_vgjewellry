@@ -37,7 +37,7 @@ class QuotationBank {
             metal: [],
             item: [],
             diamond_wt: [],
-            design_no: []
+            vendor_design_number: []
         };
 	this.filter_options = {};
         this.make();
@@ -247,14 +247,14 @@ this.date_range = this.page.add_field({
 
             label: "Design",
 
-            fieldname: "design_no",
+            fieldname: "vendor_design_number",
 
             fieldtype: "MultiSelectList",
 
             get_data(txt) {
 
                 return me.get_filter_options(
-                    "design_no",
+                    "vendor_design_number",
                     txt
                 );
 
@@ -520,7 +520,7 @@ render_cards() {
         </div>
 
         <div class="qb-design">
-            ${d.design_no || ""}
+            ${d.vendor_design_number || ""}
         </div>
 
     </div>-->
@@ -529,7 +529,7 @@ render_cards() {
 <table class="table table-borderless qb-table">
 
     <tr><td>Item</td><td>${d.item || ""}</td></tr>
-    <tr><td>Design</td><td>${d.design_no || ""}</td></tr>
+    <tr><td>Design</td><td>${d.vendor_design_number || ""}</td></tr>
     <tr><td>Metal</td><td>${d.metal || ""}</td></tr>
 
     <tr><td>Gross</td><td>${Number(d.gr_wt || 0).toFixed(3)}</td></tr>
@@ -678,7 +678,7 @@ render_cards1() {
 
             <span>Design</span>
 
-            <b>${d.design_no || ""}</b>
+            <b>${d.vendor_design_number || ""}</b>
 
         </div>
 
@@ -768,7 +768,7 @@ bind_events() {
         me.filters.item =
             me.item_filter.get_value();
 
-        me.filters.design_no =
+        me.filters.vendor_design_number =
             me.design_filter.get_value();
 
         me.load_data(true);
@@ -808,7 +808,7 @@ bind_events() {
     this.filters.diamond_wt = this.diamond_filter.get_value() || [];		
     this.filters.metal = this.metal_filter.get_value() || [];
     this.filters.item = this.item_filter.get_value() || [];
-    //this.filters.design_no = this.design_filter.get_value() || [];
+    //this.filters.vendor_design_number = this.design_filter.get_value() || [];
     let range = this.date_range.get_value() || [];
 
 
@@ -832,7 +832,7 @@ bind_events() {
         vendor: [],
         metal: [],
         item: [],
-        design_no: []
+        vendor_design_number: []
     };
 
     this.load_data(true);
@@ -1306,7 +1306,7 @@ preview_product(name) {
     if (!row) return;
 
     const dialog = new frappe.ui.Dialog({
-        title: `${row.item || ""} - ${row.design_no || ""}`,
+        title: `${row.item || ""} - ${row.vendor_design_number || ""}`,
         size: "extra-large",
         fields: [
             {
