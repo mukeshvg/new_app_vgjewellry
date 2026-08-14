@@ -4,13 +4,26 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-08-03 08:12:42.990197",
+ "modified": "2026-08-14 11:20:57.449914",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "vg-quotation-cart",
  "owner": "Administrator",
  "page_name": "vg-quotation-cart",
- "roles": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Purchase Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

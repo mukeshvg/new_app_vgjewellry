@@ -4,13 +4,26 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-08-06 08:59:36.367428",
+ "modified": "2026-08-14 11:20:24.747843",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "quotation-import-new",
  "owner": "Administrator",
  "page_name": "quotation-import-new",
- "roles": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Admin"
+  },
+  {
+   "role": "Purchase Manager"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
