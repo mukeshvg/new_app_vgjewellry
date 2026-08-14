@@ -759,7 +759,7 @@ def get_filter_options():
     for field in fields:
 
         rows = frappe.get_all(
-            "Quotation Upload",
+            "Quotation Upload New",
             fields=[field],
             filters={
                 field: ["!=", ""]
