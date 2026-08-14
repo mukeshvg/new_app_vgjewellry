@@ -543,7 +543,7 @@ render_cards() {
 
     <tr><td>Dia Wt</td><td>${d.total_diamond_wt || "0.000"}</td></tr>
 
-    <tr><td>Stone</td><td>${d.stone_pcs || 0} (${Number(d.stone_wt || 0).toFixed(3)})</td></tr>
+    <tr><td>Stone</td><td>${d.total_stone_pcs || 0} (${Number(d.total_stone_wt || 0).toFixed(3)})</td></tr>
 
 </table>
         <div class="qb-total">
@@ -621,130 +621,6 @@ render_cards() {
     $(".selected-count").html(
 
         `${this.selected_products.size} Selected from ${this.filtered_products.length}`
-
-    );
-
-}
-render_cards1() {
-
-    const me = this;
-
-    let html = "";
-
-    if (!this.filtered_products.length) {
-
-        $(".product-grid").html(`
-            <div class="text-center p-5">
-                <h4>No Quotations Found</h4>
-            </div>
-        `);
-
-        return;
-    }
-
-    this.filtered_products.forEach(function(d){
-
-        const selected = me.selected_products.has(d.name);
-
-        html += `
-
-<div class="qb-card ${selected ? 'selected' : ''}" data-name="${d.name}">
-
-    <div class="qb-image">
-
-        <img src="${d.image || '/assets/frappe/images/ui-states/default-avatar.png'}">
-
-    </div>
-
-    <div class="qb-body">
-
-        <div class="qb-row">
-
-            <span>Item</span>
-
-            <b>${d.item || ""}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Vendor</span>
-
-            <b>${d.vendor || ""}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Design</span>
-
-            <b>${d.vendor_design_number || ""}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Metal</span>
-
-            <b>${d.metal || ""}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Gross Wt</span>
-
-            <b>${d.gr_wt || 0}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Net Wt</span>
-
-            <b>${d.net_wt || 0}</b>
-
-        </div>
-
-        <div class="qb-row">
-
-            <span>Total</span>
-
-            <b>${format_currency(d.total_amt || 0)}</b>
-
-        </div>
-
-    </div>
-
-    <div class="qb-footer">
-
-        <button class="btn btn-xs btn-default preview-btn"
-            data-name="${d.name}">
-
-            Preview
-
-        </button>
-
-        <button class="btn btn-xs btn-primary select-btn"
-            data-name="${d.name}">
-
-            ${selected ? "Selected" : "Select"}
-
-        </button>
-
-    </div>
-
-</div>
-
-`;
-
-    });
-
-    $(".product-grid").html(html);
-
-    $(".selected-count").html(
-
-        `${this.selected_products.size} Selected`
 
     );
 
@@ -1359,6 +1235,44 @@ if (row.diamond_details && row.diamond_details.length) {
         </table>
     `;
 }
+    
+let stone_html = "";
+
+if (row.stone_details && row.stone_details.length) {
+
+    stone_html = `
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th colspan="6">Stone Details</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Pcs</th>
+                    <th>Wt</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    row.stone_details.forEach((d, i) => {
+
+        stone_html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${d.stone_pcs || d.pcs || 0}</td>
+                <td>${Number(d.stone_wt || d.wt || 0).toFixed(3)}</td>
+                <td>${frappe.format(d.stone_amount || d.amount || 0, {fieldtype: "Currency"})}</td>
+            </tr>
+        `;
+    });
+
+    stone_html += `
+            </tbody>
+        </table>
+    `;
+}
 
     dialog.fields_dict.details.$wrapper.html(`
 
@@ -1416,47 +1330,8 @@ if (row.diamond_details && row.diamond_details.length) {
         </table>
 
         ${diamond_html}
+        ${stone_html}
 
-
-        
-
-        <table class="table table-bordered">
-
-            <tr>
-
-                <th colspan="2">
-
-                    Stone
-
-                </th>
-
-            </tr>
-
-            <tr>
-
-                <td>Pcs</td>
-
-                <td>${row.stone_pcs || 0}</td>
-
-            </tr>
-
-            <tr>
-
-                <td>Weight</td>
-
-                <td>${row.stone_wt || 0}</td>
-
-            </tr>
-
-            <tr>
-
-                <td>Amount</td>
-
-                <td>${frappe.format(row.stone_amt || 0,{fieldtype:"Currency"})}</td>
-
-            </tr>
-
-        </table>
 
         <div class="dialog-total">
 

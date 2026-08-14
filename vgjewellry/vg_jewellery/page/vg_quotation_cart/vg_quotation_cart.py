@@ -151,6 +151,77 @@ def get_vendor_cart(vendor):
 
 
     # ---------------------------------------------------------
+    # GET STONE DETAILS
+    # ---------------------------------------------------------
+
+    quotation_names = list(set(
+        [str(d.name) for d in items]
+    ))
+
+
+    stone_rows = frappe.db.sql("""
+        SELECT
+            quotation_number,
+            stone_pcs,
+            stone_wt,
+            stone_rate,
+            stone_amount
+
+        FROM `tabQuotation Upload Stone`
+
+        WHERE quotation_number IN %(quotation_names)s
+
+        ORDER BY
+            quotation_number
+    """, {
+        "quotation_names": quotation_names
+    }, as_dict=True)
+
+
+    # ---------------------------------------------------------
+    # GROUP STONES BY QUOTATION
+    # ---------------------------------------------------------
+
+    stone_map = {}
+
+    for stone in stone_rows:
+
+        quotation_number = str(
+            stone.quotation_number
+        )
+
+        if quotation_number not in stone_map:
+            stone_map[quotation_number] = []
+
+
+        stone_map[quotation_number].append({
+
+            "stone_pcs":
+                stone.stone_pcs or 0,
+
+            "stone_wt":
+                stone.stone_wt or 0,
+
+            "stone_rate":
+                stone.stone_rate or 0,
+
+            "stone_amount":
+                stone.stone_amount or 0
+
+        })
+
+
+    # ---------------------------------------------------------
+    # ADD STONE DETAILS
+    # ---------------------------------------------------------
+
+    for item in items:
+
+        item["stone_details"] = stone_map.get(
+            str(item.name),
+            []
+        )
+    # ---------------------------------------------------------
     # GROUP BY BRANCH
     # ---------------------------------------------------------
 

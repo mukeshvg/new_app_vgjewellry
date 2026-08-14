@@ -409,6 +409,7 @@ render_po_dialog(data) {
          */
 
         let item_dia_wt = 0;
+        let item_stone_wt = 0;
 
 
         /*
@@ -440,14 +441,23 @@ render_po_dialog(data) {
                 Number(d.dia_wt2 || 0);
 
         }
+        
+	if (
+            d.stone_details &&
+            d.stone_details.length
+        ) {
+
+            d.stone_details.forEach(sdia => {
+
+                item_stone_wt += Number(
+                    sdia.stone_wt || 0
+                );
+
+            });
+
+        }
 
 
-        /*
-         * Stone
-         */
-
-        let stone_wt =
-            Number(d.stone_wt || 0);
 
 
         /*
@@ -461,7 +471,7 @@ render_po_dialog(data) {
             item_dia_wt;
 
         total_stone +=
-            stone_wt;
+            item_stone_wt;
 
 
         /*
@@ -586,45 +596,60 @@ render_po_dialog(data) {
          * STONE DETAILS HTML
          * =====================================================
          */
+        let stone_html = "";
 
-        let stone_html = `
 
-            <table
-                class="table table-bordered table-sm"
-                style="
-                    margin:0;
-                    background:white;
-                "
-            >
+        if (
+            d.stone_details &&
+            d.stone_details.length
+        ) {
 
-                <thead>
+            stone_html = `
+
+                <table
+                    class="table table-bordered table-sm"
+                    style="
+                        margin:0;
+                        background:white;
+                    "
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Pcs</th>
+                            <th>Wt</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+            `;
+
+
+            d.stone_details.forEach(sto => {
+
+                stone_html += `
 
                     <tr>
-
-                        <th>Pcs</th>
-                        <th>Wt</th>
-                        <th>Rate</th>
-                        <th>Amount</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    <tr>
-
                         <td>
-                            ${d.stone_pcs || 0}
+                            ${sto.stone_pcs || 0}
                         </td>
 
                         <td>
-                            ${stone_wt.toFixed(3)}
+                            ${Number(
+                                sto.stone_wt || 0
+                            ).toFixed(3)}
                         </td>
 
                         <td>
                             ${frappe.format(
-                                d.stone_rate || 0,
+                                sto.stone_rate || 0,
                                 {
                                     fieldtype: "Currency"
                                 }
@@ -633,7 +658,7 @@ render_po_dialog(data) {
 
                         <td>
                             ${frappe.format(
-                                d.stone_amount || 0,
+                                sto.stone_amount || 0,
                                 {
                                     fieldtype: "Currency"
                                 }
@@ -642,11 +667,34 @@ render_po_dialog(data) {
 
                     </tr>
 
-                </tbody>
+                `;
 
-            </table>
+            });
 
-        `;
+
+            stone_html += `
+
+                    </tbody>
+
+                </table>
+
+            `;
+
+        } else {
+
+            stone_html = `
+
+                <div class="text-muted"
+                     style="padding:10px;">
+
+                    No Stone Details
+
+                </div>
+
+            `;
+
+        }
+
 
 
         /*

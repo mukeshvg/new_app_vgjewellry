@@ -36,16 +36,16 @@ class QuotationCart {
 
 	`);
 		this.page.add_inner_button(
-    '<i class="fa fa-arrow-left"></i> Quotation Bank',
-    () => {
-        frappe.set_route("quotation-bank");
-		})
+			'<i class="fa fa-arrow-left"></i> Quotation Bank',
+			() => {
+				frappe.set_route("quotation-bank");
+			})
 		this.page.add_inner_button(
-    '<i class="fa fa-arrow-right"></i> Quotation PO',
-    () => {
-        frappe.set_route("vg-quotation-po");
-    }
-);
+			'<i class="fa fa-arrow-right"></i> Quotation PO',
+			() => {
+				frappe.set_route("vg-quotation-po");
+			}
+		);
 
 	}
 
@@ -142,51 +142,51 @@ class QuotationCart {
 		const me = this;
 		$(document).on("click", ".remove-cart-item", function () {
 
-    const name = $(this).data("name");
+			const name = $(this).data("name");
 
-    frappe.confirm(
+			frappe.confirm(
 
-        "Remove this product from cart?",
+				"Remove this product from cart?",
 
-        function () {
+				function () {
 
-            frappe.call({
+					frappe.call({
 
-                method: "vgjewellry.vg_jewellery.page.vg_quotation_cart.vg_quotation_cart.remove_cart_item",
+						method: "vgjewellry.vg_jewellery.page.vg_quotation_cart.vg_quotation_cart.remove_cart_item",
 
-                args: {
-                    name: name
-                },
+						args: {
+							name: name
+						},
 
-                callback(r) {
+						callback(r) {
 
-                    if (r.message) {
+							if (r.message) {
 
-                        frappe.show_alert({
-                            message: "Product removed",
-                            indicator: "green"
-                        });
+								frappe.show_alert({
+									message: "Product removed",
+									indicator: "green"
+								});
 
-                        me.open_vendor_cart(me.current_vendor);
-			    
+								me.open_vendor_cart(me.current_vendor);
 
-                        me.load_cart();
 
-                        if (me.load_cart_count) {
-                            me.load_cart_count();
-                        }
+								me.load_cart();
 
-                    }
+								if (me.load_cart_count) {
+									me.load_cart_count();
+								}
 
-                }
+							}
 
-            });
+						}
 
-        }
+					});
 
-    );
+				}
 
-});
+			);
+
+		});
 
 		$(document).on("click",".btn-view",function(){
 
@@ -196,68 +196,68 @@ class QuotationCart {
 
 
 		});
-$(document).on("click", "#generate-po", () => {
+		$(document).on("click", "#generate-po", () => {
 
-    let remarks = {};
+			let remarks = {};
 
-    $(".cart-remark").each(function () {
+			$(".cart-remark").each(function () {
 
-        remarks[$(this).data("name")] = $(this).val();
+				remarks[$(this).data("name")] = $(this).val();
 
-    });
+			});
 
-    frappe.call({
+			frappe.call({
 
-        method: "vgjewellry.vg_jewellery.page.vg_quotation_cart.vg_quotation_cart.generate_po",
+				method: "vgjewellry.vg_jewellery.page.vg_quotation_cart.vg_quotation_cart.generate_po",
 
-        args: {
+				args: {
 
-            vendor: this.current_vendor,
+					vendor: this.current_vendor,
 
-            vendor_delivery_date: $("#vendor_delivery_date").val(),
+					vendor_delivery_date: $("#vendor_delivery_date").val(),
 
-            remarks: remarks
+					remarks: remarks
 
-        },
+				},
 
-        callback: (r) => {
+				callback: (r) => {
 
-            if (!r.message) return;
+					if (!r.message) return;
 
-            frappe.show_alert({
-                message: "PO Created Successfully " ,
-                indicator: "green"
-            });
+					frappe.show_alert({
+						message: "PO Created Successfully " ,
+						indicator: "green"
+					});
 
-            this.dialog.hide();
+					this.dialog.hide();
 
-           setTimeout(() => { location.reload(); }, 500);
+					setTimeout(() => { location.reload(); }, 500);
 
-        }
+				}
 
-    });
+			});
 
-});
+		});
 	}
 	open_vendor_cart(vendor){
 		this.current_vendor = vendor;
-		    if (!this.dialog) {
+		if (!this.dialog) {
 
-		this.dialog = new frappe.ui.Dialog({
+			this.dialog = new frappe.ui.Dialog({
 
-			title: "Vendor Cart",
+				title: "Vendor Cart",
 
-			size: "extra-large",
+				size: "extra-large",
 
-			fields:[
-				{
-					fieldtype:"HTML",
-					fieldname:"cart"
-				}
-			]
+				fields:[
+					{
+						fieldtype:"HTML",
+						fieldname:"cart"
+					}
+				]
 
-		});
-		    }
+			});
+		}
 
 		this.dialog.show();
 
@@ -280,947 +280,705 @@ $(document).on("click", "#generate-po", () => {
 		});
 
 	}
-	render_vendor_cart_old(data) {
 
-    let total_net_wt = 0;
-    let total_dia_wt = 0;		
 
-    let html = `
+	render_vendor_cart(data) {
 
-<div class="container-fluid">
+		let total_net_wt = 0;
+		let total_dia_wt = 0;
+		let total_stone_wt = 0;
 
-<div class="row mb-3">
-
-    <div class="col-md-4">
-
-        <label><b>Vendor</b></label>
-
-        <div style="font-size:16px;font-weight:bold;">
-            ${data.vendor}
-        </div>
-
-    </div>
-
-    <div class="col-md-4">
-
-        <label><b>Vendor Delivery Date</b></label>
-
-        <input
-            type="date"
-            class="form-control"
-            id="vendor_delivery_date"
-            value="${data.vendor_delivery_date || ""}">
-
-    </div>
-
-
-</div>
-
-<table class="table table-bordered table-striped">
-
-<thead>
-
-<tr>
-
-<th width="60">Sr.</th>
-
-<th width="120">Image</th>
-
-<th>Item</th>
-
-<th width="90">Metal</th>
-
-<th width="90">Net Wt</th>
-
-<th width="90">Gr Wt</th>
-
-<th width="320">Diamond Details</th>
-
-<th width="80">Qty</th>
-
-<th width="250">Remark</th>
-
-<th width="60"></th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-`;
-
-    data.items.forEach((d, i) => {
-
-        total_net_wt += Number(d.net_wt || 0);
-	total_dia_wt +=  Number(d.dia_wt1 || 0) +  Number(d.dia_wt2 || 0);    
-
-        html += `
-
-<tr>
-
-<td>
-
-${i + 1}
-
-</td>
-
-<td>
-
-<img
-src="${d.image || '/assets/frappe/images/ui-states/default-avatar.png'}"
-style="
-width:90px;
-height:90px;
-object-fit:contain;
-">
-
-</td>
-
-<td>
-
-<b>${d.item || ""}</b>
-
-<br>
-
-${d.design_no || ""}
-
-</td>
-
-<td>
-
-${d.metal || ""}
-
-</td>
-
-<td>
-
-${Number(d.net_wt || 0).toFixed(3)}
-
-</td>
-
-<td>
-
-${Number(d.gr_wt || 0).toFixed(3)}
-
-</td>
-
-<td>
-
-<table class="table table-bordered table-condensed" style="margin:0;">
-
-<tr>
-
-<th>Shape</th>
-
-<th>Size</th>
-
-<th>Pcs</th>
-
-<th>Wt</th>
-
-</tr>
-
-<tr>
-
-<td>${d.dia_shape1 || "-"}</td>
-
-<td>${d.dia_size1 || "-"}</td>
-
-<td>${d.dia_pcs1 || 0}</td>
-
-<td>${d.dia_wt1 || 0}</td>
-
-</tr>
-${
-        Number(d.dia_pcs2 || 0) > 0 ||
-        Number(d.dia_wt2 || 0) > 0 ||
-        d.dia_shape2 ||
-        d.dia_size2
-        ?
-        `
-        <tr>
-
-            <td>${d.dia_shape2 || "-"}</td>
-            <td>${d.dia_size2 || "-"}</td>
-            <td>${d.dia_pcs2 || 0}</td>
-            <td>${Number(d.dia_wt2 || 0).toFixed(3)}</td>
-
-        </tr>
-        `
-        : ""
-    }
-
-</table>
-
-</td>
-
-<td>
-
-<input
-type="number"
-min="1"
-value="${d.qty || 1}"
-class="form-control cart-qty"
-data-name="${d.cart_name}">
-
-</td>
-
-<td>
-
-<textarea
-rows="2"
-class="form-control cart-remark"
-data-name="${d.cart_name}"
-placeholder="Enter Remark">${d.remark || ""}</textarea>
-
-</td>
-
-<td>
-
-<button
-class="btn btn-danger btn-sm remove-cart-item"
-data-name="${d.cart_name}">
-
-<i class="fa fa-trash"></i>
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-    });
-
-		html += `
-
-</tbody>
-
-</table>
-
-<div class="row mt-3 align-items-center">
-
-    <div class="col-md-8">
-
-        <div style="
-            display:flex;
-            gap:20px;
-            align-items:center;
-            font-size:18px;
-            font-weight:600;
-        ">
-
-            <div style="
-                background:#f8f9fa;
-                padding:12px 20px;
-                border:1px solid #ddd;
-                border-radius:6px;
-            ">
-                Total Net Wt :
-                <span style="color:#0d6efd">
-                    ${total_net_wt.toFixed(3)}
-                </span>
-            </div>
-
-            <div style="
-                background:#f8f9fa;
-                padding:12px 20px;
-                border:1px solid #ddd;
-                border-radius:6px;
-            ">
-                Total Diamond Wt :
-                <span style="color:#198754">
-                    ${total_dia_wt.toFixed(3)}
-                </span>
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-4 text-right">
-
-        <button
-            class="btn btn-success btn-lg"
-            id="generate-po">
-
-            <i class="fa fa-check"></i>
-
-            Generate PO
-
-        </button>
-
-    </div>
-
-</div>
-
-`;
-
-
-    this.dialog.fields_dict.cart.$wrapper.html(html);
-
-}
-
-
-render_vendor_cart(data) {
-
-    let total_net_wt = 0;
-    let total_dia_wt = 0;
-    let total_stone_wt = 0;
-
-    let html = `
+		let html = `
 
 <div class="container-fluid">
 
     <div class="row mb-3">
 
-        <div class="col-md-4">
+	<div class="col-md-4">
 
-            <label><b>Vendor</b></label>
+	    <label><b>Vendor</b></label>
 
-            <div style="font-size:16px;font-weight:bold;">
-                ${data.vendor || ""}
-            </div>
+	    <div style="font-size:16px;font-weight:bold;">
+		${data.vendor || ""}
+	    </div>
 
-        </div>
+	</div>
 
-        <div class="col-md-4">
+	<div class="col-md-4">
 
-            <label><b>Vendor Delivery Date</b></label>
+	    <label><b>Vendor Delivery Date</b></label>
 
-            <input
-                type="date"
-                class="form-control"
-                id="vendor_delivery_date"
-                value="${data.vendor_delivery_date || ""}"
-            >
+	    <input
+		type="date"
+		class="form-control"
+		id="vendor_delivery_date"
+		value="${data.vendor_delivery_date || ""}"
+	    >
 
-        </div>
+	</div>
 
     </div>
 
 `;
 
 
-    /*
-     * =========================================================
-     * GROUP BY BRANCH
-     * =========================================================
-     */
+		/*
+		 * =========================================================
+		 * GROUP BY BRANCH
+		 * =========================================================
+		 */
 
-    (data.branches || []).forEach((branch_data, branch_index) => {
+		(data.branches || []).forEach((branch_data, branch_index) => {
 
-        let branch_net_wt = 0;
-        let branch_dia_wt = 0;
-        let branch_stone_wt = 0;
+			let branch_net_wt = 0;
+			let branch_dia_wt = 0;
+			let branch_stone_wt = 0;
 
 
-        html += `
+			html += `
 
-        <div class="card mb-4">
+	<div class="card mb-4">
 
-            <!-- BRANCH HEADER -->
+	    <!-- BRANCH HEADER -->
 
-            <div class="card-header"
-                style="
-                    background:#f8f9fa;
-                    border:1px solid #ddd;
-                    padding:12px 15px;
-                    font-size:17px;
-                    font-weight:600;
-                ">
+	    <div class="card-header"
+		style="
+		    background:#f8f9fa;
+		    border:1px solid #ddd;
+		    padding:12px 15px;
+		    font-size:17px;
+		    font-weight:600;
+		">
 
-                <i class="fa fa-building"></i>
+		<i class="fa fa-building"></i>
 
-                Branch :
+		Branch :
 
-                <span style="color:#0d6efd;">
-                    ${branch_data.branch_name || "Not Assigned"}
-                </span>
+		<span style="color:#0d6efd;">
+		    ${branch_data.branch_name || "Not Assigned"}
+		</span>
 
-            </div>
+	    </div>
 
 
-            <div class="card-body p-0">
+	    <div class="card-body p-0">
 
-                <table class="table table-bordered table-striped"
-                       style="margin:0;">
+		<table class="table table-bordered table-striped"
+		       style="margin:0;">
 
-                    <thead>
+		    <thead>
 
-                        <tr>
+			<tr>
 
-                            <th width="50">Sr.</th>
+			    <th width="50">Sr.</th>
 
-                            <th width="120">Image</th>
+			    <th width="120">Image</th>
 
-                            <th>Item</th>
+			    <th>Item</th>
 
-                            <th width="90">Metal</th>
+			    <th width="90">Metal</th>
 
-                            <th width="90">Net Wt</th>
+			    <th width="90">Net Wt</th>
 
-                            <th width="90">Gr Wt</th>
+			    <th width="90">Gr Wt</th>
 
-                            <th width="80">Qty</th>
+			    <th width="80">Qty</th>
 
-                            <th width="250">Remark</th>
+			    <th width="250">Remark</th>
 
-                            <th width="60"></th>
+			    <th width="60"></th>
 
-                        </tr>
+			</tr>
 
-                    </thead>
+		    </thead>
 
-                    <tbody>
+		    <tbody>
 
-        `;
+	`;
 
 
-        /*
-         * =====================================================
-         * ITEMS
-         * =====================================================
-         */
+			/*
+			 * =====================================================
+			 * ITEMS
+			 * =====================================================
+			 */
 
-        (branch_data.items || []).forEach((d, i) => {
+			(branch_data.items || []).forEach((d, i) => {
 
-            let item_net_wt = Number(d.net_wt || 0);
+				let item_net_wt = Number(d.net_wt || 0);
 
-            branch_net_wt += item_net_wt;
-            total_net_wt += item_net_wt;
+				branch_net_wt += item_net_wt;
+				total_net_wt += item_net_wt;
 
 
-            /*
-             * =================================================
-             * DIAMOND DETAILS
-             * =================================================
-             */
+				/*
+				 * =================================================
+				 * DIAMOND DETAILS
+				 * =================================================
+				 */
 
-            let diamond_html = "";
+				let diamond_html = "";
 
-            let item_dia_wt = 0;
+				let item_dia_wt = 0;
 
 
-            if (
-                d.diamond_details &&
-                d.diamond_details.length
-            ) {
+				if (
+					d.diamond_details &&
+					d.diamond_details.length
+				) {
 
-                diamond_html = `
+					diamond_html = `
 
-                    <table class="table table-bordered table-condensed"
-                           style="margin:0; background:white;">
+		    <table class="table table-bordered table-condensed"
+			   style="margin:0; background:white;">
 
-                        <thead>
+			<thead>
 
-                            <tr>
+			    <tr>
 
-                                <th>Shape</th>
-                                <th>Size</th>
-                                <th>Pcs</th>
-                                <th>Wt</th>
-                                <th>Rate</th>
-                                <th>Amount</th>
+				<th>Shape</th>
+				<th>Size</th>
+				<th>Pcs</th>
+				<th>Wt</th>
+				<th>Rate</th>
+				<th>Amount</th>
 
-                            </tr>
+			    </tr>
 
-                        </thead>
+			</thead>
 
-                        <tbody>
-                `;
+			<tbody>
+		`;
 
 
-                d.diamond_details.forEach(dia => {
+					d.diamond_details.forEach(dia => {
 
-                    let dia_wt =
-                        Number(dia.diamond_wt || 0);
+						let dia_wt =
+							Number(dia.diamond_wt || 0);
 
-                    item_dia_wt += dia_wt;
+						item_dia_wt += dia_wt;
 
 
-                    diamond_html += `
+						diamond_html += `
 
-                        <tr>
+			<tr>
 
-                            <td>
-                                ${dia.diamond_shape || "-"}
-                            </td>
+			    <td>
+				${dia.diamond_shape || "-"}
+			    </td>
 
-                            <td>
-                                ${dia.diamond_size || "-"}
-                            </td>
+			    <td>
+				${dia.diamond_size || "-"}
+			    </td>
 
-                            <td>
-                                ${dia.diamond_pcs || 0}
-                            </td>
+			    <td>
+				${dia.diamond_pcs || 0}
+			    </td>
 
-                            <td>
-                                ${dia_wt.toFixed(3)}
-                            </td>
+			    <td>
+				${dia_wt.toFixed(3)}
+			    </td>
 
-                            <td>
-                                ${Number(
-                                    dia.diamond_rate || 0
-                                ).toFixed(2)}
-                            </td>
+			    <td>
+				${Number(
+					dia.diamond_rate || 0
+				).toFixed(2)}
+			    </td>
 
-                            <td>
-                                ${Number(
-                                    dia.diamond_amount || 0
-                                ).toFixed(2)}
-                            </td>
+			    <td>
+				${Number(
+					dia.diamond_amount || 0
+				).toFixed(2)}
+			    </td>
 
-                        </tr>
+			</tr>
 
-                    `;
+		    `;
 
-                });
+					});
 
 
-                diamond_html += `
+					diamond_html += `
 
-                        </tbody>
+			</tbody>
 
-                    </table>
+		    </table>
 
-                `;
+		`;
 
-            } else {
+				} else {
 
-                diamond_html = `
-                    <span class="text-muted">
-                        No Diamond
-                    </span>
-                `;
+					diamond_html = `
+		    <span class="text-muted">
+			No Diamond
+		    </span>
+		`;
 
-            }
+				}
 
 
-            branch_dia_wt += item_dia_wt;
-            total_dia_wt += item_dia_wt;
+				branch_dia_wt += item_dia_wt;
+				total_dia_wt += item_dia_wt;
 
 
-            /*
-             * =================================================
-             * STONE DETAILS
-             * =================================================
-             */
+				/*
+				 * =================================================
+				 * STONE DETAILS
+				 * =================================================
+				 */
+				
+				let stone_html = "";
 
-            let stone_wt =
-                Number(d.stone_wt || 0);
+				let item_stone_wt = 0;
 
-            branch_stone_wt += stone_wt;
-            total_stone_wt += stone_wt;
 
+				if (
+					d.stone_details &&
+					d.stone_details.length
+				) {
 
-            let stone_html = `
+					stone_html = `
 
-                <table class="table table-bordered table-condensed"
-                       style="margin:0; background:white;">
+		    <table class="table table-bordered table-condensed"
+			   style="margin:0; background:white;">
 
-                    <thead>
+			<thead>
 
-                        <tr>
+			    <tr>
 
-                            <th>Pcs</th>
-                            <th>Wt</th>
-                            <th>Rate</th>
-                            <th>Amount</th>
+				<th>Pcs</th>
+				<th>Wt</th>
+				<th>Rate</th>
+				<th>Amount</th>
 
-                        </tr>
+			    </tr>
 
-                    </thead>
+			</thead>
 
-                    <tbody>
+			<tbody>
+		`;
 
-                        <tr>
 
-                            <td>
-                                ${d.stone_pcs || 0}
-                            </td>
+					d.stone_details.forEach(dia => {
 
-                            <td>
-                                ${stone_wt.toFixed(3)}
-                            </td>
+						let dia_wt =
+							Number(dia.stone_wt || 0);
 
-                            <td>
-                                ${Number(
-                                    d.stone_rate || 0
-                                ).toFixed(2)}
-                            </td>
+						item_stone_wt += dia_wt;
 
-                            <td>
-                                ${Number(
-                                    d.stone_amount || 0
-                                ).toFixed(2)}
-                            </td>
 
-                        </tr>
+						stone_html += `
 
-                    </tbody>
+			<tr>
 
-                </table>
 
-            `;
+			    <td>
+				${dia.stone_pcs || 0}
+			    </td>
 
+			    <td>
+				${dia_wt.toFixed(3)}
+			    </td>
 
-            /*
-             * =================================================
-             * MAIN PRODUCT ROW
-             * =================================================
-             */
+			    <td>
+				${Number(
+					dia.stone_rate || 0
+				).toFixed(2)}
+			    </td>
 
-            html += `
+			    <td>
+				${Number(
+					dia.stone_amount || 0
+				).toFixed(2)}
+			    </td>
 
-                <tr>
+			</tr>
 
-                    <td>
-                        ${i + 1}
-                    </td>
+		    `;
 
+					});
 
-                    <td>
 
-                        <img
-                            src="${
-                                d.image ||
-                                '/assets/frappe/images/ui-states/default-avatar.png'
-                            }"
-                            style="
-                                width:90px;
-                                height:90px;
-                                object-fit:contain;
-                            "
-                        >
+					stone_html += `
 
-                    </td>
+			</tbody>
 
+		    </table>
 
-                    <td>
+		`;
 
-                        <b>
-                            ${d.item || ""}
-                        </b>
+				} else {
 
-                        <br>
+					stone_html = `
+		    <span class="text-muted">
+			No Stone
+		    </span>
+		`;
 
-                        <span class="text-muted">
-                            ${d.vendor_design_number || ""}
-                        </span>
+				}
 
-                    </td>
 
+				branch_stone_wt += item_stone_wt;
+				total_stone_wt += item_stone_wt;
 
-                    <td>
-                        ${d.metal || ""}
-                    </td>
 
 
-                    <td>
-                        ${item_net_wt.toFixed(3)}
-                    </td>
 
 
-                    <td>
-                        ${Number(
-                            d.gr_wt || 0
-                        ).toFixed(3)}
-                    </td>
+				/*
+				 * =================================================
+				 * MAIN PRODUCT ROW
+				 * =================================================
+				 */
 
+				html += `
 
-                    <td>
+		<tr>
 
-                        <input
-                            type="number"
-                            min="1"
-                            value="${d.qty || 1}"
-                            class="form-control cart-qty"
-                            data-name="${d.cart_name}"
-                        >
+		    <td>
+			${i + 1}
+		    </td>
 
-                    </td>
 
+		    <td>
 
-                    <td>
+			<img
+			    src="${
+				    d.image ||
+					    '/assets/frappe/images/ui-states/default-avatar.png'
+			    }"
+			    style="
+				width:90px;
+				height:90px;
+				object-fit:contain;
+			    "
+			>
 
-                        <textarea
-                            rows="2"
-                            class="form-control cart-remark"
-                            data-name="${d.cart_name}"
-                            placeholder="Enter Remark"
-                        >${d.remark || ""}</textarea>
+		    </td>
 
-                    </td>
 
+		    <td>
 
-                    <td>
+			<b>
+			    ${d.item || ""}
+			</b>
 
-                        <button
-                            class="btn btn-danger btn-sm remove-cart-item"
-                            data-name="${d.cart_name}"
-                        >
+			<br>
 
-                            <i class="fa fa-trash"></i>
+			<span class="text-muted">
+			    ${d.vendor_design_number || ""}
+			</span>
 
-                        </button>
+		    </td>
 
-                    </td>
 
-                </tr>
+		    <td>
+			${d.metal || ""}
+		    </td>
 
 
-                <!-- =================================================
-                     SECOND ROW : DIAMOND + STONE
-                     ================================================= -->
+		    <td>
+			${item_net_wt.toFixed(3)}
+		    </td>
 
-                <tr style="background:#fafafa;">
 
-                    <td></td>
+		    <td>
+			${Number(
+				d.gr_wt || 0
+			).toFixed(3)}
+		    </td>
 
-                    <td></td>
 
-                    <td colspan="2">
+		    <td>
 
-                        <div style="
-                            font-weight:600;
-                            margin-bottom:5px;
-                            color:#495057;
-                        ">
+			<input
+			    type="number"
+			    min="1"
+			    value="${d.qty || 1}"
+			    class="form-control cart-qty"
+			    data-name="${d.cart_name}"
+			>
 
-                            <i class="fa fa-diamond"></i>
+		    </td>
 
-                            Diamond Details
 
-                        </div>
+		    <td>
 
-                        ${diamond_html}
+			<textarea
+			    rows="2"
+			    class="form-control cart-remark"
+			    data-name="${d.cart_name}"
+			    placeholder="Enter Remark"
+			>${d.remark || ""}</textarea>
 
-                    </td>
+		    </td>
 
 
-                    <td colspan="3">
+		    <td>
 
-                        <div style="
-                            font-weight:600;
-                            margin-bottom:5px;
-                            color:#495057;
-                        ">
+			<button
+			    class="btn btn-danger btn-sm remove-cart-item"
+			    data-name="${d.cart_name}"
+			>
 
-                            <i class="fa fa-circle"></i>
+			    <i class="fa fa-trash"></i>
 
-                            Stone Details
+			</button>
 
-                        </div>
+		    </td>
 
-                        ${stone_html}
+		</tr>
 
-                    </td>
 
+		<!-- =================================================
+		     SECOND ROW : DIAMOND + STONE
+		     ================================================= -->
 
-                    <td colspan="2">
+		<tr style="background:#fafafa;">
 
-                        <div style="
-                            font-size:13px;
-                            color:#6c757d;
-                            padding:10px;
-                        ">
+		    <td></td>
 
-                            <b>Diamond Wt:</b>
-                            ${item_dia_wt.toFixed(3)}
+		    <td></td>
 
-                            <br>
+		    <td colspan="2">
 
-                            <b>Stone Wt:</b>
-                            ${stone_wt.toFixed(3)}
+			<div style="
+			    font-weight:600;
+			    margin-bottom:5px;
+			    color:#495057;
+			">
 
-                        </div>
+			    <i class="fa fa-diamond"></i>
 
-                    </td>
+			    Diamond Details
 
-                </tr>
+			</div>
 
-            `;
+			${diamond_html}
 
-        });
+		    </td>
 
 
-        /*
-         * =====================================================
-         * BRANCH TOTAL
-         * =====================================================
-         */
+		    <td colspan="3">
 
-        html += `
+			<div style="
+			    font-weight:600;
+			    margin-bottom:5px;
+			    color:#495057;
+			">
 
-                    </tbody>
+			    <i class="fa fa-circle"></i>
 
-                </table>
+			    Stone Details
 
+			</div>
 
-                <div
-                    style="
-                        padding:12px 15px;
-                        background:#f8f9fa;
-                        border-top:1px solid #ddd;
-                    "
-                >
+			${stone_html}
 
-                    <div style="
-                        display:flex;
-                        gap:25px;
-                        align-items:center;
-                        font-weight:600;
-                        flex-wrap:wrap;
-                    ">
+		    </td>
 
-                        <div>
 
-                            Branch Net Wt :
+		    <td colspan="2">
 
-                            <span style="color:#0d6efd;">
-                                ${branch_net_wt.toFixed(3)}
-                            </span>
+			<div style="
+			    font-size:13px;
+			    color:#6c757d;
+			    padding:10px;
+			">
 
-                        </div>
+			    <b>Diamond Wt:</b>
+			    ${item_dia_wt.toFixed(3)}
 
+			    <br>
 
-                        <div>
+			    <b>Stone Wt:</b>
+			    ${item_stone_wt.toFixed(3)}
 
-                            Branch Diamond Wt :
+			</div>
 
-                            <span style="color:#198754;">
-                                ${branch_dia_wt.toFixed(3)}
-                            </span>
+		    </td>
 
-                        </div>
+		</tr>
 
+	    `;
 
-                        <div>
+			});
 
-                            Branch Stone Wt :
 
-                            <span style="color:#fd7e14;">
-                                ${branch_stone_wt.toFixed(3)}
-                            </span>
+			/*
+			 * =====================================================
+			 * BRANCH TOTAL
+			 * =====================================================
+			 */
 
-                        </div>
+			html += `
 
-                    </div>
+		    </tbody>
 
-                </div>
+		</table>
 
 
-            </div>
+		<div
+		    style="
+			padding:12px 15px;
+			background:#f8f9fa;
+			border-top:1px solid #ddd;
+		    "
+		>
 
-        </div>
+		    <div style="
+			display:flex;
+			gap:25px;
+			align-items:center;
+			font-weight:600;
+			flex-wrap:wrap;
+		    ">
 
-        `;
+			<div>
 
-    });
+			    Branch Net Wt :
 
+			    <span style="color:#0d6efd;">
+				${branch_net_wt.toFixed(3)}
+			    </span>
 
-    /*
-     * =========================================================
-     * OVERALL TOTAL
-     * =========================================================
-     */
+			</div>
 
-    html += `
 
-        <div class="row mt-3 align-items-center">
+			<div>
 
-            <div class="col-md-8">
+			    Branch Diamond Wt :
 
-                <div style="
-                    display:flex;
-                    gap:15px;
-                    align-items:center;
-                    font-size:17px;
-                    font-weight:600;
-                    flex-wrap:wrap;
-                ">
+			    <span style="color:#198754;">
+				${branch_dia_wt.toFixed(3)}
+			    </span>
 
+			</div>
 
-                    <div style="
-                        background:#f8f9fa;
-                        padding:12px 18px;
-                        border:1px solid #ddd;
-                        border-radius:6px;
-                    ">
 
-                        Total Net Wt :
+			<div>
 
-                        <span style="color:#0d6efd;">
-                            ${total_net_wt.toFixed(3)}
-                        </span>
+			    Branch Stone Wt :
 
-                    </div>
+			    <span style="color:#fd7e14;">
+				${branch_stone_wt.toFixed(3)}
+			    </span>
 
+			</div>
 
-                    <div style="
-                        background:#f8f9fa;
-                        padding:12px 18px;
-                        border:1px solid #ddd;
-                        border-radius:6px;
-                    ">
+		    </div>
 
-                        Total Diamond Wt :
+		</div>
 
-                        <span style="color:#198754;">
-                            ${total_dia_wt.toFixed(3)}
-                        </span>
 
-                    </div>
+	    </div>
 
+	</div>
 
-                    <div style="
-                        background:#f8f9fa;
-                        padding:12px 18px;
-                        border:1px solid #ddd;
-                        border-radius:6px;
-                    ">
+	`;
 
-                        Total Stone Wt :
+		});
 
-                        <span style="color:#fd7e14;">
-                            ${total_stone_wt.toFixed(3)}
-                        </span>
 
-                    </div>
+		/*
+		 * =========================================================
+		 * OVERALL TOTAL
+		 * =========================================================
+		 */
 
+		html += `
 
-                </div>
+	<div class="row mt-3 align-items-center">
 
-            </div>
+	    <div class="col-md-8">
 
+		<div style="
+		    display:flex;
+		    gap:15px;
+		    align-items:center;
+		    font-size:17px;
+		    font-weight:600;
+		    flex-wrap:wrap;
+		">
 
-            <div class="col-md-4 text-right">
 
-                <button
-                    class="btn btn-success btn-lg"
-                    id="generate-po"
-                >
+		    <div style="
+			background:#f8f9fa;
+			padding:12px 18px;
+			border:1px solid #ddd;
+			border-radius:6px;
+		    ">
 
-                    <i class="fa fa-check"></i>
+			Total Net Wt :
 
-                    Generate PO
+			<span style="color:#0d6efd;">
+			    ${total_net_wt.toFixed(3)}
+			</span>
 
-                </button>
+		    </div>
 
-            </div>
 
-        </div>
+		    <div style="
+			background:#f8f9fa;
+			padding:12px 18px;
+			border:1px solid #ddd;
+			border-radius:6px;
+		    ">
+
+			Total Diamond Wt :
+
+			<span style="color:#198754;">
+			    ${total_dia_wt.toFixed(3)}
+			</span>
+
+		    </div>
+
+
+		    <div style="
+			background:#f8f9fa;
+			padding:12px 18px;
+			border:1px solid #ddd;
+			border-radius:6px;
+		    ">
+
+			Total Stone Wt :
+
+			<span style="color:#fd7e14;">
+			    ${total_stone_wt.toFixed(3)}
+			</span>
+
+		    </div>
+
+
+		</div>
+
+	    </div>
+
+
+	    <div class="col-md-4 text-right">
+
+		<button
+		    class="btn btn-success btn-lg"
+		    id="generate-po"
+		>
+
+		    <i class="fa fa-check"></i>
+
+		    Generate PO
+
+		</button>
+
+	    </div>
+
+	</div>
 
     </div>
 
 `;
 
 
-    this.dialog.fields_dict.cart.$wrapper.html(html);
-}
+		this.dialog.fields_dict.cart.$wrapper.html(html);
+	}
 
 
 }

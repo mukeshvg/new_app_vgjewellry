@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class QuotationUpload(Document):
+class QuotationUploadStone(Document):
 	pass

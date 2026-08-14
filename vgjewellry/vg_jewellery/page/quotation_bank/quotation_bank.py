@@ -403,6 +403,124 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
     # Main SQL
     # ---------------------------------------------------------
     sql = f"""
+    SELECT
+
+    q.name,
+    q.vendor_code,
+    q.vendor,
+    q.image,
+    q.item,
+    q.vendor_design_number,
+    q.metal,
+    q.gr_wt,
+    q.net_wt,
+    q.gold_value,
+    q.labour_rate,
+    q.total_labour,
+    q.total_amount,
+    q.modified,
+
+    /* =========================
+       DIAMOND
+       ========================= */
+
+    d.diamond_shape,
+    d.diamond_size,
+    d.total_diamond_pcs,
+    d.total_diamond_wt,
+    d.total_diamond_amount,
+
+    /* =========================
+       STONE
+       ========================= */
+
+    s.total_stone_pcs,
+    s.total_stone_wt,
+    s.total_stone_amount
+
+FROM `tabQuotation Upload New` q
+
+/* =========================
+   DIAMOND AGGREGATION
+   ========================= */
+
+LEFT JOIN (
+
+    SELECT
+
+        quotation_number,
+
+        GROUP_CONCAT(
+            DISTINCT diamond_shape
+            ORDER BY diamond_shape
+            SEPARATOR ', '
+        ) AS diamond_shape,
+
+        GROUP_CONCAT(
+            DISTINCT diamond_size
+            ORDER BY CAST(diamond_size AS DECIMAL(10,3))
+            SEPARATOR ', '
+        ) AS diamond_size,
+
+        SUM(IFNULL(diamond_pcs, 0)) AS total_diamond_pcs,
+
+        ROUND(
+            SUM(IFNULL(diamond_wt, 0)),
+            3
+        ) AS total_diamond_wt,
+
+        ROUND(
+            SUM(IFNULL(diamond_amount, 0)),
+            2
+        ) AS total_diamond_amount
+
+    FROM `tabQuotation Upload Diamond`
+
+    GROUP BY quotation_number
+
+) d
+    ON d.quotation_number = q.name
+
+
+/* =========================
+   STONE AGGREGATION
+   ========================= */
+
+LEFT JOIN (
+
+    SELECT
+
+        quotation_number,
+
+        SUM(IFNULL(stone_pcs, 0)) AS total_stone_pcs,
+
+        ROUND(
+            SUM(IFNULL(stone_wt, 0)),
+            3
+        ) AS total_stone_wt,
+
+        ROUND(
+            SUM(IFNULL(stone_amount, 0)),
+            2
+        ) AS total_stone_amount
+
+    FROM `tabQuotation Upload Stone`
+
+    GROUP BY quotation_number
+
+) s
+    ON s.quotation_number = q.name
+
+
+WHERE {" AND ".join(where)}
+
+{"HAVING " + " AND ".join(having) if having else ""}
+
+ORDER BY q.modified DESC
+
+LIMIT %(start)s, %(page_length)s
+    """
+    sql1 = f"""
         SELECT
 
     q.name,
@@ -415,9 +533,6 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
     q.gr_wt,
     q.net_wt,
     q.gold_value,
-    q.stone_pcs,
-    q.stone_wt,
-    q.stone_rate,
     q.stone_amount,
     q.labour_rate,
     q.total_labour,
@@ -440,12 +555,21 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
 
     ROUND(SUM(IFNULL(d.diamond_wt,0)),3) AS total_diamond_wt,
 
-    ROUND(SUM(IFNULL(d.diamond_amount,0)),2) AS total_diamond_amount
+    ROUND(SUM(IFNULL(d.diamond_amount,0)),2) AS total_diamond_amount,
+
+    SUM(IFNULL(s.stone_pcs,0)) AS total_stone_pcs,
+
+    ROUND(SUM(IFNULL(s.stone_wt,0)),3) AS total_stone_wt,
+
+    ROUND(SUM(IFNULL(s.stone_amount,0)),2) AS total_stone_amount
 
 FROM `tabQuotation Upload New` q
 
 LEFT JOIN `tabQuotation Upload Diamond` d
     ON d.quotation_number = q.name
+    
+LEFT JOIN `tabQuotation Upload Stone` s
+    ON s.quotation_number = q.name
 
 WHERE {" AND ".join(where)}
 
@@ -460,10 +584,6 @@ GROUP BY
     q.gr_wt,
     q.net_wt,
     q.gold_value,
-    q.stone_pcs,
-    q.stone_wt,
-    q.stone_rate,
-    q.stone_amount,
     q.labour_rate,
     q.total_labour,
     q.total_amount,
@@ -585,6 +705,30 @@ LIMIT %(start)s,%(page_length)s
     for q in quotations:
         q["diamond_details"] = diamond_map.get(str(q["name"]), [])
 
+    stone_details = frappe.get_all(
+    "Quotation Upload Stone",
+    filters={
+        "quotation_number": ["in", quotation_names]
+    },
+    fields=[
+        "quotation_number",
+        "stone_pcs",
+        "stone_wt",
+        "stone_rate",
+        "stone_amount"
+    ],
+    order_by="quotation_number asc, idx asc"
+)
+
+
+    stone_map = {}
+
+    for d in stone_details:
+        quotation_no = str(d["quotation_number"])
+        stone_map.setdefault(quotation_no, []).append(d)
+
+    for q in quotations:
+        q["stone_details"] = stone_map.get(str(q["name"]), [])
     # ---------------------------------------------------------
     # Image Server
     # ---------------------------------------------------------
@@ -604,145 +748,6 @@ LIMIT %(start)s,%(page_length)s
         "image_server_url": image_server_url
     }
 
-#@frappe.whitelist()
-@frappe.whitelist(allow_guest=True)
-def get_quotations_old(start=0, page_length=40, search="", filters=None):
-
-    filters = frappe.parse_json(filters or {})
-
-    where = ["1=1"]
-    values = {}
-
-    # Search
-    if search:
-        where.append("""
-            (
-                item LIKE %(search)s
-                OR design_no LIKE %(search)s
-            )
-        """)
-        values["search"] = f"%{search}%"
-
-    # Metal
-    if filters.get("metal"):
-        where.append("metal IN %(metal)s")
-        values["metal"] = tuple(filters["metal"])
-
-    # Item
-    if filters.get("item"):
-        where.append("item IN %(item)s")
-        values["item"] = tuple(filters["item"])
-
-    # Design
-    if filters.get("design_no"):
-        where.append("design_no IN %(design_no)s")
-        values["design_no"] = tuple(filters["design_no"])
-
-    # Diamond Weight Filter
-    if filters.get("diamond_wt"):
-
-        range_conditions = []
-
-        for rng in filters["diamond_wt"]:
-
-            frm, to = rng.split("-")
-
-            range_conditions.append(
-                f"""
-                (
-                    IFNULL(dia_wt1,0) + IFNULL(dia_wt2,0)
-                ) BETWEEN {float(frm)} AND {float(to)}
-                """
-            )
-
-        where.append("(" + " OR ".join(range_conditions) + ")")
-
-    sql = f"""
-        SELECT *
-        FROM `tabQuotation Upload`
-        WHERE {' AND '.join(where)}
-        ORDER BY modified DESC
-        LIMIT %(start)s,%(page_length)s
-    """
-
-    values["start"] = int(start)
-    values["page_length"] = int(page_length)
-
-    item_mapping = {
-    "Bangles": 86,
-    "Button": 108,
-    "Cufflink": 107,
-    "Pendant": 90,
-    "Polki": 199,
-    "Ring": 91,
-    "Set": 92,
-    "Tops": 93,
-    "Chain": 10000007,
-    "Bali": 10000008,
-    "Tanmania": 10000004,
-    "Mangalsutra": 10000005
-
-}
-    item_ids = []
-
-    for item in filters.get("item", []):
-
-        if item in item_mapping:
-            item_ids.append(
-                item_mapping[item]
-            )
-
-    from_date = filters.get("from_date")
-    to_date = filters.get("to_date")
-    sale_data ={}
-    current_stock ={}
-    summary ={}
-    if item_ids or filters.get("diamond_wt"):
-        
-        sale_data = get_ornate_data(
-        from_date="2026-04-01",
-        to_date="2026-08-01",
-        diamond_wt=filters.get("diamond_wt"),
-        item_mst=item_ids,
-        item_trade_mst= [1006],
-        table_name="dbo.SPTran" )
-       
-        current_stock = get_current_stock_data(
-        diamond_wt=filters.get("diamond_wt"),
-        item_mst=item_ids,
-        item_trade_mst= [1006])
-
-
-
-        summary = {
-
-        "stock_count": len(current_stock),
-
-        "stock_diamond_wt": sum(
-            float(x.get("DiamondWt") or 0)
-            for x in current_stock
-        ),
-
-
-        "sale_count": len(sale_data),
-
-        "sale_diamond_wt": sum(
-            float(x.get("DiamondWt") or 0)
-            for x in sale_data
-        )
-
-    }
-
-
-    quotations= frappe.db.sql(sql, values, as_dict=True)
-    image_server_url="http://192.168.1.5:51"
-    return {
-        "quotations": quotations,
-        "sale_data": sale_data,
-        "current_stock":current_stock,
-        "summary": summary,
-        "image_server_url":image_server_url
-    }
 
 @frappe.whitelist()
 def get_filter_options():

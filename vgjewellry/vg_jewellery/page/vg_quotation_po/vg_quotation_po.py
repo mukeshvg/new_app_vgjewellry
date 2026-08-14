@@ -153,6 +153,74 @@ def get_po_details(po_no):
             []
         )
 
+    stone_map = {}
+
+
+    if quotation_names:
+
+        stone_rows = frappe.db.sql("""
+            SELECT
+                quotation_number,
+                stone_pcs,
+                stone_wt,
+                stone_rate,
+                stone_amount
+
+            FROM `tabQuotation Upload Stone`
+
+            WHERE quotation_number IN %(quotation_names)s
+
+            ORDER BY
+                quotation_number,
+                name ASC
+
+        """, {
+            "quotation_names": quotation_names
+        }, as_dict=True)
+
+
+        # -----------------------------------------------------
+        # GROUP STONES BY QUOTATION
+        # -----------------------------------------------------
+
+        for stone in stone_rows:
+
+            quotation_number = str(
+                stone.quotation_number
+            )
+
+            if quotation_number not in stone_map:
+
+                stone_map[quotation_number] = []
+
+
+            stone_map[quotation_number].append({
+
+                "stone_pcs":
+                    stone.stone_pcs or 0,
+
+                "stone_wt":
+                    stone.stone_wt or 0,
+
+                "stone_rate":
+                    stone.stone_rate or 0,
+
+                "stone_amount":
+                    stone.stone_amount or 0
+
+            })
+
+
+    # ---------------------------------------------------------
+    # ATTACH STONE DETAILS TO EACH ITEM
+    # ---------------------------------------------------------
+
+    for item in items:
+
+        item["stone_details"] = stone_map.get(
+            str(item.name),
+            []
+        )
 
     # ---------------------------------------------------------
     # RETURN
@@ -194,12 +262,17 @@ def generate_pdf(po_no):
 
         total_qty += float(row.get("qty") or 1)
 
-        total_stone_wt += float(row.get("stone_wt") or 0)
 
         for diamond in row.get("diamond_details", []):
 
             total_dia_wt += float(
                 diamond.get("diamond_wt") or 0
+            )
+        
+        for stone in row.get("stone_details", []):
+
+            total_stone_wt += float(
+                stone.get("stone_wt") or 0
             )
 
     # ---------------------------------------------------------
@@ -667,13 +740,10 @@ th {
                  STONE DETAILS
             ============================================== -->
 
-            {% if row.stone_pcs
-               or row.stone_wt
-               or row.stone_rate
-               or row.stone_amount %}
+            {% if row.stone_details %}
 
             <table
-                class="diamond-table"
+                class="stone-table"
                 width="100%"
             >
 
@@ -708,37 +778,42 @@ th {
                 </tr>
 
 
+                {% for stone in row.stone_details %}
+
                 <tr align="center">
 
                     <td>
 
                         <b>
-                            Stone
+                            Diamond {{ loop.index }}
                         </b>
 
                     </td>
 
                     <td>
-                        {{ row.stone_pcs or 0 }}
+                        {{ stone.stone_pcs or "" }}
                     </td>
 
                     <td>
-                        {{ row.stone_wt or 0 }}
+                        {{ stone.stone_wt or "" }}
                     </td>
 
                     <td>
-                        {{ row.stone_rate or 0 }}
+                        {{ stone.stone_rate or "" }}
                     </td>
 
                     <td>
-                        {{ row.stone_amount or 0 }}
+                        {{ stone.stone_amount or "" }}
                     </td>
 
                 </tr>
 
+                {% endfor %}
+
             </table>
 
             {% endif %}
+
 
 
             <!-- =============================================

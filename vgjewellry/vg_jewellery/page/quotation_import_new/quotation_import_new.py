@@ -103,6 +103,28 @@ def upload_excel():
 
         if col not in df.columns:
             frappe.throw(f"Missing column : {col}")
+    
+    actual_columns = list(df.columns)
+    missing_columns = []
+    extra_columns = []
+    if actual_columns != required_columns:
+        missing_columns = [ col for col in required_columns  if col not in actual_columns  ]
+        extra_columns = [ col for col in actual_columns if col not in required_columns  ]
+        frappe.throw(
+        "Excel columns do not match the required template exactly.<br><br>"
+
+        f"<b>Expected columns:</b><br>"
+        f"{', '.join(required_columns)}<br><br>"
+
+        f"<b>Uploaded columns:</b><br>"
+        f"{', '.join(actual_columns)}<br><br>"
+
+        f"<b>Missing columns:</b><br>"
+        f"{', '.join(missing_columns) if missing_columns else 'None'}<br><br>"
+
+        f"<b>Extra columns:</b><br>"
+        f"{', '.join(extra_columns) if extra_columns else 'None'}"
+    )    
 
     # --------------------------------------------------------
     # Load workbook for images
@@ -125,6 +147,8 @@ def upload_excel():
 
     quotation_count = 0
     diamond_count = 0
+    stone_count = 0
+    skipped_count = 0
     # --------------------------------------------------------
     # Start Import
     # --------------------------------------------------------
@@ -165,6 +189,23 @@ def upload_excel():
             # ---------------------------------------------
 
             if is_parent:
+                skip_current_item = False
+                vendor_code = current_vendor_code
+                vendor_design_number = clean(row.get("Vendor Design Number"))
+                if vendor_code and vendor_design_number:
+                    existing = frappe.db.exists(
+                        "Quotation Upload New",
+                        {
+                            "vendor_code": vendor_code,
+                            "vendor_design_number": vendor_design_number
+                        }
+                    )
+
+                    if existing:
+                        current_parent = existing
+                        skip_current_item = True
+                        skipped_count += 1
+                        continue
 
                 doc = frappe.get_doc({
 
@@ -281,6 +322,47 @@ def upload_excel():
                 diamond.insert(ignore_permissions=True)
 
                 diamond_count += 1
+            
+            # ---------------------------------------------
+            # Stone Row Detection
+            # ---------------------------------------------
+
+            is_stone = any([
+
+                clean(row.get("Stone Pcs")),
+                clean(row.get("Stone Wt")),
+                clean(row.get("Stone rate")),
+                clean(row.get("Stone Amt"))
+
+            ])
+
+            # ---------------------------------------------
+            # Create Stone Record
+            # ---------------------------------------------
+
+            if is_stone:
+
+                if not current_parent:
+                    frappe.throw(
+                        f"No parent quotation found before Excel row {excel_row}"
+                    )
+
+                stone = frappe.get_doc({
+
+                    "doctype": "Quotation Upload Stone",
+
+                    "quotation_number": current_parent,
+
+                    "stone_pcs": flt(clean(row.get("Stone Pcs")) or 0),
+                    "stone_wt": flt(clean(row.get("Stone Wt")) or 0),
+                    "stone_rate": flt(clean(row.get("Stone rate")) or 0),
+                    "stone_amount": flt(clean(row.get("Stone Amt")) or 0)
+
+                })
+
+                stone.insert(ignore_permissions=True)
+
+                stone_count += 1
 
         # ---------------------------------------------
         # Commit
@@ -294,7 +376,9 @@ def upload_excel():
 
             "message":
                 f"{quotation_count} Quotations Imported\n"
-                f"{diamond_count} Diamond Records Imported"
+                f"{diamond_count} Diamond Records Imported\n"
+                f"{stone_count} Stone Records Imported\n"
+                f"{skipped_count} Records Skipped"
 
         }
 

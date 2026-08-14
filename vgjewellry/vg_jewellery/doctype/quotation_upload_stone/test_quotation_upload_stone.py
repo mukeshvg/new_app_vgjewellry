@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestQuotationUpload(FrappeTestCase):
+class TestQuotationUploadStone(FrappeTestCase):
 	pass

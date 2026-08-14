@@ -11,7 +11,7 @@ frappe.pages['quotation-import-new'].on_page_load = function(wrapper) {
 
 	let html = `
 	<div class="mt-4">
-	    <input type="file" id="quotation_file" accept=".xlsx,.xls"/>
+	    <input type="file" id="quotation_file" accept=".xlsx"/>
 
 	    <br><br>
 
@@ -55,9 +55,57 @@ frappe.pages['quotation-import-new'].on_page_load = function(wrapper) {
 						message: r.message.message
 					});
 				} else {
-					frappe.msgprint(r.message);
+					frappe.msgprint({
+					    title: "Upload Error",
+					    indicator: "red",
+					    message: r.message || "Excel upload failed."
+					});
 				}
 
+			},
+			error: function(xhr) {
+
+			    frappe.dom.unfreeze();
+
+			    let message = "Excel upload failed.";
+
+			    try {
+
+				let response = JSON.parse(xhr.responseText);
+
+				if (response._server_messages) {
+
+				    let server_messages = JSON.parse(response._server_messages);
+
+				    if (server_messages.length) {
+
+					let msg = JSON.parse(server_messages[0]);
+
+					if (msg.message) {
+					    message = msg.message;
+					}
+				    }
+
+				} else if (response.exception) {
+
+				    message = response.exception;
+
+				} else if (response.message) {
+
+				    message = response.message;
+				}
+
+			    } catch (e) {
+
+				console.error("Error parsing server response:", e);
+
+			    }
+
+			    frappe.msgprint({
+				title: "Excel Upload Error",
+				indicator: "red",
+				message: message
+			    });
 			}
 		});
 
