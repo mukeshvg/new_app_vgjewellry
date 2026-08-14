@@ -752,8 +752,7 @@ def get_filter_options():
     fields = [
         "vendor",
         "item",
-        "metal",
-        "design_no"
+        "metal"
     ]
 
     for field in fields:
