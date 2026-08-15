@@ -3,6 +3,8 @@ import json
 import pyodbc
 import os
 import pandas as pd
+from frappe.utils import today
+
 
 
 value = os.getenv('sjodbc')
@@ -640,7 +642,7 @@ LIMIT %(start)s,%(page_length)s
 
         sale_data = get_ornate_data(
             from_date=from_date or "2026-04-01",
-            to_date=to_date or "2026-08-01",
+            to_date=to_date or  today(),
             diamond_wt=filters.get("diamond_wt"),
             item_mst=item_ids,
             item_trade_mst=[1006],
