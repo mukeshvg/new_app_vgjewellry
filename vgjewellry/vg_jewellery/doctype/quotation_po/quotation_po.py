@@ -48,7 +48,7 @@ class QuotationPO(Document):
         last_po = frappe.db.sql("""
             SELECT name
             FROM `tabQuotation PO`
-            WHERE name LIKE 'PO-Q-%'
+            WHERE name LIKE 'PO-Q/%'
             ORDER BY creation DESC
             LIMIT 1
         """, as_dict=True)
@@ -63,7 +63,7 @@ class QuotationPO(Document):
 
             # Get number after the last "-"
             match = re.search(
-                r'-(\d+)$',
+                r'/(\d+)$',
                 last_name
             )
 
@@ -79,6 +79,6 @@ class QuotationPO(Document):
         # -----------------------------------------------------
 
         self.name = (
-            f"PO-Q-{branch_code}-{date}-{next_number}"
+            f"PO-Q/{branch_code}/{date}/{next_number}"
         )
 
