@@ -392,7 +392,7 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
 
             range_conditions.append(
                 f"""
-                SUM(IFNULL(d.diamond_wt,0))
+                (IFNULL(d.total_diamond_wt,0))
                 BETWEEN {frm} AND {to}
                 """
             )
