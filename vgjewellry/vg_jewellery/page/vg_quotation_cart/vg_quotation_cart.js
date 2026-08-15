@@ -271,7 +271,7 @@ class QuotationCart {
 			},
 
 			callback:(r)=>{
-				this.dialog.hide();
+				//this.dialog.hide();
 
 				this.render_vendor_cart(r.message);
 
