@@ -691,7 +691,7 @@ class QuotationCart {
 
 		    <td>
 
-			<input
+			<input name="c1"
 			    type="number"
 			    min="1"
 			    value="${d.qty || 1}"
@@ -704,7 +704,7 @@ class QuotationCart {
 
 		    <td>
 
-			<textarea
+			<textarea name="c3"
 			    rows="2"
 			    class="form-control cart-remark"
 			    data-name="${d.cart_name}"
