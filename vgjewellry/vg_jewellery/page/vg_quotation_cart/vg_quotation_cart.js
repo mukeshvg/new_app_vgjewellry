@@ -43,7 +43,8 @@ class QuotationCart {
 		this.page.add_inner_button(
 			'<i class="fa fa-arrow-right"></i> Quotation PO',
 			() => {
-				frappe.set_route("vg-quotation-po");
+				window.location.href = "/app/vg-quotation-po";
+				//frappe.set_route("vg-quotation-po");
 			}
 		);
 

@@ -296,7 +296,8 @@ this.date_range = this.page.add_field({
     Cart (<span id="cart-count">0</span>)
 `, () => {
 
-    frappe.set_route("vg-quotation-cart");
+	window.location.href = "/app/vg-quotation-cart";
+    //frappe.set_route("vg-quotation-cart");
 
 });
 
