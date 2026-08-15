@@ -129,7 +129,7 @@ def get_ornate_data(
             s.DiamondWt,
 
 
-            s.Image1
+            s.Image1 as ImagePath1
 
 
         FROM {table_name} s WITH(NOLOCK)
