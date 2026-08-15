@@ -198,6 +198,20 @@ class QuotationCart {
 		});
 		$(document).on("click", "#generate-po", () => {
 
+			let vendor_delivery_date = $("#vendor_delivery_date").val();
+
+			    // Mandatory validation
+			    if (!vendor_delivery_date) {
+				frappe.msgprint({
+				    title: "Vendor Delivery Date Required",
+				    indicator: "red",
+				    message: "Please select Vendor Delivery Date before generating PO."
+				});
+
+				$("#vendor_delivery_date").focus();
+
+				return;
+			    }
 			let remarks = {};
 
 			$(".cart-remark").each(function () {
