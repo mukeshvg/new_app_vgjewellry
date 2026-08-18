@@ -550,8 +550,8 @@ render_cards() {
         <div class="qb-total">
 
             ${frappe.format(
-                d.total_amt || 0,
-                {fieldtype:"Currency"}
+                d.total_amount || 0,
+                {fieldtype:"Currency" ,precision: 0}
             )}
 
         </div>
@@ -1226,7 +1226,7 @@ if (row.diamond_details && row.diamond_details.length) {
                 <td>${d.diamond_size || d.size || ""}</td>
                 <td>${d.diamond_pcs || d.pcs || 0}</td>
                 <td>${Number(d.diamond_wt || d.wt || 0).toFixed(3)}</td>
-                <td>${frappe.format(d.diamond_amount || d.amount || 0, {fieldtype: "Currency"})}</td>
+                <td>${frappe.format(d.diamond_amount || d.amount || 0, {fieldtype: "Currency", precision: 0})}</td>
             </tr>
         `;
     });
@@ -1264,7 +1264,7 @@ if (row.stone_details && row.stone_details.length) {
                 <td>${i + 1}</td>
                 <td>${d.stone_pcs || d.pcs || 0}</td>
                 <td>${Number(d.stone_wt || d.wt || 0).toFixed(3)}</td>
-                <td>${frappe.format(d.stone_amount || d.amount || 0, {fieldtype: "Currency"})}</td>
+                <td>${frappe.format(d.stone_amount || d.amount || 0, {fieldtype: "Currency" ,precision: 0})}</td>
             </tr>
         `;
     });
@@ -1291,14 +1291,11 @@ if (row.stone_details && row.stone_details.length) {
 
         <table class="table table-bordered">
 
-            <tr><th colspan="2">Basic Details</th></tr>
+            <tr><th colspan="4">Basic Details</th></tr>
 
             <tr>
                 <td>Vendor</td>
                 <td>${row.vendor || ""}</td>
-            </tr>
-
-            <tr>
                 <td>Vendor Code</td>
                 <td>${row.vendor_code || ""}</td>
             </tr>
@@ -1306,26 +1303,27 @@ if (row.stone_details && row.stone_details.length) {
             <tr>
                 <td>Item</td>
                 <td>${row.item || ""}</td>
-            </tr>
-
-            <tr>
                 <td>Design</td>
                 <td>${row.vendor_design_number || ""}</td>
             </tr>
 
             <tr>
                 <td>Metal</td>
-                <td>${row.metal || ""}</td>
+                <td colspan="3">${row.metal || ""}</td>
             </tr>
 
             <tr>
                 <td>Gross Weight</td>
                 <td>${Number(row.gr_wt || 0).toFixed(3)}</td>
-            </tr>
 
-            <tr>
                 <td>Net Weight</td>
                 <td>${Number(row.net_wt || 0).toFixed(3)}</td>
+            </tr>
+            <tr>
+                <td>Gold Value</td>
+                <td>${Number(row.gold_value || 0).toFixed()}</td>
+                <td>Total Labour</td>
+                <td>${Number(row.total_labour || 0).toFixed()}</td>
             </tr>
 
         </table>
@@ -1337,7 +1335,7 @@ if (row.stone_details && row.stone_details.length) {
         <div class="dialog-total">
 
             Total :
-            ${frappe.format(row.total_amt || 0,{fieldtype:"Currency"})}
+            ${frappe.format(row.total_amount || 0,{fieldtype:"Currency",precision:0})}
 
         </div>
 

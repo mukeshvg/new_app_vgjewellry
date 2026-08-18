@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-08-15 13:28:16.488273",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "style_name",
+  "from_weight",
+  "to_weight",
+  "sales_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "style_name",
+   "fieldtype": "Data",
+   "label": "Style Name"
+  },
+  {
+   "fieldname": "from_weight",
+   "fieldtype": "Float",
+   "label": "From Weight"
+  },
+  {
+   "fieldname": "to_weight",
+   "fieldtype": "Float",
+   "label": "To Weight"
+  },
+  {
+   "fieldname": "sales_rate",
+   "fieldtype": "Int",
+   "label": "Sales Rate"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-15 13:53:42.525579",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Ornate Diamond Sales Rate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

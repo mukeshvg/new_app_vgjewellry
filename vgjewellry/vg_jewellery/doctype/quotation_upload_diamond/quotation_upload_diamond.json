@@ -17,6 +17,8 @@
   {
    "fieldname": "quotation_number",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Quotation Number",
    "options": "Quotation Upload New"
   },
@@ -54,7 +56,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-06 08:47:44.309430",
+ "modified": "2026-08-18 10:20:03.122137",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Quotation Upload Diamond",

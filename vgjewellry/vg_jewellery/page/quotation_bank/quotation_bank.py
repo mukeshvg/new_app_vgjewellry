@@ -522,81 +522,6 @@ ORDER BY q.modified DESC
 
 LIMIT %(start)s, %(page_length)s
     """
-    sql1 = f"""
-        SELECT
-
-    q.name,
-    q.vendor_code,
-    q.vendor,
-    q.image,
-    q.item,
-    q.vendor_design_number,
-    q.metal,
-    q.gr_wt,
-    q.net_wt,
-    q.gold_value,
-    q.stone_amount,
-    q.labour_rate,
-    q.total_labour,
-    q.total_amount,
-    q.modified,
-
-    GROUP_CONCAT(
-        DISTINCT d.diamond_shape
-        ORDER BY d.diamond_shape
-        SEPARATOR ', '
-    ) AS diamond_shape,
-
-    GROUP_CONCAT(
-        DISTINCT d.diamond_size
-        ORDER BY CAST(d.diamond_size AS DECIMAL(10,3))
-        SEPARATOR ', '
-    ) AS diamond_size,
-
-    SUM(IFNULL(d.diamond_pcs,0)) AS total_diamond_pcs,
-
-    ROUND(SUM(IFNULL(d.diamond_wt,0)),3) AS total_diamond_wt,
-
-    ROUND(SUM(IFNULL(d.diamond_amount,0)),2) AS total_diamond_amount,
-
-    SUM(IFNULL(s.stone_pcs,0)) AS total_stone_pcs,
-
-    ROUND(SUM(IFNULL(s.stone_wt,0)),3) AS total_stone_wt,
-
-    ROUND(SUM(IFNULL(s.stone_amount,0)),2) AS total_stone_amount
-
-FROM `tabQuotation Upload New` q
-
-LEFT JOIN `tabQuotation Upload Diamond` d
-    ON d.quotation_number = q.name
-    
-LEFT JOIN `tabQuotation Upload Stone` s
-    ON s.quotation_number = q.name
-
-WHERE {" AND ".join(where)}
-
-GROUP BY
-    q.name,
-    q.vendor_code,
-    q.vendor,
-    q.image,
-    q.item,
-    q.vendor_design_number,
-    q.metal,
-    q.gr_wt,
-    q.net_wt,
-    q.gold_value,
-    q.labour_rate,
-    q.total_labour,
-    q.total_amount,
-    q.modified
-
-{"HAVING " + " AND ".join(having) if having else ""}
-
-ORDER BY q.modified DESC
-
-LIMIT %(start)s,%(page_length)s
-    """
 
     values["start"] = int(start)
     values["page_length"] = int(page_length)
@@ -676,9 +601,33 @@ LIMIT %(start)s,%(page_length)s
     # Fetch Quotations
     # ---------------------------------------------------------
 
+    rates = get_all_rates()
+
+    diamond_rates = rates["diamond"]
+    metal_rates = rates["metal"]
+
+
+
     quotations = frappe.db.sql(sql, values, as_dict=True)
 
+    for q in quotations:
+        gold_rate = get_metal_rate(
+            q.get("metal"),
+            metal_rates
+        )
+        q["gold_rate"] = gold_rate
+        if gold_rate > 0:
+            net_wt = float(
+                q.get("net_wt") or 0
+            )
+
+            q["gold_value"] = round(
+                gold_rate * net_wt,
+                2
+            )
+
     quotation_names = [q["name"] for q in quotations]
+    
 
     diamond_details = frappe.get_all(
     "Quotation Upload Diamond",
@@ -701,11 +650,21 @@ LIMIT %(start)s,%(page_length)s
     diamond_map = {}
 
     for d in diamond_details:
+        d["diamond_rate"] = get_diamond_rate(d.get("diamond_shape"), d.get("diamond_wt"),d.get("diamond_pcs"), diamond_rates )
+        d["diamond_amount"] = round(float(d.get("diamond_wt") or 0)* float(d["diamond_rate"] or 0))
+
         quotation_no = str(d["quotation_number"])
         diamond_map.setdefault(quotation_no, []).append(d)
 
     for q in quotations:
         q["diamond_details"] = diamond_map.get(str(q["name"]), [])
+        q["total_diamond_amount"] = round(
+        sum(
+            float(s.get("diamond_amount") or 0)
+            for s in q["diamond_details"]
+        ),
+        2
+    )
 
     stone_details = frappe.get_all(
     "Quotation Upload Stone",
@@ -726,11 +685,43 @@ LIMIT %(start)s,%(page_length)s
     stone_map = {}
 
     for d in stone_details:
+        d["stone_amount"] = get_stone_rate( d.get("stone_amount"))
         quotation_no = str(d["quotation_number"])
         stone_map.setdefault(quotation_no, []).append(d)
 
     for q in quotations:
         q["stone_details"] = stone_map.get(str(q["name"]), [])
+        q["total_stone_amount"] = round(
+        sum(
+            float(s.get("stone_amount") or 0)
+            for s in q["stone_details"]
+        ),
+        2
+    )
+        total_diamond_amount = float(
+        q.get("total_diamond_amount") or 0
+    )
+
+        total_stone_amount = float(
+            q.get("total_stone_amount") or 0
+        )
+
+        gold_value = float(
+            q.get("gold_value") or 0
+        )
+
+        total_labour = float(
+            q.get("total_labour") or 0
+        )
+
+        q["total_amount"] = round(
+            total_diamond_amount
+            + total_stone_amount
+            + gold_value
+            + total_labour,
+            2
+        )
+        
     # ---------------------------------------------------------
     # Image Server
     # ---------------------------------------------------------
@@ -922,54 +913,6 @@ def add_to_cart(quotation_ids, branch, remark=None):
     }
 
 
-@frappe.whitelist()
-def add_to_cart1(quotation_ids):
-
-    quotation_ids = frappe.parse_json(quotation_ids)
-
-    added = []
-    skipped = []
-
-    for quotation_id in quotation_ids:
-
-        # Check if already in cart with status = 1
-        existing = frappe.db.exists(
-            "Quotation Cart",
-            {
-                "quotation_id": quotation_id,
-                "status": 1
-            }
-        )
-
-        if existing:
-            skipped.append(quotation_id)
-            continue
-
-        quotation = frappe.db.get_value(
-            "Quotation Upload New",
-            quotation_id,
-            ["vendor"],
-            as_dict=True
-        )
-
-
-        doc = frappe.get_doc({
-            "doctype": "Quotation Cart",
-            "quotation_id": quotation_id,
-            "vendor": quotation.vendor if quotation else "",
-            "status": 1
-        })
-
-        doc.insert(ignore_permissions=True)
-
-        added.append(quotation_id)
-
-    frappe.db.commit()
-
-    return {
-        "added": added,
-        "skipped": skipped
-    }
 
 @frappe.whitelist()
 def get_cart_count():
@@ -1080,3 +1023,140 @@ def branch_query(doctype, txt, searchfield, start, page_len, filters):
         "start": start,
         "page_len": page_len
     })
+
+def get_all_rates():
+
+    # ---------------------------------------------------------
+    # Diamond Rates - fetch once
+    # ---------------------------------------------------------
+
+    diamond_rates = frappe.get_all(
+        "Ornate Diamond Sales Rate",
+        fields=[
+            "style_name",
+            "from_weight",
+            "to_weight",
+            "sales_rate"
+        ]
+    )
+
+    # ---------------------------------------------------------
+    # Metal Rates - fetch once
+    # ---------------------------------------------------------
+
+    metal_rates = frappe.get_all(
+        "Ornate Metal Rate",
+        fields=[
+            "metal",
+            "rate",
+            "ornate_metal_id"
+        ]
+    )
+
+    return {
+        "diamond": diamond_rates,
+        "metal": metal_rates
+    }
+
+METAL_MAP  = {
+    "Gold 14KT": "14 KT GOLD",
+    "Gold 18KT": "18KT DIAMOND JEWELLERY"
+        }
+
+def get_metal_rate( metal, metal_rates ):
+    if not metal or metal is None:
+        return 0
+    try:
+        met = str (metal).strip()
+        metal_name = METAL_MAP.get(met)
+        if not metal_name:
+            return 0
+        for rate in metal_rates:
+            rate_metal = str(rate.get("metal") or "").strip()
+            if rate_metal == metal_name:
+                return float(rate.get("rate")/10 or 0)
+        return 0
+    except (TypeError, ValueError):
+        return 0
+    
+
+
+
+DIAMOND_STYLE_MAP = {
+    "round": "REAL DIAMOND(CT)",
+    "princess": "PRINCESS DIAMOND(CT)",
+    "oval": "OVAL DIAMOND(CT)",
+    "pear": "PEAR DIAMOND(CT)",
+    "emerald": "EMERALD DIAMOND(CT)",
+    "marquise": "MARQUISE DIAMOND(CT)",
+    "heart": "HEART DIAMOND(CT)",
+    "baguette" :"BAGUETTE DIAMOND(CT)",
+    "bugget":"BAGUETTE DIAMOND(CT)",
+    "radiant" : "RADIANT DIAMOND(CT)",
+    "rose cut" : "ROSE CUT DIAMOND(CT)",
+    "cushion" : "CUSHION DIAMOND(CT)"
+}
+
+def get_diamond_rate(
+    diamond_shape,
+    diamond_wt,
+    diamond_pcs,
+    diamond_rates
+):
+
+    if not diamond_shape or diamond_wt is None:
+        return 0
+
+    try:
+        diamond_wt = float(diamond_wt) / float (diamond_pcs)
+    except (TypeError, ValueError):
+        return 0
+
+    shape = str(
+        diamond_shape
+    ).strip().lower()
+
+    style_name = DIAMOND_STYLE_MAP.get(
+        shape
+    )
+
+
+    if not style_name:
+        return 0
+
+    for rate in diamond_rates:
+
+        if str(rate.get("style_name") or "").strip().lower() != style_name.lower():
+            continue
+        from_weight = float(
+            rate.get("from_weight") or 0
+        )
+
+        to_weight = float(
+            rate.get("to_weight") or 0
+        )
+        if (
+            from_weight <= diamond_wt
+            and diamond_wt <= to_weight
+        ):
+            return float(
+                rate.get("sales_rate") or 0
+            )
+
+    return 0
+
+
+
+def get_stone_rate(stone_amount):
+
+    if stone_amount is None:
+        return 0
+
+    try:
+        return round(
+            float(stone_amount) * 3,
+            2
+        )
+    except (TypeError, ValueError):
+        return 0
+    
