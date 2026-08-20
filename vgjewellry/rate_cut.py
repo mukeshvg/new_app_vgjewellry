@@ -249,7 +249,7 @@ def get_vendor_rate_cut(acc_mst_id,summary_id):
             SUM(r.Pcs) AS ReturnPcs,
             SUM(r.GrossWt) AS ReturnGrossWt,
             SUM(r.NetWt) AS ReturnNetWt,
-            SUM(r.FineWt) AS ReturnFineWt,
+            SUM(r.FineWt + r.WastageWeight) AS ReturnFineWt,
             SUM(r.OtherCharge) AS ReturnOtherCharge,
 
             STUFF
@@ -356,7 +356,7 @@ WHERE RN = 1;'''
             SUM(r.Pcs) AS ReturnPcs,
             SUM(r.GrossWt) AS ReturnGrossWt,
             SUM(r.NetWt) AS ReturnNetWt,
-            SUM(r.FineWt) AS ReturnFineWt,
+            SUM(r.FineWt + r.WastageWeight) AS ReturnFineWt,
             SUM(r.OtherCharge) AS ReturnOtherCharge,
 
             STUFF

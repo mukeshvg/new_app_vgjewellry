@@ -84,7 +84,7 @@ input[type="number"] {
     z-index: 5;
 }
 
-.ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th ,.rate-cut-individual-table thead tr.vendor-filter-row th  {
+.ledger-fixed-table thead tr.ledger-filter-row th, .metal-currency-table thead tr.metal-currency-table-filter th ,.rate-cut-individual-table thead tr.vendor-filter-row th, .rate-cut-table head tr.vendor-filter-row th  {
     position: sticky;
     top: 38px; /* height of first header row */
     background: #FFFFFF;
@@ -459,6 +459,30 @@ function updateRateCutTotals() {
 				<!--<th>Save</th>-->
 				<th>Remove</th>
 			    </tr>
+			    <tr class="vendor-filter-row">
+				<th></th>
+				<th></th>
+				<th><input type="text" class="form-control form-control-sm vendor-filter-main" data-col="2" placeholder="Vendor"></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<!--<th></th>-->
+				<th></th>
+			    </tr>
 			</thead>
 
 			<tbody>
@@ -689,6 +713,170 @@ step="0.01">
 		`;
 
 		$('#vendor-table').html(html);
+		function filterRateCutVendorTable() {
+
+    const filterValue = $('#vendor-table .vendor-filter-main')
+        .val()
+        .toLowerCase()
+        .trim();
+
+    // Filter table rows
+    $('#vendor-table .rate-cut-table tbody tr').each(function () {
+
+        const row = $(this);
+
+        // Do not filter TOTAL row
+        if (row.find('td').first().text().trim() === '') {
+            return;
+        }
+
+        // Vendor is column index 2
+        const vendorText = row
+            .find('td')
+            .eq(2)
+            .text()
+            .toLowerCase()
+            .trim();
+
+        const show = !filterValue || vendorText.includes(filterValue);
+
+        row.toggle(show);
+    });
+
+    // Update totals using only visible rows
+    updateFilteredRateCutTotals();
+}
+function updateFilteredRateCutTotals() {
+
+    let totalKetanFineWt = 0;
+    let totalSelectedFineWt = 0;
+    let totalFineWtDiff = 0;
+    let totalNetWt = 0;
+    let totalHM = 0;
+    let totalOC = 0;
+    let totalSalesWastageWt = 0;
+    let totalReturnFineWt = 0;
+
+    let totalBillValueWithoutGst = 0;
+    let totalBillValue = 0;
+    let totalBillAmt = 0;
+    let totalBillAmtWithoutGst = 0;
+    let totalDiff = 0;
+
+    $('#vendor-table .rate-cut-table tbody tr:visible').each(function () {
+
+        const row = $(this);
+        const td = row.find('td');
+
+        // Skip TOTAL row
+        if (td.length < 20) {
+            return;
+        }
+
+        // Fine Wt - Ketan Sir
+        totalKetanFineWt +=
+            parseFloat(td.eq(3).find('input').val()) || 0;
+
+        // Fine Wt Selected
+        totalSelectedFineWt +=
+            parseFloat(td.eq(4).text()) || 0;
+
+        // Fine Wt Diff
+        totalFineWtDiff +=
+            parseFloat(td.eq(5).text()) || 0;
+
+        // Net Wt
+        totalNetWt +=
+            parseFloat(td.eq(6).find('input').val()) || 0;
+
+        // HM
+        totalHM +=
+            parseFloat(td.eq(7).text()) || 0;
+
+        // OC
+        totalOC +=
+            parseFloat(td.eq(8).text()) || 0;
+
+        // Sales Wastage Wt
+        totalSalesWastageWt +=
+            parseFloat(td.eq(9).text()) || 0;
+
+        // Return Fine Wt
+        totalReturnFineWt +=
+            parseFloat(td.eq(10).text()) || 0;
+
+        // Bill Value Without GST
+        totalBillValueWithoutGst +=
+            parseFloat(td.eq(14).find('input').val()) || 0;
+
+        // With GST Value
+        totalBillValue +=
+            parseFloat(td.eq(15).find('input').val()) || 0;
+
+        // Bill Amt
+        totalBillAmt +=
+            parseFloat(td.eq(16).find('input').val()) || 0;
+
+        // Bill Amt Without GST
+        totalBillAmtWithoutGst +=
+            parseFloat(td.eq(17).find('input').val()) || 0;
+
+        // Diff
+        totalDiff +=
+            parseFloat(td.eq(18).find('input').val()) || 0;
+    });
+
+    // Update TOTAL row
+    $('#total-ketan-finewt')
+        .text(totalKetanFineWt.toFixed(3));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(4)
+        .text(totalSelectedFineWt.toFixed(3));
+
+    $('#total-finewt-diff')
+        .text(totalFineWtDiff.toFixed(3));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(6)
+        .text(totalNetWt.toFixed(3));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(7)
+        .text(totalHM.toFixed(3));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(8)
+        .text(totalOC.toFixed(2));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(9)
+        .text(totalSalesWastageWt.toFixed(2));
+
+    $('#vendor-table .rate-cut-table tbody tr:last-child td')
+        .eq(10)
+        .text(totalReturnFineWt.toFixed(3));
+
+    $('#total-bill-value-without-gst')
+        .text(totalBillValueWithoutGst.toFixed());
+
+    $('#total-bill-value')
+        .text(totalBillValue.toFixed());
+
+    $('#total-bill-amt')
+        .text(totalBillAmt.toFixed());
+
+    $('#total-bill-amt-without-gst')
+        .text(totalBillAmtWithoutGst.toFixed());
+
+    $('#total-diff-bill')
+        .text(totalDiff.toFixed());
+}
+$('#vendor-table').on(
+    'keyup',
+    '.vendor-filter-main',
+    filterRateCutVendorTable
+);
 		
 		$("#vendor-table .rate-cut-by, #vendor-table .rate-cut-type").on("change", function () {
 
@@ -1018,6 +1206,10 @@ $(this)
 	}
 
 	$('#rate-cut-date-filter').val(frappe.datetime.get_today());
+        let today = frappe.datetime.get_today();
+
+$('#rate-cut-from-date').val(today);
+$('#rate-cut-to-date').val(today);
 
 	let rateCutByOptions = [];
 
