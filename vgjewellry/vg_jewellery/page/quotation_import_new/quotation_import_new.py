@@ -28,6 +28,7 @@ from openpyxl_image_loader import SheetImageLoader
 
 ALLOWED_ITEMS = {
     "Bangles",
+    "Bracelet",
     "Button",
     "Cufflink",
     "Pendant",
