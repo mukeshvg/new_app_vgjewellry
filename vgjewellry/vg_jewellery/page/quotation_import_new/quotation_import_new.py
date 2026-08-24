@@ -26,6 +26,22 @@ from openpyxl import load_workbook
 from openpyxl_image_loader import SheetImageLoader
 
 
+ALLOWED_ITEMS = {
+    "Bangles",
+    "Button",
+    "Cufflink",
+    "Pendant",
+    "Polki",
+    "Ring",
+    "Set",
+    "Tops",
+    "Chain",
+    "Bali",
+    "Tanmania",
+    "Mangalsutra",
+}
+
+
 def clean(value):
     """Convert NaN to None"""
     if pd.isna(value):
@@ -104,6 +120,70 @@ def upload_excel():
         if col not in df.columns:
             frappe.throw(f"Missing column : {col}")
     
+    # --------------------------------------------------------
+    # Load workbook for images
+    # --------------------------------------------------------
+
+    wb = load_workbook(temp_file)
+
+    ws = wb.active
+
+    image_loader = SheetImageLoader(ws)
+    
+    # --------------------------------------------------------
+    # Validate Item values BEFORE importing anything
+    # --------------------------------------------------------
+    # Only parent rows are validated. Child diamond/stone rows
+    # normally have a blank Item value.
+    
+    invalid_items = []
+
+    for index, row in df.iterrows():
+        excel_row = index + 2
+
+        is_parent = any([
+            clean(row.get("Vendor Design Number")),
+            clean(row.get("Item")),
+            clean(row.get("Metal")),
+            clean(row.get("Gr Wt")),
+            clean(row.get("Net Wt")),
+            clean(row.get("Gold Value"))
+        ])
+
+        if is_parent:
+            item_value = clean(row.get("Item"))
+
+            if item_value is None or str(item_value).strip().capitalize() not in ALLOWED_ITEMS:
+                display_value = (
+                    "Blank"
+                    if item_value is None or str(item_value).strip() == ""
+                    else str(item_value).strip()
+                )
+                invalid_items.append(
+                    f"<b>Row {excel_row}</b> : Item = "
+                    f"<b>{frappe.utils.escape_html(display_value)}</b>"
+                )
+            image_cell = f"C{excel_row}"
+
+
+            if not image_loader.image_in(image_cell):
+
+                invalid_items.append(
+
+                    f"Row {excel_row}: "
+                    f"<b>Image is blank/missing or not in image cell</b>"
+
+                )    
+
+    if invalid_items:
+        frappe.throw(
+            "<b>Invalid Item found. Nothing was uploaded.</b><br><br>"
+            "Allowed Item values are:<br>"
+            f"{', '.join(sorted(ALLOWED_ITEMS))}<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_items)
+        )
+
     actual_columns = list(df.columns)
     missing_columns = []
     extra_columns = []
@@ -126,15 +206,6 @@ def upload_excel():
         f"{', '.join(extra_columns) if extra_columns else 'None'}"
     )    
 
-    # --------------------------------------------------------
-    # Load workbook for images
-    # --------------------------------------------------------
-
-    wb = load_workbook(temp_file)
-
-    ws = wb.active
-
-    image_loader = SheetImageLoader(ws)
 
     # --------------------------------------------------------
     # Variables
