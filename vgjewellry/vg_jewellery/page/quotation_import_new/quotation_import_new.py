@@ -41,6 +41,16 @@ ALLOWED_ITEMS = {
     "Mangalsutra",
 }
 
+ALLOWED_DIAMOND_SHAPES ={
+    "Round","Radiant","Oval","Pear","Emerald","Rose Cut","Heart","Princess","Baguette","Cushion","Marquise"
+}
+
+ALLOWED_METALS = {
+    "gold 14kt",
+    "gold 18kt",
+    "platinum"
+}
+
 
 def clean(value):
     """Convert NaN to None"""
@@ -182,6 +192,73 @@ def upload_excel():
             f"{', '.join(sorted(ALLOWED_ITEMS))}<br><br>"
             "<b>Invalid rows:</b><br>"
             + "<br>".join(invalid_items)
+        )
+
+    # --------------------------------------------------------
+    # Validate Metal values BEFORE importing anything
+    # --------------------------------------------------------
+
+    invalid_metals = []
+
+    for index, row in df.iterrows():
+
+        excel_row = index + 2
+        metal_value = clean(row.get("Metal"))
+
+        if metal_value is not None and str(metal_value).strip() != "":
+
+            normalized_metal = str(metal_value).strip().lower()
+
+            if normalized_metal not in ALLOWED_METALS:
+
+                invalid_metals.append(
+                    f"<b>Row {excel_row}</b> : Metal = "
+                    f"<b>{frappe.utils.escape_html(str(metal_value).strip())}</b>"
+                )
+
+    if invalid_metals:
+
+        frappe.throw(
+            "<b>Invalid Metal found. Nothing was uploaded.</b><br><br>"
+            "Allowed Metal values are:<br>"
+            f"{', '.join(sorted(ALLOWED_METALS))}<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_metals)
+        )
+
+    # --------------------------------------------------------
+    # Validate Diamond Shape values BEFORE importing anything
+    # --------------------------------------------------------
+
+    invalid_diamond_shapes = []
+
+    for index, row in df.iterrows():
+
+        excel_row = index + 2
+
+        diamond_shape = clean(row.get("Diamond Shape"))
+
+        # Only validate when Diamond Shape has a value
+        if diamond_shape is not None and str(diamond_shape).strip() != "":
+
+            # First letter of each word capitalized
+            normalized_shape = str(diamond_shape).strip().title()
+
+            if normalized_shape not in ALLOWED_DIAMOND_SHAPES:
+
+                invalid_diamond_shapes.append(
+                    f"<b>Row {excel_row}</b> : Diamond Shape = "
+                    f"<b>{frappe.utils.escape_html(str(diamond_shape).strip())}</b>"
+                )
+
+    if invalid_diamond_shapes:
+
+        frappe.throw(
+            "<b>Invalid Diamond Shape found. Nothing was uploaded.</b><br><br>"
+            "Allowed Diamond Shape values are:<br>"
+            f"{', '.join(sorted(ALLOWED_DIAMOND_SHAPES))}<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_diamond_shapes)
         )
 
     actual_columns = list(df.columns)
