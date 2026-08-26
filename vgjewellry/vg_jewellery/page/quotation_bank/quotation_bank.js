@@ -715,6 +715,24 @@ bind_events() {
     this.load_data(true);
 
 });
+	// ============================================================
+// IMAGE ZOOM + PAN VIEWER
+// ============================================================
+
+$(document).on(
+    "click",
+    ".preview-image, .dialog-main-image, .stock-image-card img",
+    function (e) {
+
+        e.stopPropagation();
+
+        const imageSrc = $(this).attr("src");
+
+        if (!imageSrc) return;
+
+        me.open_image_viewer(imageSrc);
+    }
+);
     // Search
 
     this.search_box.$input.on("keyup", frappe.utils.debounce(function () {
@@ -770,8 +788,15 @@ $(document).on("click",".preview-btn",function(e){
 
 });
 
-$(document).on("click",".qb-card",function(){
+$(document).on("click",".qb-card",function(e){
 
+	 if (
+        $(e.target).closest(
+            ".preview-image, .dialog-main-image, .stock-image-card img"
+        ).length
+    ) {
+        return;
+    }
     me.toggle_selection(
 
         $(this).data("name")
@@ -926,6 +951,308 @@ show_stock_sale_modal(title, data){
 
     dialog.fields_dict.grid.$wrapper.html(html);
 
+}
+// ============================================================
+// IMAGE VIEWER WITH ZOOM + PAN
+// ============================================================
+
+open_image_viewer(imageSrc) {
+
+    // Remove existing viewer
+    $("#qb-image-viewer").remove();
+
+    let zoom = 1;
+    let posX = 0;
+    let posY = 0;
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const viewer = $(`
+        <div id="qb-image-viewer">
+
+            <div class="qb-image-viewer-toolbar">
+
+                <button type="button" class="qb-img-minus">
+                    <i class="fa fa-minus"></i>
+                </button>
+
+                <span class="qb-img-zoom-value">
+                    100%
+                </span>
+
+                <button type="button" class="qb-img-plus">
+                    <i class="fa fa-plus"></i>
+                </button>
+
+                <button type="button" class="qb-img-reset">
+                    <i class="fa fa-refresh"></i>
+                    Reset
+                </button>
+
+                <button type="button" class="qb-img-close">
+                    <i class="fa fa-times"></i>
+                </button>
+
+            </div>
+
+            <div class="qb-image-viewer-container">
+
+                <img
+                    class="qb-image-viewer-image"
+                    src="${imageSrc}"
+                    draggable="false"
+                >
+
+            </div>
+
+        </div>
+    `);
+
+    $("body").append(viewer);
+
+    const image = viewer.find(".qb-image-viewer-image");
+    const container = viewer.find(".qb-image-viewer-container");
+
+    // --------------------------------------------------------
+    // CSS
+    // --------------------------------------------------------
+
+    viewer.css({
+        position: "fixed",
+        top: "0",
+        left: "0",
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.92)",
+        zIndex: "100000",
+        display: "flex",
+        flexDirection: "column"
+    });
+
+    viewer.find(".qb-image-viewer-toolbar").css({
+        height: "55px",
+        minHeight: "55px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "8px",
+        background: "rgba(0,0,0,0.75)",
+        zIndex: "2"
+    });
+
+    viewer.find(".qb-image-viewer-toolbar button").css({
+        border: "1px solid rgba(255,255,255,0.4)",
+        background: "rgba(255,255,255,0.12)",
+        color: "#fff",
+        padding: "7px 12px",
+        borderRadius: "4px",
+        cursor: "pointer"
+    });
+
+    viewer.find(".qb-img-close").css({
+        marginLeft: "20px"
+    });
+
+    viewer.find(".qb-img-zoom-value").css({
+        color: "#fff",
+        minWidth: "60px",
+        textAlign: "center",
+        fontWeight: "bold"
+    });
+
+    container.css({
+        flex: "1",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "grab"
+    });
+
+    image.css({
+        maxWidth: "90%",
+        maxHeight: "90%",
+        userSelect: "none",
+        pointerEvents: "auto",
+        transformOrigin: "center center",
+        transition: "transform 0.08s linear"
+    });
+
+    // --------------------------------------------------------
+    // UPDATE IMAGE
+    // --------------------------------------------------------
+
+    const updateImage = () => {
+
+        image.css(
+            "transform",
+            `translate(${posX}px, ${posY}px) scale(${zoom})`
+        );
+
+        viewer.find(".qb-img-zoom-value")
+            .text(`${Math.round(zoom * 100)}%`);
+    };
+
+    // --------------------------------------------------------
+    // ZOOM
+    // --------------------------------------------------------
+
+    const setZoom = (newZoom) => {
+
+        zoom = Math.max(
+            0.5,
+            Math.min(5, newZoom)
+        );
+
+        updateImage();
+    };
+
+    // --------------------------------------------------------
+    // PLUS
+    // --------------------------------------------------------
+
+    viewer.on("click", ".qb-img-plus", function (e) {
+
+        e.stopPropagation();
+
+        setZoom(zoom + 0.25);
+    });
+
+    // --------------------------------------------------------
+    // MINUS
+    // --------------------------------------------------------
+
+    viewer.on("click", ".qb-img-minus", function (e) {
+
+        e.stopPropagation();
+
+        setZoom(zoom - 0.25);
+    });
+
+    // --------------------------------------------------------
+    // RESET
+    // --------------------------------------------------------
+
+    viewer.on("click", ".qb-img-reset", function (e) {
+
+        e.stopPropagation();
+
+        zoom = 1;
+        posX = 0;
+        posY = 0;
+
+        updateImage();
+    });
+
+    // --------------------------------------------------------
+    // MOUSE WHEEL ZOOM
+    // --------------------------------------------------------
+
+    container.on("wheel", function (e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.originalEvent.deltaY < 0) {
+            setZoom(zoom + 0.15);
+        } else {
+            setZoom(zoom - 0.15);
+        }
+    });
+
+    // --------------------------------------------------------
+    // MOUSE DOWN - START PAN
+    // --------------------------------------------------------
+
+    container.on("mousedown", function (e) {
+
+        if (e.which !== 1) return;
+
+        dragging = true;
+
+        startX = e.clientX - posX;
+        startY = e.clientY - posY;
+
+        container.css("cursor", "grabbing");
+
+        e.preventDefault();
+    });
+
+    // --------------------------------------------------------
+    // MOUSE MOVE - PAN
+    // --------------------------------------------------------
+
+    container.on("mousemove", function (e) {
+
+        if (!dragging) return;
+
+        posX = e.clientX - startX;
+        posY = e.clientY - startY;
+
+        updateImage();
+
+        e.preventDefault();
+    });
+
+    // --------------------------------------------------------
+    // MOUSE UP
+    // --------------------------------------------------------
+
+    $(document).on("mouseup.qbImageViewer", function () {
+
+        dragging = false;
+
+        container.css("cursor", "grab");
+    });
+
+    // --------------------------------------------------------
+    // CLOSE
+    // --------------------------------------------------------
+
+    const closeViewer = () => {
+
+        $(document).off("mouseup.qbImageViewer");
+
+        viewer.remove();
+    };
+
+    viewer.on("click", ".qb-img-close", function (e) {
+
+        e.stopPropagation();
+
+        closeViewer();
+    });
+
+    // Click dark background to close
+    container.on("click", function (e) {
+
+        if (e.target === container[0]) {
+            closeViewer();
+        }
+    });
+
+    // --------------------------------------------------------
+    // ESC KEY
+    // --------------------------------------------------------
+
+    $(document).on("keydown.qbImageViewer", function (e) {
+
+        if (e.key === "Escape") {
+
+            $(document).off("keydown.qbImageViewer");
+
+            closeViewer();
+        }
+    });
+
+    // --------------------------------------------------------
+    // INITIAL
+    // --------------------------------------------------------
+
+    updateImage();
 }
     refresh() {
 	    this.load_data(true);
