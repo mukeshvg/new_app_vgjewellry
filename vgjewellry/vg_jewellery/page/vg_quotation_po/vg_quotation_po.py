@@ -1075,6 +1075,7 @@ def send_pending_po_emails():
             #
             # PO.vendor = supplier_code
             # -------------------------------------------------
+            
             vendor_email = frappe.db.get_value(
                 "Ornate_Supplier_Master",
                 {
@@ -1082,8 +1083,16 @@ def send_pending_po_emails():
                 },
                 "po_contact_person_email"
             )
-            
             vendor_email ="miteshthakur87@gmail.com"
+            
+            if not vendor_email:
+                vendor_email = frappe.db.get_value(
+                    "Visitor Vendor",
+                    {
+                        "vendor_code": po_doc.vendor
+                    },
+                    "vendor_email"
+                )
 
             if not vendor_email:
 
