@@ -532,6 +532,8 @@ LIMIT %(start)s, %(page_length)s
 
     item_mapping = {
         "Bangles": 86,
+        "Bracelet": 88,
+        "Nosepin": 89,
         "Button": 108,
         "Cufflink": 107,
         "Pendant": 90,
