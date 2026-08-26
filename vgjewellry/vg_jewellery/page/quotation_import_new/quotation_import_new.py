@@ -44,7 +44,7 @@ ALLOWED_ITEMS = {
 }
 
 ALLOWED_DIAMOND_SHAPES ={
-    "Round","Radiant","Oval","Pear","Emerald","Rose Cut","Heart","Princess","Baguette","Cushion","Marquise"
+    "Round","Radiant","Oval","Pear","Emerald","Rose Cut","Heart","Princess","Baguette","Cushion","Marquise","Pie Cut"
 }
 
 ALLOWED_METALS = {
@@ -283,7 +283,133 @@ def upload_excel():
 
         f"<b>Extra columns:</b><br>"
         f"{', '.join(extra_columns) if extra_columns else 'None'}"
-    )    
+    )
+
+
+    # --------------------------------------------------------
+    # Validate Vendor Code
+    #
+    # Vendor Code can appear in only ONE Excel cell.
+    # It will be inherited by following rows until another
+    # Vendor Code is found.
+    #
+    # Valid source:
+    #   1. Ornate_Supplier_Master.supplier_code
+    #   2. Visitor Vendor.vendor_code
+    # --------------------------------------------------------
+
+    invalid_vendor_codes = []
+
+    # Get Supplier Master codes
+    supplier_codes = frappe.get_all(
+        "Ornate_Supplier_Master",
+        filters={
+            "supplier_code": ["!=", ""]
+        },
+        pluck="supplier_code"
+    )
+
+    # Get Visitor Vendor codes
+    visitor_vendor_codes = frappe.get_all(
+        "Visitor Vendor",
+        filters={
+            "vendor_code": ["!=", ""]
+        },
+        pluck="vendor_code"
+    )
+
+    # Combine both lists
+    # Case-insensitive
+    allowed_vendor_codes = {
+        str(code).strip().lower()
+        for code in supplier_codes + visitor_vendor_codes
+        if code
+    }
+
+    # Current inherited Vendor Code
+    validation_vendor_code = None
+
+    for index, row in df.iterrows():
+
+        excel_row = index + 2
+
+        # ----------------------------------------------------
+        # Update Vendor Code when Excel has a value
+        # ----------------------------------------------------
+
+        excel_vendor_code = clean(row.get("Vendor Code"))
+
+        if (
+            excel_vendor_code is not None
+            and str(excel_vendor_code).strip() != ""
+        ):
+            validation_vendor_code = str(
+                excel_vendor_code
+            ).strip()
+
+        # ----------------------------------------------------
+        # Detect Parent Row
+        # ----------------------------------------------------
+
+        is_parent = any([
+            clean(row.get("Vendor Design Number")),
+            clean(row.get("Item")),
+            clean(row.get("Metal")),
+            clean(row.get("Gr Wt")),
+            clean(row.get("Net Wt")),
+            clean(row.get("Gold Value"))
+        ])
+
+        if not is_parent:
+            continue
+
+        # ----------------------------------------------------
+        # Vendor Code is required for parent row
+        # ----------------------------------------------------
+
+        if not validation_vendor_code:
+
+            invalid_vendor_codes.append(
+                f"<b>Row {excel_row}</b> : "
+                f"Vendor Code = <b>Blank / Not provided</b>"
+            )
+
+            continue
+
+        # ----------------------------------------------------
+        # Check Vendor Code
+        # ----------------------------------------------------
+
+        normalized_vendor_code = (
+            validation_vendor_code.strip().lower()
+        )
+
+        if normalized_vendor_code not in allowed_vendor_codes:
+
+            invalid_vendor_codes.append(
+                f"<b>Row {excel_row}</b> : "
+                f"Vendor Code = "
+                f"<b>{frappe.utils.escape_html(validation_vendor_code)}</b>"
+            )
+
+
+    # --------------------------------------------------------
+    # Stop entire import if invalid Vendor Code found
+    # --------------------------------------------------------
+
+    if invalid_vendor_codes:
+
+        frappe.throw(
+            "<b>Invalid Vendor Code found. Nothing was uploaded.</b>"
+            "<br><br>"
+            "Vendor Code must exist in either:<br>"
+            "<b>Ornate_Supplier_Master.supplier_code</b>"
+            "<br>OR<br>"
+            "<b>Visitor Vendor.vendor_code</b>"
+            "<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_vendor_codes)
+        )
 
 
     # --------------------------------------------------------
