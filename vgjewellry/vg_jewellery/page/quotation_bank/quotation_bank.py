@@ -1094,7 +1094,8 @@ DIAMOND_STYLE_MAP = {
     "bugget":"BAGUETTE DIAMOND(CT)",
     "radiant" : "RADIANT DIAMOND(CT)",
     "rose cut" : "ROSE CUT DIAMOND(CT)",
-    "cushion" : "CUSHION DIAMOND(CT)"
+    "cushion" : "CUSHION DIAMOND(CT)",
+    "pie cut" : "PIE CUT DIAMOND(CT)"
 }
 
 def get_diamond_rate(
