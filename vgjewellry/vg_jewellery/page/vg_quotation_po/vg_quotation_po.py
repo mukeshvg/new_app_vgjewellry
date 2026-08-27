@@ -572,7 +572,7 @@ th {
                 <img
                     src="{{ row.image }}"
                     class="item-image"
-                />
+                >
 
             {% endif %}
             {{row.vendor_design_number}}
