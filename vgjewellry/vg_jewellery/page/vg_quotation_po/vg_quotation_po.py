@@ -1,5 +1,8 @@
 import frappe
 from frappe.utils.pdf import get_pdf
+from whatsapp.api import send_whatsapp
+from frappe.utils import get_url
+
 
 @frappe.whitelist()
 def get_po_list():
@@ -1048,11 +1051,10 @@ th {
 
 @frappe.whitelist(allow_guest=True)    
 def send_pending_po_emails():
-
     po_list = frappe.get_all(
         "Quotation PO",
         filters={
-            "is_mail_send": 1,
+           # "is_mail_send": 1,
             "status": 1
         },
         fields=[
@@ -1129,6 +1131,13 @@ def send_pending_po_emails():
 
             if not file_url:
                 continue
+            base_url = frappe.utils.get_url()
+            pdf_url = f"{base_url}{file_url}"
+            link = "www.po.com"
+            body_param =["nit",po.name,"8758960079",link ]
+            #a=send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            return send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+
 
             # -------------------------------------------------
             # GET PDF FILE
