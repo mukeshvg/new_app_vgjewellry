@@ -519,11 +519,11 @@ th {
             Image
         </th>
 
-        <th width="18%">
+        <th width="18%" align="left">
             Item
         </th>
 
-        <th width="8%">
+        <th width="8%" align="left">
             Metal
         </th>
 
@@ -531,15 +531,15 @@ th {
             Qty
         </th>
 
-        <th width="10%">
+        <th width="10%" align="right">
             Gross Wt
         </th>
 
-        <th width="10%">
+        <th width="10%" align="right">
             Net Wt
         </th>
 
-        <th width="12%">
+        <th width="12%" align="right">
             Diamond Wt
         </th>
 
@@ -575,6 +575,7 @@ th {
                 >
 
             {% endif %}
+            {{row.vendor_design_number}}
 
         </td>
 
@@ -588,7 +589,7 @@ th {
         </td>
 
 
-        <td align="center">
+        <td align="left">
 
             {{ row.metal or "" }}
 
@@ -604,7 +605,7 @@ th {
 
         <td align="right">
 
-            {{ row.gross_wt or 0 }}
+            {{ row.gr_wt or 0 }}
 
         </td>
 
