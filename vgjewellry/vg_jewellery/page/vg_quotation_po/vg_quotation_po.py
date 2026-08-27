@@ -563,7 +563,7 @@ th {
 <td
     rowspan="2"
     align="center"
-    style="vertical-align:top; text-align:center;"
+    style="vertical-align:middle; text-align:center;"
 >
     {% if row.image %}
         <div style="width:100%; text-align:center;">
