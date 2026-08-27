@@ -572,12 +572,10 @@ th {
                 <img
                     src="{{ row.image }}"
                     class="item-image"
-                >
+                />
 
             {% endif %}
-            <span>
             {{row.vendor_design_number}}
-            </span>
 
         </td>
 
