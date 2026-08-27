@@ -575,9 +575,9 @@ th {
                 >
 
             {% endif %}
-            <br/>
-            <br/>
+            <span>
             {{row.vendor_design_number}}
+            </span>
 
         </td>
 
