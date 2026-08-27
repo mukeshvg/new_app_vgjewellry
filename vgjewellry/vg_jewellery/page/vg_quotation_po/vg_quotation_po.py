@@ -561,23 +561,25 @@ th {
             {{ loop.index }}
         </td>
 
+<td
+    rowspan="2"
+    align="center"
+    style="vertical-align:top;"
+>
+    {% if row.image %}
+        <div style="display:block; text-align:center;">
+            <img
+                src="{{ row.image }}"
+                class="item-image"
+                style="display:block; margin:0 auto 5px auto;"
+            >
+        </div>
+    {% endif %}
 
-        <td
-            rowspan="2"
-            align="center"
-        >
-
-            {% if row.image %}
-
-                <img
-                    src="{{ row.image }}"
-                    class="item-image"
-                >
-
-            {% endif %}
-            {{row.vendor_design_number}}
-
-        </td>
+    <div style="display:block; text-align:center; font-weight:bold;">
+        {{ row.vendor_design_number or "" }}
+    </div>
+</td>
 
 
         <td>
