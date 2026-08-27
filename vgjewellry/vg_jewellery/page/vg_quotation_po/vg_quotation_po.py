@@ -560,28 +560,35 @@ th {
         >
             {{ loop.index }}
         </td>
-
 <td
     rowspan="2"
     align="center"
-    style="vertical-align:top;"
+    style="vertical-align:top; text-align:center;"
 >
     {% if row.image %}
-        <div style="display:block; text-align:center;">
+        <div style="width:100%; text-align:center;">
             <img
                 src="{{ row.image }}"
                 class="item-image"
-                style="display:block; margin:0 auto 5px auto;"
+                style="
+                    display:block;
+                    width:75px;
+                    height:75px;
+                    object-fit:contain;
+                    margin:0 auto 5px auto;
+                "
             >
         </div>
     {% endif %}
 
-    <div style="display:block; text-align:center; font-weight:bold;">
+    <div style="
+        width:100%;
+        text-align:center;
+        font-weight:bold;
+    ">
         {{ row.vendor_design_number or "" }}
     </div>
 </td>
-
-
         <td>
 
             <b>
