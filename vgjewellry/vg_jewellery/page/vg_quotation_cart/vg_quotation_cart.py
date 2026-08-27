@@ -278,15 +278,55 @@ def get_vendor_cart(vendor):
 @frappe.whitelist()
 def remove_cart_item(name):
 
-    if frappe.db.exists("Quotation Cart", name):
+    # ---------------------------------------------------------
+    # CHECK CART ITEM
+    # ---------------------------------------------------------
+
+    if not frappe.db.exists("Quotation Cart", name):
+        frappe.throw(_("Quotation Cart not found."))
+
+
+    # ---------------------------------------------------------
+    # DELETE LINKED QUOTATION CART ITEM FIRST
+    # ---------------------------------------------------------
+
+    linked_items = frappe.get_all(
+        "Quotation Cart Item",
+        filters={
+            "quotation_number": name
+        },
+        fields=["name"]
+    )
+
+
+    for item in linked_items:
 
         frappe.delete_doc(
-            "Quotation Cart",
-            name,
+            "Quotation Cart Item",
+            item.name,
             ignore_permissions=True
         )
 
-    return True  
+
+    # ---------------------------------------------------------
+    # DELETE QUOTATION CART
+    # ---------------------------------------------------------
+
+    frappe.delete_doc(
+        "Quotation Cart",
+        name,
+        ignore_permissions=True
+    )
+
+
+    # ---------------------------------------------------------
+    # COMMIT
+    # ---------------------------------------------------------
+
+    frappe.db.commit()
+
+
+    return True
 
 
 @frappe.whitelist()
