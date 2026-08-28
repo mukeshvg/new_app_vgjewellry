@@ -1025,9 +1025,12 @@ th {
     # ---------------------------------------------------------
     # SAVE PDF
     # ---------------------------------------------------------
+
+    safe_po_no = str(po_no).replace("/", "-")
+
     file_doc = frappe.get_doc({
         "doctype": "File",
-        "file_name": f"{po_no}.pdf",
+        "file_name": f"{safe_po_no}.pdf",
         "attached_to_doctype": "Quotation PO",
         "attached_to_name": po_no,
         "is_private": 0,
