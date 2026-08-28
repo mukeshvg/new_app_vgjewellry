@@ -262,6 +262,55 @@ def upload_excel():
             "<b>Invalid rows:</b><br>"
             + "<br>".join(invalid_diamond_shapes)
         )
+    
+    invalid_diamond_pcs = []
+
+    for index, row in df.iterrows():
+
+        excel_row = index + 2
+
+        diamond_pcs = clean(row.get("Diamond Pcs"))
+
+        # Diamond Pcs is mandatory and must be 1 or greater
+        if (
+            diamond_pcs is None
+            or str(diamond_pcs).strip() == ""
+        ):
+            invalid_diamond_pcs.append(
+                f"<b>Row {excel_row}</b> : Diamond Pcs is "
+                f"<b>blank / null</b>"
+            )
+            continue
+
+        try:
+            diamond_pcs_value = float(diamond_pcs)
+
+            if diamond_pcs_value < 1:
+                invalid_diamond_pcs.append(
+                    f"<b>Row {excel_row}</b> : Diamond Pcs = "
+                    f"<b>{frappe.utils.escape_html(str(diamond_pcs).strip())}</b> "
+                    f"(must be 1 or greater)"
+                )
+
+        except (ValueError, TypeError):
+
+            invalid_diamond_pcs.append(
+                f"<b>Row {excel_row}</b> : Diamond Pcs = "
+                f"<b>{frappe.utils.escape_html(str(diamond_pcs).strip())}</b> "
+                f"(must be a valid number)"
+            )
+
+
+    if invalid_diamond_pcs:
+
+        frappe.throw(
+            "<b>Invalid Diamond Pcs found. Nothing was uploaded.</b>"
+            "<br><br>"
+            "<b>Diamond Pcs must be 1 or greater.</b>"
+            "<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_diamond_pcs)
+        )
 
     actual_columns = list(df.columns)
     missing_columns = []
