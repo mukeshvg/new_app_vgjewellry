@@ -354,7 +354,7 @@ def generate_po(vendor, vendor_delivery_date=None, remarks=None):
             qc.name AS cart_name,
             qc.quotation_id,
             qc.vendor,
-
+            qc.vendor_code,
             qci.branch,
             qci.remark AS cart_remark
 
@@ -385,9 +385,10 @@ def generate_po(vendor, vendor_delivery_date=None, remarks=None):
     # ---------------------------------------------------------
 
     branch_groups = {}
+    vendor_code =""
 
     for row in cart_items:
-
+        vendor_code = row.vendor_code
         # Branch ID
         branch = row.branch or "Not Assigned"
 
@@ -417,6 +418,7 @@ def generate_po(vendor, vendor_delivery_date=None, remarks=None):
         po = frappe.new_doc("Quotation PO")
 
         po.vendor = vendor
+        po.vendor_code = vendor_code
 
         po.branch = (
             None
@@ -548,84 +550,5 @@ def generate_po(vendor, vendor_delivery_date=None, remarks=None):
                 len(created_pos)
             )
 
-    }
-
-@frappe.whitelist()
-def generate_po_old(vendor, vendor_delivery_date=None, remarks=None):
-
-    if isinstance(remarks, str):
-        remarks = json.loads(remarks)
-
-    if not remarks:
-        remarks = {}
-
-    cart_items = frappe.get_all(
-        "Quotation Cart",
-        filters={
-            "vendor": vendor,
-            "status": 1
-        },
-        fields=[
-            "name",
-            "quotation_id",
-            "vendor"
-            #"vendor_delivery_date",
-            #"jewellery_type"
-        ],
-        order_by="creation asc"
-    )
-
-    if not cart_items:
-        frappe.throw(_("No products found in cart."))
-
-    # Create PO Header
-    po = frappe.new_doc("Quotation PO")
-    po.vendor = vendor
-    po.vendor_delivery_date = (
-        vendor_delivery_date
-    )
-    po.jewellery_type = (
-        "Diamond"
-    )
-    po.status = 1
-    po.insert(ignore_permissions=True)
-
-    # Create PO Items
-    for row in cart_items:
-
-        po_item = frappe.new_doc("Quotation PO Item")
-        po_item.po_no = po.name
-
-        # Link to Quotation Upload
-        po_item.item = row.quotation_id
-
-        # If these fields exist in Quotation PO Item
-        po_item.vendor_delivery_date = row.vendor_delivery_date
-        po_item.jewellery_type = row.jewellery_type
-
-        # Remark from Cart Page
-        po_item.remark = remarks.get(row.name, "")
-
-        po_item.insert(ignore_permissions=True)
-
-        # Update Cart
-        frappe.db.set_value(
-            "Quotation Cart",
-            row.name,
-            {
-                "status": 2
-            },
-            update_modified=False
-        )
-
-    frappe.db.commit()
-
-    return {
-        "success": True,
-        "po_no": po.name,
-        "vendor": po.vendor,
-        "vendor_delivery_date": po.vendor_delivery_date,
-        "jewellery_type": po.jewellery_type,
-        "message": _("Quotation PO Created Successfully.")
     }
 

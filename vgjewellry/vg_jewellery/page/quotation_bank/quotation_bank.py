@@ -802,7 +802,7 @@ def add_to_cart(quotation_ids, branch, remark=None):
         quotation = frappe.db.get_value(
             "Quotation Upload New",
             quotation_id,
-            ["name", "vendor"],
+            ["name", "vendor","vendor_code"],
             as_dict=True
         )
 
@@ -834,6 +834,7 @@ def add_to_cart(quotation_ids, branch, remark=None):
                 "doctype": "Quotation Cart",
                 "quotation_id": quotation_id,
                 "vendor": quotation.vendor or "",
+                "vendor_code": quotation.vendor_code or "",
                 "status": 1
             })
 

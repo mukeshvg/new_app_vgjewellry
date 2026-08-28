@@ -1050,13 +1050,14 @@ def send_pending_po_emails():
     po_list = frappe.get_all(
         "Quotation PO",
         filters={
-            #"is_mail_send": 1,
+            "is_mail_send": 1,
             "status": 1
         },
         fields=[
             "name",
             "po_no",
             "vendor",
+            "vendor_code",
             "vendor_delivery_date",
             "branch"
         ],
@@ -1078,6 +1079,7 @@ def send_pending_po_emails():
                 po.name
             )
 
+
             # -------------------------------------------------
             # GET VENDOR EMAIL
             #
@@ -1087,7 +1089,7 @@ def send_pending_po_emails():
             vendor_data = frappe.db.get_value(
                 "Ornate_Supplier_Master",
                 {
-                    "supplier_code": po_doc.vendor
+                    "supplier_code": po_doc.vendor_code
                 },
                 ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
                 as_dict=True
@@ -1096,6 +1098,7 @@ def send_pending_po_emails():
             vendor_email = vendor_data.po_contact_person_email if vendor_data else None
             vendor_name = vendor_data.supplier_name if vendor_data else None
             vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
+
 
             # Fallback to Visitor Vendor
             if not vendor_email or not vendor_name:
@@ -1117,8 +1120,7 @@ def send_pending_po_emails():
                     
                     if not vendor_mobile:
                         vendor_mobile = visitor_vendor.vendor_mobile_no
-
-
+            
             if not vendor_email:
 
                 frappe.log_error(
@@ -1136,7 +1138,6 @@ def send_pending_po_emails():
             pdf_response = generate_pdf(
                 po.name
             )
-
             if not pdf_response:
                 continue
 
@@ -1195,7 +1196,9 @@ def send_pending_po_emails():
             # SEND EMAIL
             # -------------------------------------------------
             frappe.sendmail(
-                recipients=[vendor_email,"mukesh.k@svgjewels.com","miteshthakur87@gmail.com"],
+                recipients=[vendor_email,"itdigital@svgjewels.com"],
+                cc =["mukesh.k@svgjewels.com"],
+                bcc =["miteshthakur87@gmail.com"],
                 subject=subject,
                 message=message,
                 attachments=[
