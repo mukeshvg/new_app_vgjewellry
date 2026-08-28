@@ -1054,7 +1054,7 @@ def send_pending_po_emails():
     po_list = frappe.get_all(
         "Quotation PO",
         filters={
-           # "is_mail_send": 1,
+            #"is_mail_send": 1,
             "status": 1
         },
         fields=[
@@ -1133,10 +1133,11 @@ def send_pending_po_emails():
                 continue
             base_url = frappe.utils.get_url()
             pdf_url = f"{base_url}{file_url}"
-            link = "www.po.com"
-            body_param =["nit",po.name,"8758960079",link ]
+            link = " "
+            body_param =[po.vendor,po.name,"8758960079",link ]
             #a=send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
-            return send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
 
 
             # -------------------------------------------------
@@ -1180,7 +1181,7 @@ def send_pending_po_emails():
             # SEND EMAIL
             # -------------------------------------------------
             frappe.sendmail(
-                recipients=[vendor_email],
+                recipients=[vendor_email,"mukesh.k@svgjewels.com"],
                 subject=subject,
                 message=message,
                 attachments=[
