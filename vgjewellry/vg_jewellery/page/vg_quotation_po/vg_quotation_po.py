@@ -2,6 +2,7 @@ import frappe
 from frappe.utils.pdf import get_pdf
 from whatsapp.api import send_whatsapp
 from frappe.utils import get_url
+import re
 
 
 @frappe.whitelist()
@@ -1080,6 +1081,15 @@ def send_pending_po_emails():
             )
 
 
+
+            vendor_code = po_doc.vendor_code
+
+            if vendor_code:
+                vendor_code = re.sub(
+                    r'^(\d{2})-',
+                    r'0\1-',
+                    str(vendor_code)
+                )
             # -------------------------------------------------
             # GET VENDOR EMAIL
             #
@@ -1089,7 +1099,7 @@ def send_pending_po_emails():
             vendor_data = frappe.db.get_value(
                 "Ornate_Supplier_Master",
                 {
-                    "supplier_code": po_doc.vendor_code
+                    "supplier_code": vendor_code
                 },
                 ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
                 as_dict=True
@@ -1105,7 +1115,7 @@ def send_pending_po_emails():
                 visitor_vendor = frappe.db.get_value(
                     "Visitor Vendor",
                     {
-                        "vendor_code": po_doc.vendor
+                        "vendor_code": po_doc.vendor_code
                     },
                     ["vendor_email", "vendor_name","vendor_mobile_no"],
                     as_dict=True
