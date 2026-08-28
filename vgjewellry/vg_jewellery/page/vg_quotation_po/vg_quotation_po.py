@@ -1207,8 +1207,7 @@ def send_pending_po_emails():
             # -------------------------------------------------
             frappe.sendmail(
                 recipients=[vendor_email,"itdigital@svgjewels.com"],
-                cc =["mukesh.k@svgjewels.com"],
-                bcc =["miteshthakur87@gmail.com"],
+                cc =["mukesh.k@svgjewels.com","miteshthakur87@gmail.com"],
                 subject=subject,
                 message=message,
                 attachments=[
