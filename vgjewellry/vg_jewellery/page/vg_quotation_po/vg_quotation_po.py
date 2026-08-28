@@ -482,10 +482,6 @@ th {
 
         <td>
 
-            Branch :
-            <b>
-                {{ branch_name }}
-            </b>
 
         </td>
 
@@ -1087,24 +1083,41 @@ def send_pending_po_emails():
             #
             # PO.vendor = supplier_code
             # -------------------------------------------------
-            
-            vendor_email = frappe.db.get_value(
+
+            vendor_data = frappe.db.get_value(
                 "Ornate_Supplier_Master",
                 {
                     "supplier_code": po_doc.vendor
                 },
-                "po_contact_person_email"
+                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
+                as_dict=True
             )
-            vendor_email ="miteshthakur87@gmail.com"
-            
-            if not vendor_email:
-                vendor_email = frappe.db.get_value(
+
+            vendor_email = vendor_data.po_contact_person_email if vendor_data else None
+            vendor_name = vendor_data.supplier_name if vendor_data else None
+            vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
+
+            # Fallback to Visitor Vendor
+            if not vendor_email or not vendor_name:
+                visitor_vendor = frappe.db.get_value(
                     "Visitor Vendor",
                     {
                         "vendor_code": po_doc.vendor
                     },
-                    "vendor_email"
+                    ["vendor_email", "vendor_name","vendor_mobile_no"],
+                    as_dict=True
                 )
+
+                if visitor_vendor:
+                    if not vendor_email:
+                        vendor_email = visitor_vendor.vendor_email
+
+                    if not vendor_name:
+                        vendor_name = visitor_vendor.vendor_name
+                    
+                    if not vendor_mobile:
+                        vendor_mobile = visitor_vendor.vendor_mobile_no
+
 
             if not vendor_email:
 
@@ -1134,8 +1147,9 @@ def send_pending_po_emails():
             base_url = frappe.utils.get_url()
             pdf_url = f"{base_url}{file_url}"
             link = " "
-            body_param =[po.vendor,po.name,"8758960079",link ]
-            #a=send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            body_param =[po.vendor,po.name,"8238095376",link ]
+            mobile = f"91{vendor_mobile}"
+            send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
 
@@ -1181,7 +1195,7 @@ def send_pending_po_emails():
             # SEND EMAIL
             # -------------------------------------------------
             frappe.sendmail(
-                recipients=[vendor_email,"mukesh.k@svgjewels.com"],
+                recipients=[vendor_email,"mukesh.k@svgjewels.com","miteshthakur87@gmail.com"],
                 subject=subject,
                 message=message,
                 attachments=[
