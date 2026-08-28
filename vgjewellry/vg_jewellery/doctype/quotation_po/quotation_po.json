@@ -8,6 +8,7 @@
   "po_no",
   "jewellery_type",
   "vendor",
+  "vendor_code",
   "vendor_delivery_date",
   "status",
   "is_mail_send",
@@ -51,12 +52,17 @@
    "fieldname": "is_mail_send",
    "fieldtype": "Int",
    "label": "Is mail send"
+  },
+  {
+   "fieldname": "vendor_code",
+   "fieldtype": "Data",
+   "label": "Vendor Code"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-11 17:09:55.821009",
+ "modified": "2026-08-28 14:07:38.092540",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Quotation PO",
