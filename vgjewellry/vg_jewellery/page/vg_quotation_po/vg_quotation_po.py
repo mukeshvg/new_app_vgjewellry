@@ -1161,7 +1161,7 @@ def send_pending_po_emails():
             base_url = frappe.utils.get_url()
             pdf_url = f"{base_url}{file_url}"
             link = " "
-            body_param =[po.vendor,po.name,"8238095376",link ]
+            body_param =[vendor_name,po.name,"8238095376",link ]
             mobile = f"91{vendor_mobile}"
             send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
