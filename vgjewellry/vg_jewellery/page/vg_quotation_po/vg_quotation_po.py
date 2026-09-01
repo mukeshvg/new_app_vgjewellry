@@ -1113,6 +1113,9 @@ def send_pending_po_emails():
             vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
 
 
+            user_name = frappe.get_doc( "User", po_doc.owner )
+
+
             # Fallback to Visitor Vendor
             if not vendor_email or not vendor_name:
                 visitor_vendor = frappe.db.get_value(
@@ -1134,11 +1137,13 @@ def send_pending_po_emails():
                     if not vendor_mobile:
                         vendor_mobile = visitor_vendor.vendor_mobile_no
             
+            is_whatsapp_send= False
             if not vendor_email:
-                vendor_param= [po.name,po.name,po_doc.vendor_code]
-                send_whatsapp("919512152521","po_sending_email_whatsapp_failed",vendor_param)
-                send_whatsapp("919273446652","po_sending_email_whatsapp_failed",vendor_param)
-                send_whatsapp("8238095376","po_sending_email_whatsapp_failed",vendor_param)
+                vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
+                send_whatsapp("919512152521","po_email_failed",vendor_param)
+                send_whatsapp("919273446652","po_email_failed",vendor_param)
+                send_whatsapp("8238095376","po_email_failed",vendor_param)
+                is_whatsapp_send = True
                 frappe.log_error(
                     f"Vendor email not found. "
                     f"Vendor Code: {po_doc.vendor}, "
@@ -1148,10 +1153,11 @@ def send_pending_po_emails():
 
             
             if not vendor_mobile:
-                vendor_param= [po.name,po.name,po_doc.vendor_code]
-                send_whatsapp("919512152521","po_sending_email_whatsapp_failed",vendor_param)
-                send_whatsapp("919273446652","po_sending_email_whatsapp_failed",vendor_param)
-                send_whatsapp("8238095376","po_sending_email_whatsapp_failed",vendor_param)
+                if not is_whatsapp_send:
+                    vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
+                    send_whatsapp("919512152521","po_email_failed",vendor_param)
+                    send_whatsapp("919273446652","po_email_failed",vendor_param)
+                    send_whatsapp("918238095376","po_email_failed",vendor_param)
                 frappe.log_error(
                     f"Vendor mobile not found. "
                     f"Vendor Code: {po_doc.vendor}, "
