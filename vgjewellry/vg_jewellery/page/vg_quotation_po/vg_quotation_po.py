@@ -1142,7 +1142,7 @@ def send_pending_po_emails():
                 vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
                 send_whatsapp("919512152521","po_email_failed",vendor_param)
                 send_whatsapp("919273446652","po_email_failed",vendor_param)
-                send_whatsapp("8238095376","po_email_failed",vendor_param)
+                send_whatsapp("918238095376","po_email_failed",vendor_param)
                 is_whatsapp_send = True
                 frappe.log_error(
                     f"Vendor email not found. "
