@@ -1284,7 +1284,7 @@ def send_pending_whatsapp():
 
             vendor_code = po_doc.vendor_code
 
-            if(vendor_code == "093-DIAMOND"):
+            if(vendor_code == "093-DIAMOND" ):
                 continue
 
             if vendor_code:
@@ -1367,76 +1367,6 @@ def send_pending_whatsapp():
             send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
 
-            return f"{mobile}"
-
-
-            # -------------------------------------------------
-            # GET PDF FILE
-            # -------------------------------------------------
-            file_doc = frappe.get_doc(
-                "File",
-                {
-                    "file_url": file_url
-                }
-            )
-
-            # -------------------------------------------------
-            # EMAIL
-            # -------------------------------------------------
-            subject = f"Purchase Order - {po.name}"
-
-            message = f"""
-                <p>Dear Sir/Madam,</p>
-
-                <p>
-                    Please find attached Purchase Order
-                    <b>{po.name}</b>.
-                </p>
-
-                <p>
-                    Kindly review the Purchase Order and confirm
-                    your acceptance.
-                </p>
-
-                <br>
-
-                <p>
-                    Regards,<br>
-                    Purchase Department<br>
-                    SHAH VIRCHAND GOVANJI JEWELLERS PVT. LTD.
-                </p>
-            """
-
-            # -------------------------------------------------
-            # SEND EMAIL
-            # -------------------------------------------------
-            frappe.sendmail(
-                recipients=[vendor_email,"itdigital@svgjewels.com"],
-                cc =["mukesh.k@svgjewels.com","miteshthakur87@gmail.com","diamond@svgjewels.com"],
-                reply_to="diamond@svgjewels.com",
-                subject=subject,
-                message=message,
-                attachments=[
-                    {
-                        "fname": file_doc.file_name,
-                        "fcontent": file_doc.get_content()
-                    }
-                ],
-                reference_doctype="Quotation PO",
-                reference_name=po.name
-            )
-
-            # -------------------------------------------------
-            # MARK AS MAIL SENT
-            # -------------------------------------------------
-            frappe.db.set_value(
-                "Quotation PO",
-                po.name,
-                "is_mail_send",
-                0
-            )
-
-            frappe.db.commit()
 
         except Exception:
 
