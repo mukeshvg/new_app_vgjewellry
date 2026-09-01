@@ -1245,4 +1245,205 @@ def send_pending_po_emails():
 
             frappe.db.rollback()    
 
+@frappe.whitelist(allow_guest=True)    
+def send_pending_whatsapp():
+    po_list = frappe.get_all(
+        "Quotation PO",
+        filters={
+            "is_mail_send": 0,
+            "status": 1,
+
+        },
+        fields=[
+            "name",
+            "po_no",
+            "vendor",
+            "vendor_code",
+            "vendor_delivery_date",
+            "branch"
+        ],
+        order_by="creation asc"
+    )
+
+    if not po_list:
+        return
+
+    for po in po_list:
+
+        try:
+
+            # -------------------------------------------------
+            # GET FULL PO
+            # -------------------------------------------------
+            po_doc = frappe.get_doc(
+                "Quotation PO",
+                po.name
+            )
+
+
+
+            vendor_code = po_doc.vendor_code
+
+            if(vendor_code == "093-DIAMOND")
+                continue
+
+            if vendor_code:
+                vendor_code = re.sub(
+                    r'^(\d{2})-',
+                    r'0\1-',
+                    str(vendor_code)
+                )
+            # -------------------------------------------------
+            # GET VENDOR EMAIL
+            #
+            # PO.vendor = supplier_code
+            # -------------------------------------------------
+
+            vendor_data = frappe.db.get_value(
+                "Ornate_Supplier_Master",
+                {
+                    "supplier_code": vendor_code
+                },
+                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
+                as_dict=True
+            )
+
+            vendor_email = vendor_data.po_contact_person_email if vendor_data else None
+            vendor_name = vendor_data.supplier_name if vendor_data else None
+            vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
+
+
+            # Fallback to Visitor Vendor
+            if not vendor_email or not vendor_name:
+                visitor_vendor = frappe.db.get_value(
+                    "Visitor Vendor",
+                    {
+                        "vendor_code": po_doc.vendor_code
+                    },
+                    ["vendor_email", "vendor_name","vendor_mobile_no"],
+                    as_dict=True
+                )
+
+                if visitor_vendor:
+                    if not vendor_email:
+                        vendor_email = visitor_vendor.vendor_email
+
+                    if not vendor_name:
+                        vendor_name = visitor_vendor.vendor_name
+                    
+                    if not vendor_mobile:
+                        vendor_mobile = visitor_vendor.vendor_mobile_no
+            
+            if not vendor_email:
+
+                frappe.log_error(
+                    f"Vendor email not found. "
+                    f"Vendor Code: {po_doc.vendor}, "
+                    f"PO: {po.name}",
+                    "PO Email Cron"
+                )
+
+                continue
+
+            # -------------------------------------------------
+            # GENERATE PDF
+            # -------------------------------------------------
+            pdf_response = generate_pdf(
+                po.name
+            )
+            if not pdf_response:
+                continue
+
+            file_url = pdf_response.get("file_url")
+
+            if not file_url:
+                continue
+            base_url = frappe.utils.get_url()
+            pdf_url = f"{base_url}{file_url}"
+            link = " "
+            body_param =[vendor_name,po.name,"8238095376",link ]
+            mobile = f"91{vendor_mobile}"
+            send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+
+            return f"{mobile}"
+
+
+            # -------------------------------------------------
+            # GET PDF FILE
+            # -------------------------------------------------
+            file_doc = frappe.get_doc(
+                "File",
+                {
+                    "file_url": file_url
+                }
+            )
+
+            # -------------------------------------------------
+            # EMAIL
+            # -------------------------------------------------
+            subject = f"Purchase Order - {po.name}"
+
+            message = f"""
+                <p>Dear Sir/Madam,</p>
+
+                <p>
+                    Please find attached Purchase Order
+                    <b>{po.name}</b>.
+                </p>
+
+                <p>
+                    Kindly review the Purchase Order and confirm
+                    your acceptance.
+                </p>
+
+                <br>
+
+                <p>
+                    Regards,<br>
+                    Purchase Department<br>
+                    SHAH VIRCHAND GOVANJI JEWELLERS PVT. LTD.
+                </p>
+            """
+
+            # -------------------------------------------------
+            # SEND EMAIL
+            # -------------------------------------------------
+            frappe.sendmail(
+                recipients=[vendor_email,"itdigital@svgjewels.com"],
+                cc =["mukesh.k@svgjewels.com","miteshthakur87@gmail.com","diamond@svgjewels.com"],
+                reply_to="diamond@svgjewels.com",
+                subject=subject,
+                message=message,
+                attachments=[
+                    {
+                        "fname": file_doc.file_name,
+                        "fcontent": file_doc.get_content()
+                    }
+                ],
+                reference_doctype="Quotation PO",
+                reference_name=po.name
+            )
+
+            # -------------------------------------------------
+            # MARK AS MAIL SENT
+            # -------------------------------------------------
+            frappe.db.set_value(
+                "Quotation PO",
+                po.name,
+                "is_mail_send",
+                0
+            )
+
+            frappe.db.commit()
+
+        except Exception:
+
+            frappe.log_error(
+                frappe.get_traceback(),
+                f"PO Email Failed - {po.name}"
+            )
+
+            frappe.db.rollback()    
 
