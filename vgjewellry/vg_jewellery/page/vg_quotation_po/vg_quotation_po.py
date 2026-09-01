@@ -1284,7 +1284,7 @@ def send_pending_whatsapp():
 
             vendor_code = po_doc.vendor_code
 
-            if(vendor_code == "093-DIAMOND")
+            if(vendor_code == "093-DIAMOND"):
                 continue
 
             if vendor_code:
