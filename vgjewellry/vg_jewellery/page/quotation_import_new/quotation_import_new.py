@@ -334,22 +334,26 @@ def upload_excel():
         f"{', '.join(extra_columns) if extra_columns else 'None'}"
     )
 
-
     # --------------------------------------------------------
-    # Validate Vendor Code
+    # Validate Vendor Code / Vendor
+    #
+    # Vendor Code and Vendor are parent-row values.
+    # Blank child rows inherit the values from the last parent.
     #
     # Vendor Code can appear in only ONE Excel cell.
-    # It will be inherited by following rows until another
-    # Vendor Code is found.
-    #
-    # Valid source:
-    #   1. Ornate_Supplier_Master.supplier_code
-    #   2. Visitor Vendor.vendor_code
+    # Vendor can appear in only ONE Excel cell.
+    # Both are inherited by following rows until another
+    # parent/vendor value is found.
     # --------------------------------------------------------
 
     invalid_vendor_codes = []
+    invalid_vendors = []
 
-    # Get Supplier Master codes
+
+    # --------------------------------------------------------
+    # Get valid Vendor Codes
+    # --------------------------------------------------------
+
     supplier_codes = frappe.get_all(
         "Ornate_Supplier_Master",
         filters={
@@ -358,7 +362,6 @@ def upload_excel():
         pluck="supplier_code"
     )
 
-    # Get Visitor Vendor codes
     visitor_vendor_codes = frappe.get_all(
         "Visitor Vendor",
         filters={
@@ -367,34 +370,28 @@ def upload_excel():
         pluck="vendor_code"
     )
 
-    # Combine both lists
-    # Case-insensitive
     allowed_vendor_codes = {
         str(code).strip().lower()
         for code in supplier_codes + visitor_vendor_codes
         if code
     }
 
-    # Current inherited Vendor Code
+
+    # --------------------------------------------------------
+    # Current inherited values
+    # --------------------------------------------------------
+
     validation_vendor_code = None
+    validation_vendor = None
+
+
+    # --------------------------------------------------------
+    # Validate Excel rows
+    # --------------------------------------------------------
 
     for index, row in df.iterrows():
 
         excel_row = index + 2
-
-        # ----------------------------------------------------
-        # Update Vendor Code when Excel has a value
-        # ----------------------------------------------------
-
-        excel_vendor_code = clean(row.get("Vendor Code"))
-
-        if (
-            excel_vendor_code is not None
-            and str(excel_vendor_code).strip() != ""
-        ):
-            validation_vendor_code = str(
-                excel_vendor_code
-            ).strip()
 
         # ----------------------------------------------------
         # Detect Parent Row
@@ -409,12 +406,57 @@ def upload_excel():
             clean(row.get("Gold Value"))
         ])
 
+        # ----------------------------------------------------
+        # Vendor Code
+        #
+        # Only update inherited Vendor Code when the Excel
+        # cell actually contains a value.
+        # ----------------------------------------------------
+
+        excel_vendor_code = clean(row.get("Vendor Code"))
+
+        if (
+            excel_vendor_code is not None
+            and str(excel_vendor_code).strip() != ""
+        ):
+            if isinstance(excel_vendor_code, float) and excel_vendor_code.is_integer():
+                validation_vendor_code = str(int(excel_vendor_code))
+            else:
+                validation_vendor_code = str(
+                    excel_vendor_code
+                ).strip()
+
+
+        # ----------------------------------------------------
+        # Vendor
+        #
+        # Vendor is also inherited like Vendor Code.
+        # ----------------------------------------------------
+
+        excel_vendor = clean(row.get("Vendor"))
+
+        if (
+            excel_vendor is not None
+            and str(excel_vendor).strip() != ""
+        ):
+            validation_vendor = str(
+                excel_vendor
+            ).strip()
+
+
+        # ----------------------------------------------------
+        # Only validate parent rows
+        #
+        # Diamond / Stone child rows are ignored here.
+        # ----------------------------------------------------
+
         if not is_parent:
             continue
 
-        # ----------------------------------------------------
-        # Vendor Code is required for parent row
-        # ----------------------------------------------------
+
+        # ====================================================
+        # VALIDATE VENDOR CODE
+        # ====================================================
 
         if not validation_vendor_code:
 
@@ -423,27 +465,38 @@ def upload_excel():
                 f"Vendor Code = <b>Blank / Not provided</b>"
             )
 
-            continue
+        else:
 
-        # ----------------------------------------------------
-        # Check Vendor Code
-        # ----------------------------------------------------
+            normalized_vendor_code = (
+                validation_vendor_code.strip().lower()
+            )
 
-        normalized_vendor_code = (
-            validation_vendor_code.strip().lower()
-        )
+            if normalized_vendor_code not in allowed_vendor_codes:
 
-        if normalized_vendor_code not in allowed_vendor_codes:
+                invalid_vendor_codes.append(
+                    f"<b>Row {excel_row}</b> : "
+                    f"Vendor Code = "
+                    f"<b>{frappe.utils.escape_html(validation_vendor_code)}</b>"
+                )
 
-            invalid_vendor_codes.append(
+
+        # ====================================================
+        # VALIDATE VENDOR
+        #
+        # Vendor must be available on parent row/inherited
+        # value.
+        # ====================================================
+
+        if not validation_vendor:
+
+            invalid_vendors.append(
                 f"<b>Row {excel_row}</b> : "
-                f"Vendor Code = "
-                f"<b>{frappe.utils.escape_html(validation_vendor_code)}</b>"
+                f"Vendor = <b>Blank / Not provided</b>"
             )
 
 
     # --------------------------------------------------------
-    # Stop entire import if invalid Vendor Code found
+    # Stop entire import if Vendor Code is invalid
     # --------------------------------------------------------
 
     if invalid_vendor_codes:
@@ -458,6 +511,22 @@ def upload_excel():
             "<br><br>"
             "<b>Invalid rows:</b><br>"
             + "<br>".join(invalid_vendor_codes)
+        )
+
+
+    # --------------------------------------------------------
+    # Stop entire import if Vendor is blank
+    # --------------------------------------------------------
+
+    if invalid_vendors:
+
+        frappe.throw(
+            "<b>Invalid Vendor found. Nothing was uploaded.</b>"
+            "<br><br>"
+            "Vendor must be provided in the parent row."
+            "<br><br>"
+            "<b>Invalid rows:</b><br>"
+            + "<br>".join(invalid_vendors)
         )
 
 
