@@ -1135,7 +1135,10 @@ def send_pending_po_emails():
                         vendor_mobile = visitor_vendor.vendor_mobile_no
             
             if not vendor_email:
-
+                vendor_param= [po.name,po.name,po_doc.vendor_code]
+                send_whatsapp("919512152521","po_sending_email_whatsapp_failed",vendor_param)
+                send_whatsapp("919273446652","po_sending_email_whatsapp_failed",vendor_param)
+                send_whatsapp("8238095376","po_sending_email_whatsapp_failed",vendor_param)
                 frappe.log_error(
                     f"Vendor email not found. "
                     f"Vendor Code: {po_doc.vendor}, "
@@ -1143,8 +1146,21 @@ def send_pending_po_emails():
                     "PO Email Cron"
                 )
 
-                continue
+            
+            if not vendor_mobile:
+                vendor_param= [po.name,po.name,po_doc.vendor_code]
+                send_whatsapp("919512152521","po_sending_email_whatsapp_failed",vendor_param)
+                send_whatsapp("919273446652","po_sending_email_whatsapp_failed",vendor_param)
+                send_whatsapp("8238095376","po_sending_email_whatsapp_failed",vendor_param)
+                frappe.log_error(
+                    f"Vendor mobile not found. "
+                    f"Vendor Code: {po_doc.vendor}, "
+                    f"PO: {po.name}",
+                    "PO Mobile Cron"
+                )
 
+            if not vendor_email or not vendor_mobile:
+                continue
             # -------------------------------------------------
             # GENERATE PDF
             # -------------------------------------------------
