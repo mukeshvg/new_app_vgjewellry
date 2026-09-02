@@ -485,7 +485,8 @@ LEFT JOIN (
         ) AS diamond_shape,
 
         GROUP_CONCAT(
-            DISTINCT diamond_size
+            DISTINCT CAST(ROUND(CAST(diamond_size AS DECIMAL(10,3)), 3) AS DECIMAL(10,3))
+
             ORDER BY CAST(diamond_size AS DECIMAL(10,3))
             SEPARATOR ', '
         ) AS diamond_size,
