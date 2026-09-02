@@ -545,6 +545,7 @@ render_cards() {
     <tr><td>Dia Wt</td><td>${d.total_diamond_wt || "0.000"}</td></tr>
 
     <tr><td>Stone</td><td>${d.total_stone_pcs || 0} (${Number(d.total_stone_wt || 0).toFixed(3)})</td></tr>
+    <tr><td>Last Added in PO</td><td>${d.last_added_in_po || "-"} (${d.last_po_no || "-"})</td></tr>
 
 </table>
         <div class="qb-total">

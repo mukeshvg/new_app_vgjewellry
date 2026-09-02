@@ -12,7 +12,8 @@
   "po_contact_person",
   "po_contact_person_email",
   "po_contact_person_mobile1",
-  "po_contact_person_mobile_2"
+  "po_contact_person_mobile_2",
+  "po_format"
  ],
  "fields": [
   {
@@ -54,12 +55,21 @@
    "fieldname": "po_contact_person_mobile_2",
    "fieldtype": "Data",
    "label": "Po Contact Person Mobile 2"
+  },
+  {
+   "default": "Pdf",
+   "fieldname": "po_format",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "PO Format",
+   "options": "Pdf\nExcel"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-01 17:38:01.921422",
+ "modified": "2026-09-02 12:04:45.759080",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Ornate_Supplier_Master",

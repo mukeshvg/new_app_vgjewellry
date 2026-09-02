@@ -1086,6 +1086,7 @@ def send_pending_po_emails():
 
 
             vendor_code = po_doc.vendor_code
+            po_format ="Pdf"
 
             if vendor_code:
                 vendor_code = re.sub(
@@ -1104,13 +1105,14 @@ def send_pending_po_emails():
                 {
                     "supplier_code": vendor_code
                 },
-                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
+                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1","po_format"],
                 as_dict=True
             )
 
             vendor_email = vendor_data.po_contact_person_email if vendor_data else None
             vendor_name = vendor_data.supplier_name if vendor_data else None
             vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
+            po_format = vendor_data.po_format if vendor_data else "Pdf"
 
 
             user_name = frappe.get_doc( "User", po_doc.owner )
@@ -1140,9 +1142,9 @@ def send_pending_po_emails():
             is_whatsapp_send= False
             if not vendor_email:
                 vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
-                send_whatsapp("919512152521","po_email_failed",vendor_param)
-                send_whatsapp("919273446652","po_email_failed",vendor_param)
-                send_whatsapp("918238095376","po_email_failed",vendor_param)
+                send_whatsapp("919512152521","po_email_failed_vendor",vendor_param)
+                send_whatsapp("919273446652","po_email_failed_vendor",vendor_param)
+                send_whatsapp("918238095376","po_email_failed_vendor",vendor_param)
                 is_whatsapp_send = True
                 frappe.log_error(
                     f"Vendor email not found. "
@@ -1155,9 +1157,9 @@ def send_pending_po_emails():
             if not vendor_mobile:
                 if not is_whatsapp_send:
                     vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
-                    send_whatsapp("919512152521","po_email_failed",vendor_param)
-                    send_whatsapp("919273446652","po_email_failed",vendor_param)
-                    send_whatsapp("918238095376","po_email_failed",vendor_param)
+                    send_whatsapp("919512152521","po_email_failed_vendor",vendor_param)
+                    send_whatsapp("919273446652","po_email_failed_vendor",vendor_param)
+                    send_whatsapp("918238095376","po_email_failed_vendor",vendor_param)
                 frappe.log_error(
                     f"Vendor mobile not found. "
                     f"Vendor Code: {po_doc.vendor}, "
@@ -1170,9 +1172,10 @@ def send_pending_po_emails():
             # -------------------------------------------------
             # GENERATE PDF
             # -------------------------------------------------
-            pdf_response = generate_pdf(
-                po.name
-            )
+            if po_format =="Excel":
+                pdf_response = generate_excel(po.name)
+            else:
+                pdf_response = generate_pdf(po.name)
             if not pdf_response:
                 continue
 
@@ -1186,6 +1189,7 @@ def send_pending_po_emails():
             body_param =[vendor_name,po.name,"8238095376",link ]
             mobile = f"91{vendor_mobile}"
             send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp("918238095376","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
 
@@ -1303,7 +1307,7 @@ def send_pending_whatsapp():
             )
 
 
-
+            po_format = "Pdf" 
             vendor_code = po_doc.vendor_code
 
             if(vendor_code == "093-DIAMOND" ):
@@ -1326,13 +1330,14 @@ def send_pending_whatsapp():
                 {
                     "supplier_code": vendor_code
                 },
-                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1"],
+                ["po_contact_person_email", "supplier_name","po_contact_person_mobile1","po_format"],
                 as_dict=True
             )
 
             vendor_email = vendor_data.po_contact_person_email if vendor_data else None
             vendor_name = vendor_data.supplier_name if vendor_data else None
             vendor_mobile = vendor_data.po_contact_person_mobile1 if vendor_data else None
+            po_format = vendor_data.po_format if vendor_data else "Pdf"
 
 
             # Fallback to Visitor Vendor
@@ -1370,9 +1375,11 @@ def send_pending_whatsapp():
             # -------------------------------------------------
             # GENERATE PDF
             # -------------------------------------------------
-            pdf_response = generate_pdf(
-                po.name
-            )
+
+            if po_format =="Excel":
+                pdf_response = generate_excel(po.name)
+            else:
+                pdf_response = generate_pdf(po.name)
             if not pdf_response:
                 continue
 
@@ -1399,3 +1406,1012 @@ def send_pending_whatsapp():
 
             frappe.db.rollback()    
 
+@frappe.whitelist()
+def generate_excel(po_no):
+
+    import io
+    import os
+    import requests
+
+    from openpyxl import Workbook
+    from openpyxl.styles import (
+        Font,
+        Alignment,
+        Border,
+        Side,
+        PatternFill
+    )
+    from openpyxl.drawing.image import Image as XLImage
+    from openpyxl.utils import get_column_letter
+
+    # ---------------------------------------------------------
+    # GET PO DETAILS
+    # ---------------------------------------------------------
+
+    po_details = get_po_details(po_no)
+
+    po = frappe._dict(po_details["po"])
+    items = po_details["items"]
+    branch_name = po_details.get("branch_name", "")
+
+    # ---------------------------------------------------------
+    # CALCULATE TOTALS
+    # ---------------------------------------------------------
+
+    total_net_wt = 0
+    total_dia_wt = 0
+    total_stone_wt = 0
+    total_qty = 0
+
+    for row in items:
+
+        total_net_wt += float(
+            row.get("net_wt") or 0
+        )
+
+        total_qty += float(
+            row.get("qty") or 1
+        )
+
+        for diamond in row.get("diamond_details", []):
+
+            total_dia_wt += float(
+                diamond.get("diamond_wt") or 0
+            )
+
+        for stone in row.get("stone_details", []):
+
+            total_stone_wt += float(
+                stone.get("stone_wt") or 0
+            )
+
+    # ---------------------------------------------------------
+    # GET USER
+    # ---------------------------------------------------------
+
+    user_name = frappe.get_doc(
+        "User",
+        po.owner
+    )
+
+    # ---------------------------------------------------------
+    # CREATE WORKBOOK
+    # ---------------------------------------------------------
+
+    wb = Workbook()
+
+    ws = wb.active
+    ws.title = "Purchase Order"
+
+    # ---------------------------------------------------------
+    # PAGE SETTINGS
+    # ---------------------------------------------------------
+
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+
+    ws.page_margins.left = 0.25
+    ws.page_margins.right = 0.25
+    ws.page_margins.top = 0.4
+    ws.page_margins.bottom = 0.4
+
+    # ---------------------------------------------------------
+    # COLUMN WIDTHS
+    # ---------------------------------------------------------
+
+    widths = {
+        "A": 6,     # Sr
+        "B": 18,    # Image
+        "C": 22,    # Item
+        "D": 16,    # Metal
+        "E": 8,     # Qty
+        "F": 13,    # Gross
+        "G": 13,    # Net
+        "H": 15,    # Diamond
+    }
+
+    for col, width in widths.items():
+        ws.column_dimensions[col].width = width
+
+    # ---------------------------------------------------------
+    # STYLES
+    # ---------------------------------------------------------
+
+    thin = Side(
+        style="thin",
+        color="000000"
+    )
+
+    border = Border(
+        left=thin,
+        right=thin,
+        top=thin,
+        bottom=thin
+    )
+
+    no_border = Border()
+
+    header_fill = PatternFill(
+        fill_type="solid",
+        fgColor="EFEFEF"
+    )
+
+    detail_fill = PatternFill(
+        fill_type="solid",
+        fgColor="F8F8F8"
+    )
+
+    title_font = Font(
+        name="Arial",
+        size=16,
+        bold=True
+    )
+
+    subtitle_font = Font(
+        name="Arial",
+        size=12,
+        bold=True
+    )
+
+    normal_font = Font(
+        name="Arial",
+        size=10
+    )
+
+    bold_font = Font(
+        name="Arial",
+        size=10,
+        bold=True
+    )
+
+    small_font = Font(
+        name="Arial",
+        size=9
+    )
+
+    # ---------------------------------------------------------
+    # COMPANY HEADER
+    # ---------------------------------------------------------
+
+    ws.merge_cells("A1:H1")
+
+    ws["A1"] = "SHAH VIRCHAND GOVANJI"
+    ws["A1"].font = title_font
+    ws["A1"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    ws.merge_cells("A2:H2")
+
+    ws["A2"] = "JEWELLERS PVT. LTD."
+    ws["A2"].font = subtitle_font
+    ws["A2"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    ws.merge_cells("A3:H3")
+
+    ws["A3"] = "VALSAD - VAPI - SURAT"
+    ws["A3"].font = subtitle_font
+    ws["A3"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    ws.merge_cells("A4:H4")
+
+    ws["A4"] = "Phone Number : 02632-229999"
+    ws["A4"].font = subtitle_font
+    ws["A4"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    ws.merge_cells("A6:H6")
+
+    ws["A6"] = "PURCHASE ORDER"
+    ws["A6"].font = Font(
+        name="Arial",
+        size=15,
+        bold=True,
+        underline="single"
+    )
+
+    ws["A6"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    # ---------------------------------------------------------
+    # PO HEADER
+    # ---------------------------------------------------------
+
+    ws["A8"] = "PO No :"
+    ws["A8"].font = bold_font
+
+    ws["B8"] = po.name
+    ws["B8"].font = bold_font
+
+    ws["E8"] = "Vendor :"
+    ws["E8"].font = bold_font
+
+    ws["H8"] = po.vendor or ""
+    ws["H8"].font = bold_font
+    ws["H8"].alignment = Alignment(
+        horizontal="right"
+    )
+
+    ws["A9"] = "PO Date :"
+    ws["A9"].font = bold_font
+
+    ws["B9"] = (
+        frappe.utils.format_date(
+            po.creation,
+            "dd-MM-yyyy"
+        )
+    )
+
+    ws["E9"] = "Delivery Date :"
+    ws["E9"].font = bold_font
+
+    ws["H9"] = (
+        frappe.utils.format_date(
+            po.vendor_delivery_date,
+            "dd-MM-yyyy"
+        )
+        if po.vendor_delivery_date
+        else ""
+    )
+
+    ws["A10"] = ""
+    ws["E10"] = "Total Qty :"
+    ws["E10"].font = bold_font
+
+    ws["H10"] = total_qty
+    ws["H10"].font = bold_font
+
+    # ---------------------------------------------------------
+    # ITEM TABLE HEADER
+    # ---------------------------------------------------------
+
+    start_row = 12
+
+    headers = [
+        "Sr",
+        "Image",
+        "Item",
+        "Metal",
+        "Qty",
+        "Gross Wt",
+        "Net Wt",
+        "Diamond Wt"
+    ]
+
+    for col_num, value in enumerate(headers, 1):
+
+        cell = ws.cell(
+            row=start_row,
+            column=col_num,
+            value=value
+        )
+
+        cell.font = bold_font
+        cell.fill = header_fill
+        cell.border = border
+        cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+            wrap_text=True
+        )
+
+    ws.row_dimensions[start_row].height = 25
+
+    current_row = start_row + 1
+
+    # ---------------------------------------------------------
+    # ITEMS
+    # ---------------------------------------------------------
+
+    for index, row in enumerate(items, 1):
+
+        item_start_row = current_row
+        item_end_row = current_row + 1
+
+        # -----------------------------------------------------
+        # MAIN ROW
+        # -----------------------------------------------------
+
+        values = [
+            index,
+            "",
+            row.get("item") or row.get("name") or "",
+            row.get("metal") or "",
+            row.get("qty") or 1,
+            float(row.get("gr_wt") or 0),
+            float(row.get("net_wt") or 0),
+            sum(
+                float(
+                    d.get("diamond_wt") or 0
+                )
+                for d in row.get(
+                    "diamond_details",
+                    []
+                )
+            )
+        ]
+
+        for col_num, value in enumerate(values, 1):
+
+            cell = ws.cell(
+                row=item_start_row,
+                column=col_num,
+                value=value
+            )
+
+            cell.font = normal_font
+            cell.border = border
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center",
+                wrap_text=True
+            )
+
+        # Item should be left aligned
+        ws.cell(
+            item_start_row,
+            3
+        ).alignment = Alignment(
+            horizontal="left",
+            vertical="center",
+            wrap_text=True
+        )
+
+        # -----------------------------------------------------
+        # IMAGE
+        # -----------------------------------------------------
+
+        image_path = row.get("image")
+
+        if image_path:
+
+            try:
+
+                image_data = None
+
+                # ---------------------------------------------
+                # LOCAL FILE
+                # ---------------------------------------------
+
+                if image_path.startswith("/files/"):
+
+                    local_path = frappe.get_site_path(
+                        "public",
+                        image_path.lstrip("/")
+                    )
+
+                    if os.path.exists(local_path):
+
+                        with open(
+                            local_path,
+                            "rb"
+                        ) as f:
+
+                            image_data = f.read()
+
+                # ---------------------------------------------
+                # FULL URL
+                # ---------------------------------------------
+
+                elif image_path.startswith(
+                    "http://"
+                ) or image_path.startswith(
+                    "https://"
+                ):
+
+                    response = requests.get(
+                        image_path,
+                        timeout=10
+                    )
+
+                    if response.status_code == 200:
+
+                        image_data = response.content
+
+                # ---------------------------------------------
+                # ADD IMAGE
+                # ---------------------------------------------
+
+                if image_data:
+
+                    image_stream = io.BytesIO(
+                        image_data
+                    )
+
+                    xl_image = XLImage(
+                        image_stream
+                    )
+
+                    xl_image.width = 75
+                    xl_image.height = 75
+
+                    ws.add_image(
+                        xl_image,
+                        f"B{item_start_row}"
+                    )
+
+            except Exception:
+
+                frappe.log_error(
+                    frappe.get_traceback(),
+                    "PO Excel Image Error"
+                )
+
+        # -----------------------------------------------------
+        # VENDOR DESIGN NUMBER
+        # -----------------------------------------------------
+
+        design_no = (
+            row.get("vendor_design_number")
+            or ""
+        )
+
+        ws.cell(
+            item_start_row,
+            2
+        ).value = design_no
+
+        ws.cell(
+            item_start_row,
+            2
+        ).font = bold_font
+
+        ws.cell(
+            item_start_row,
+            2
+        ).alignment = Alignment(
+            horizontal="center",
+            vertical="bottom"
+        )
+
+        # -----------------------------------------------------
+        # SECOND ROW
+        # -----------------------------------------------------
+
+        for col_num in range(1, 9):
+
+            cell = ws.cell(
+                item_end_row,
+                col_num
+            )
+
+            cell.border = border
+            cell.fill = detail_fill
+            cell.font = small_font
+            cell.alignment = Alignment(
+                vertical="top",
+                wrap_text=True
+            )
+
+        # -----------------------------------------------------
+        # DIAMOND DETAILS
+        # -----------------------------------------------------
+
+        detail_row = item_end_row
+
+        diamond_details = row.get(
+            "diamond_details",
+            []
+        )
+
+        if diamond_details:
+
+            ws.cell(
+                detail_row,
+                3,
+                "DIAMOND DETAILS"
+            )
+
+            ws.cell(
+                detail_row,
+                3
+            ).font = bold_font
+
+            diamond_header_row = detail_row + 1
+
+            diamond_headers = [
+                "Diamond",
+                "Shape",
+                "Size",
+                "Pcs",
+                "Weight",
+                "Rate",
+                "Amount"
+            ]
+
+            # Put diamond table in C:H
+            diamond_start_col = 3
+
+            for i, header in enumerate(
+                diamond_headers
+            ):
+
+                col = diamond_start_col + i
+
+                if col > 8:
+                    break
+
+                cell = ws.cell(
+                    diamond_header_row,
+                    col,
+                    header
+                )
+
+                cell.font = bold_font
+                cell.fill = header_fill
+                cell.border = border
+                cell.alignment = Alignment(
+                    horizontal="center",
+                    vertical="center"
+                )
+
+            detail_row = diamond_header_row + 1
+
+            for dia_index, diamond in enumerate(
+                diamond_details,
+                1
+            ):
+
+                diamond_values = [
+                    f"Diamond {dia_index}",
+                    diamond.get(
+                        "diamond_shape"
+                    ) or "",
+                    diamond.get(
+                        "diamond_size"
+                    ) or "",
+                    diamond.get(
+                        "diamond_pcs"
+                    ) or 0,
+                    float(
+                        diamond.get(
+                            "diamond_wt"
+                        ) or 0
+                    ),
+                    float(
+                        diamond.get(
+                            "diamond_rate"
+                        ) or 0
+                    ),
+                    float(
+                        diamond.get(
+                            "diamond_amount"
+                        ) or 0
+                    )
+                ]
+
+                for i, value in enumerate(
+                    diamond_values
+                ):
+
+                    col = diamond_start_col + i
+
+                    if col > 8:
+                        break
+
+                    cell = ws.cell(
+                        detail_row,
+                        col,
+                        value
+                    )
+
+                    cell.border = border
+                    cell.font = small_font
+                    cell.alignment = Alignment(
+                        horizontal="center",
+                        vertical="center",
+                        wrap_text=True
+                    )
+
+                detail_row += 1
+
+        # -----------------------------------------------------
+        # STONE DETAILS
+        # -----------------------------------------------------
+
+        if row.get("stone_details"):
+
+            detail_row += 1
+
+            ws.cell(
+                detail_row,
+                3,
+                "STONE DETAILS"
+            )
+
+            ws.cell(
+                detail_row,
+                3
+            ).font = bold_font
+
+            stone_header_row = detail_row + 1
+
+            stone_headers = [
+                "Stone",
+                "Pcs",
+                "Weight",
+                "Rate",
+                "Amount"
+            ]
+
+            for i, header in enumerate(
+                stone_headers
+            ):
+
+                col = 3 + i
+
+                cell = ws.cell(
+                    stone_header_row,
+                    col,
+                    header
+                )
+
+                cell.font = bold_font
+                cell.fill = header_fill
+                cell.border = border
+                cell.alignment = Alignment(
+                    horizontal="center"
+                )
+
+            detail_row = stone_header_row + 1
+
+            for stone_index, stone in enumerate(
+                row.get("stone_details", []),
+                1
+            ):
+
+                stone_values = [
+                    f"Stone {stone_index}",
+                    stone.get(
+                        "stone_pcs"
+                    ) or 0,
+                    float(
+                        stone.get(
+                            "stone_wt"
+                        ) or 0
+                    ),
+                    float(
+                        stone.get(
+                            "stone_rate"
+                        ) or 0
+                    ),
+                    float(
+                        stone.get(
+                            "stone_amount"
+                        ) or 0
+                    )
+                ]
+
+                for i, value in enumerate(
+                    stone_values
+                ):
+
+                    col = 3 + i
+
+                    cell = ws.cell(
+                        detail_row,
+                        col,
+                        value
+                    )
+
+                    cell.border = border
+                    cell.font = small_font
+                    cell.alignment = Alignment(
+                        horizontal="center"
+                    )
+
+                detail_row += 1
+
+        # -----------------------------------------------------
+        # REMARK
+        # -----------------------------------------------------
+
+        detail_row += 1
+
+        ws.cell(
+            detail_row,
+            3,
+            "Remark"
+        )
+
+        ws.cell(
+            detail_row,
+            3
+        ).font = bold_font
+
+        ws.merge_cells(
+            start_row=detail_row,
+            start_column=4,
+            end_row=detail_row,
+            end_column=8
+        )
+
+        remark_cell = ws.cell(
+            detail_row,
+            4
+        )
+
+        remark_cell.value = (
+            row.get("remark") or ""
+        )
+
+        remark_cell.font = normal_font
+
+        remark_cell.alignment = Alignment(
+            vertical="top",
+            wrap_text=True
+        )
+
+        # Add border around remark
+        for col in range(3, 9):
+
+            ws.cell(
+                detail_row,
+                col
+            ).border = border
+
+        # -----------------------------------------------------
+        # ROW HEIGHT
+        # -----------------------------------------------------
+
+        ws.row_dimensions[
+            item_start_row
+        ].height = 90
+
+        # Move to next item
+        current_row = detail_row + 2
+
+    # ---------------------------------------------------------
+    # TOTALS
+    # ---------------------------------------------------------
+
+    total_row = current_row
+
+    ws.merge_cells(
+        start_row=total_row,
+        start_column=1,
+        end_row=total_row,
+        end_column=8
+    )
+
+    total_cell = ws.cell(
+        total_row,
+        1
+    )
+
+    total_cell.value = (
+        f"Total Qty : {total_qty}    "
+        f"Total Net Wt : {total_net_wt:.3f}    "
+        f"Total Diamond Wt : {total_dia_wt:.3f}    "
+        f"Total Stone Wt : {total_stone_wt:.3f}"
+    )
+
+    total_cell.font = Font(
+        name="Arial",
+        size=11,
+        bold=True
+    )
+
+    total_cell.alignment = Alignment(
+        horizontal="right"
+    )
+
+    # ---------------------------------------------------------
+    # TERMS
+    # ---------------------------------------------------------
+
+    terms_start = total_row + 3
+
+    ws.merge_cells(
+        start_row=terms_start,
+        start_column=1,
+        end_row=terms_start,
+        end_column=8
+    )
+
+    ws.cell(
+        terms_start,
+        1,
+        "Important Terms and Conditions"
+    )
+
+    ws.cell(
+        terms_start,
+        1
+    ).font = Font(
+        name="Arial",
+        size=11,
+        bold=True
+    )
+
+    terms = [
+        "The weight mentioned in the Purchase Order is final, and the order must be as per the specified weight.",
+        "Delivery dates specified in the PO are binding.",
+        "Goods must conform to agreed specifications and be free from defects.",
+        "Rejected goods will be returned at the vendor's expense.",
+        "The vendor is responsible for all expenses related to repairing jewellery products.",
+        "The buyer reserves the right to cancel the PO without liability if the vendor fails to meet agreed-upon terms or specifications.",
+        "Please review the Purchase Order and confirm your acceptance by replying to this email or via WhatsApp at your earliest convenience.",
+        "If a product is damaged or has a QC issue and VG repairs it at its facility, charges for the same will be borne by the vendor."
+    ]
+
+    term_row = terms_start + 1
+
+    for index, term in enumerate(
+        terms,
+        1
+    ):
+
+        ws.merge_cells(
+            start_row=term_row,
+            start_column=1,
+            end_row=term_row,
+            end_column=8
+        )
+
+        cell = ws.cell(
+            term_row,
+            1
+        )
+
+        cell.value = f"{index}. {term}"
+
+        cell.font = Font(
+            name="Arial",
+            size=9,
+            bold=True
+        )
+
+        cell.alignment = Alignment(
+            wrap_text=True,
+            vertical="top"
+        )
+
+        term_row += 1
+
+    # ---------------------------------------------------------
+    # SIGNATURE
+    # ---------------------------------------------------------
+
+    signature_row = term_row + 3
+
+    ws.merge_cells(
+        start_row=signature_row,
+        start_column=6,
+        end_row=signature_row,
+        end_column=8
+    )
+
+    signature_cell = ws.cell(
+        signature_row,
+        6
+    )
+
+    signature_cell.value = (
+        user_name.full_name
+    )
+
+    signature_cell.font = Font(
+        name="Arial",
+        size=10,
+        bold=False,
+        underline="single"
+    )
+
+    signature_cell.alignment = Alignment(
+        horizontal="right"
+    )
+
+    ws.merge_cells(
+        start_row=signature_row + 1,
+        start_column=6,
+        end_row=signature_row + 1,
+        end_column=8
+    )
+
+    ws.cell(
+        signature_row + 1,
+        6
+    ).value = "(Purchase Department)"
+
+    ws.cell(
+        signature_row + 1,
+        6
+    ).font = Font(
+        name="Arial",
+        size=10
+    )
+
+    ws.cell(
+        signature_row + 1,
+        6
+    ).alignment = Alignment(
+        horizontal="right"
+    )
+
+    # ---------------------------------------------------------
+    # NUMBER FORMATS
+    # ---------------------------------------------------------
+
+    for row in ws.iter_rows():
+
+        for cell in row:
+
+            if isinstance(
+                cell.value,
+                float
+            ):
+
+                cell.number_format = "0.000"
+
+    # ---------------------------------------------------------
+    # FREEZE
+    # ---------------------------------------------------------
+
+    ws.freeze_panes = "A13"
+
+    # ---------------------------------------------------------
+    # SAVE TO MEMORY
+    # ---------------------------------------------------------
+
+    output = io.BytesIO()
+
+    wb.save(output)
+
+    output.seek(0)
+
+    excel_content = output.getvalue()
+
+    # ---------------------------------------------------------
+    # SAFE FILE NAME
+    # ---------------------------------------------------------
+
+    safe_po_no = str(
+        po_no
+    ).replace(
+        "/",
+        "-"
+    )
+
+    file_name = (
+        f"{safe_po_no}.xlsx"
+    )
+
+    # ---------------------------------------------------------
+    # SAVE FILE IN FRAPPE
+    # ---------------------------------------------------------
+
+    file_doc = frappe.get_doc({
+        "doctype": "File",
+        "file_name": file_name,
+        "attached_to_doctype": "Quotation PO",
+        "attached_to_name": po_no,
+        "is_private": 0,
+        "content": excel_content
+    })
+
+    file_doc.save(
+        ignore_permissions=True
+    )
+
+    frappe.db.commit()
+
+    # ---------------------------------------------------------
+    # RETURN
+    # ---------------------------------------------------------
+
+    return {
+        "success": True,
+        "file_url": file_doc.file_url,
+        "file_name": file_name
+    }

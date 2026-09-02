@@ -4,6 +4,7 @@ import pyodbc
 import os
 import pandas as pd
 from frappe.utils import today
+from datetime import datetime
 
 
 
@@ -421,6 +422,9 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
     q.total_labour,
     q.total_amount,
     q.modified,
+    
+    qpi.po_no AS last_po_no,
+    qpi.creation AS last_added_in_po,
 
     /* =========================
        DIAMOND
@@ -441,6 +445,28 @@ def get_quotations(start=0, page_length=40, search="", filters=None):
     s.total_stone_amount
 
 FROM `tabQuotation Upload New` q
+
+LEFT JOIN (
+
+    SELECT
+        qpi.item,
+        qpi.po_no,
+        qpi.creation
+
+    FROM `tabQuotation PO Item` qpi
+
+    INNER JOIN (
+        SELECT
+            item,
+            MAX(creation) AS last_creation
+        FROM `tabQuotation PO Item`
+        GROUP BY item
+    ) latest
+        ON latest.item = qpi.item
+        AND latest.last_creation = qpi.creation
+
+) qpi
+    ON qpi.item = q.name
 
 /* =========================
    DIAMOND AGGREGATION
@@ -692,6 +718,9 @@ LIMIT %(start)s, %(page_length)s
         stone_map.setdefault(quotation_no, []).append(d)
 
     for q in quotations:
+        if q["last_added_in_po"]:
+            dt_object = datetime.strptime(str(q["last_added_in_po"]), "%Y-%m-%d %H:%M:%S.%f")
+            q["last_added_in_po"]=dt_object.strftime("%d-%m-%Y")
         q["stone_details"] = stone_map.get(str(q["name"]), [])
         q["total_stone_amount"] = round(
         sum(

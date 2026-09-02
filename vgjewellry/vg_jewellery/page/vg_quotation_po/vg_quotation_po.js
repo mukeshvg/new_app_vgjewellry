@@ -222,8 +222,51 @@ view_po(name) {
         <i class="fa fa-envelope"></i>
         Send Mail
     </button>
+    <button
+            type="button"
+            class="btn btn-primary btn-download-excel"
+            style="margin-right: 8px;"
+        >
+            Download Excel
+        </button>
 `);
 
+dialog.$wrapper
+    .find(".btn-download-excel")
+    .on("click", function() {
+
+        frappe.call({
+
+            method:
+                "vgjewellry.vg_jewellery.page.vg_quotation_po.vg_quotation_po.generate_excel",
+
+            args: {
+                po_no: name
+            },
+
+            freeze: true,
+
+            freeze_message: "Generating Excel...",
+
+            callback: function(r) {
+
+                if (
+                    r.message &&
+                    r.message.success
+                ) {
+
+                    window.open(
+                        r.message.file_url,
+                        "_blank"
+                    );
+
+                }
+
+            }
+
+        });
+
+    });
 dialog.$wrapper.find(".btn-send-po-mail").on("click", function() {
 
     frappe.confirm(
