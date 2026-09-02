@@ -1249,7 +1249,6 @@ def send_pending_po_emails(po_no = None):
                     SHAH VIRCHAND GOVANJI JEWELLERS PVT. LTD.
                 </p>
             """
-
             # -------------------------------------------------
             # SEND EMAIL
             # -------------------------------------------------
@@ -1281,6 +1280,7 @@ def send_pending_po_emails(po_no = None):
 
             frappe.db.commit()
 
+
         except Exception:
 
             frappe.log_error(
@@ -1289,6 +1289,10 @@ def send_pending_po_emails(po_no = None):
             )
 
             frappe.db.rollback()    
+    return {
+    "success": True,
+    "email": vendor_name
+    }
 
 @frappe.whitelist(allow_guest=True)    
 def send_pending_whatsapp():
