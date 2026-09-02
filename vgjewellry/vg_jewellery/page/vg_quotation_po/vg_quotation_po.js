@@ -144,7 +144,7 @@ No Purchase Orders Found
 <td>${d.jewellery_type || ""}</td>
 
 <td class="text-center">${d.total_items}</td>
-<td class="text-center">${d.is_mail_send==1? "<span style='color:green'>Sent</span>":"<span style='color:red'>Not Sent</span>"}</td>
+<td class="text-center">${d.is_mail_send==0? "<span style='color:green'>Sent</span>":"<span style='color:red'>Not Sent</span>"}</td>
 
 <td>
 
