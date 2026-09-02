@@ -1050,23 +1050,42 @@ th {
 
 
 @frappe.whitelist(allow_guest=True)    
-def send_pending_po_emails():
-    po_list = frappe.get_all(
-        "Quotation PO",
-        filters={
-            "is_mail_send": 1,
-            "status": 1
-        },
-        fields=[
-            "name",
-            "po_no",
-            "vendor",
-            "vendor_code",
-            "vendor_delivery_date",
-            "branch"
-        ],
-        order_by="creation asc"
-    )
+def send_pending_po_emails(po_no = None):
+    if not po_no:
+        po_list = frappe.get_all(
+            "Quotation PO",
+            filters={
+                "is_mail_send": 1,
+                "status": 1
+            },
+            fields=[
+                "name",
+                "po_no",
+                "vendor",
+                "vendor_code",
+                "vendor_delivery_date",
+                "branch"
+            ],
+            order_by="creation asc"
+        )
+    else:
+        po_list = frappe.get_all(
+            "Quotation PO",
+            filters={
+                "name": po_no,
+                "status": 1
+            },
+            fields=[
+                "name",
+                "po_no",
+                "vendor",
+                "vendor_code",
+                "vendor_delivery_date",
+                "branch"
+            ],
+            order_by="creation asc"
+        )
+
 
     if not po_list:
         return
