@@ -301,7 +301,7 @@ dialog.$wrapper.find(".btn-send-po-mail").on("click", function() {
 			frappe.msgprint({
                             title: "Mail Not Sent",
                             message:
-                                "Vendor Po email or / and vendor mobile no absent in Ornate Supplier Master", 
+                                "Please Enter Po Contact Person Email and Po Contact Person Mobile1 in  Ornate Supplier Master Doctype for Supplier Code "+ r.message.vendor_name, 
                             indicator: "red"
                         });
 

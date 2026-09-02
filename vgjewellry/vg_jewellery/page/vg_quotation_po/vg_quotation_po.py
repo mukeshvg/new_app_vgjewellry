@@ -1172,7 +1172,8 @@ def send_pending_po_emails(po_no = None):
                     "PO Email Cron"
                 )
                 return {
-                            "success":False
+                            "success":False,
+                            "vendor_code": po_doc.vendor_code
                         }
 
             
@@ -1188,7 +1189,7 @@ def send_pending_po_emails(po_no = None):
                     f"PO: {po.name}",
                     "PO Mobile Cron"
                 )
-                return { "success":False}
+                return { "success":False,"vendor_code":po_doc.vendor_code}
 
             if not vendor_email or not vendor_mobile:
                 continue
