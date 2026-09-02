@@ -1161,9 +1161,9 @@ def send_pending_po_emails(po_no = None):
             is_whatsapp_send= False
             if not vendor_email:
                 vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
-                send_whatsapp("919512152521","po_email_failed_vendor",vendor_param)
-                send_whatsapp("919273446652","po_email_failed_vendor",vendor_param)
-                send_whatsapp("918238095376","po_email_failed_vendor",vendor_param)
+                """send_whatsapp("919512152521","po_email_failed_vendor",None,vendor_param)
+                send_whatsapp("919273446652","po_email_failed_vendor",None,vendor_param)
+                send_whatsapp("918238095376","po_email_failed_vendor",None,vendor_param)"""
                 is_whatsapp_send = True
                 frappe.log_error(
                     f"Vendor email not found. "
@@ -1171,20 +1171,24 @@ def send_pending_po_emails(po_no = None):
                     f"PO: {po.name}",
                     "PO Email Cron"
                 )
+                return {
+                            "success":False
+                        }
 
             
             if not vendor_mobile:
                 if not is_whatsapp_send:
                     vendor_param= [po.name,user_name.full_name,po_doc.vendor_code]
-                    send_whatsapp("919512152521","po_email_failed_vendor",vendor_param)
-                    send_whatsapp("919273446652","po_email_failed_vendor",vendor_param)
-                    send_whatsapp("918238095376","po_email_failed_vendor",vendor_param)
+                    """send_whatsapp("919512152521","po_email_failed_vendor",None,vendor_param)
+                    send_whatsapp("919273446652","po_email_failed_vendor",None,vendor_param)
+                    send_whatsapp("918238095376","po_email_failed_vendor",None,vendor_param)"""
                 frappe.log_error(
                     f"Vendor mobile not found. "
                     f"Vendor Code: {po_doc.vendor}, "
                     f"PO: {po.name}",
                     "PO Mobile Cron"
                 )
+                return { "success":False}
 
             if not vendor_email or not vendor_mobile:
                 continue
