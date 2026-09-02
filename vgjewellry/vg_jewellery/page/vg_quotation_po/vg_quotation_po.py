@@ -1767,9 +1767,9 @@ def generate_excel(po_no):
             wrap_text=True
         )
 
-        # -----------------------------------------------------
+        # ---------------------------------------------------------
         # IMAGE
-        # -----------------------------------------------------
+        # ---------------------------------------------------------
 
         image_path = row.get("image")
 
@@ -1779,9 +1779,9 @@ def generate_excel(po_no):
 
                 image_data = None
 
-                # ---------------------------------------------
-                # LOCAL FILE
-                # ---------------------------------------------
+                # =================================================
+                # CASE 1: /files/xxxx.jpg
+                # =================================================
 
                 if image_path.startswith("/files/"):
 
@@ -1799,28 +1799,65 @@ def generate_excel(po_no):
 
                             image_data = f.read()
 
-                # ---------------------------------------------
-                # FULL URL
-                # ---------------------------------------------
 
-                elif image_path.startswith(
-                    "http://"
-                ) or image_path.startswith(
-                    "https://"
+                # =================================================
+                # CASE 2: /private/files/xxxx.jpg
+                # =================================================
+
+                elif image_path.startswith("/private/files/"):
+
+                    local_path = frappe.get_site_path(
+                        image_path.lstrip("/")
+                    )
+
+
+                    if os.path.exists(local_path):
+
+                        with open(
+                            local_path,
+                            "rb"
+                        ) as f:
+
+                            image_data = f.read()
+
+
+                # =================================================
+                # CASE 3: HTTP / HTTPS
+                # =================================================
+
+                elif (
+                    image_path.startswith("http://")
+                    or
+                    image_path.startswith("https://")
                 ):
 
                     response = requests.get(
                         image_path,
-                        timeout=10
+                        timeout=30
                     )
 
-                    if response.status_code == 200:
+                    response.raise_for_status()
 
-                        image_data = response.content
+                    image_data = response.content
 
-                # ---------------------------------------------
-                # ADD IMAGE
-                # ---------------------------------------------
+
+                # =================================================
+                # CASE 4: LOCAL FILE PATH
+                # =================================================
+
+                elif os.path.exists(image_path):
+
+                    with open(
+                        image_path,
+                        "rb"
+                    ) as f:
+
+                        image_data = f.read()
+
+
+                # =================================================
+                # ADD IMAGE TO EXCEL
+                # =================================================
 
                 if image_data:
 
@@ -1832,13 +1869,23 @@ def generate_excel(po_no):
                         image_stream
                     )
 
+                    # Excel image size
                     xl_image.width = 75
                     xl_image.height = 75
 
+                    # Add image
                     ws.add_image(
                         xl_image,
                         f"B{item_start_row}"
                     )
+
+                else:
+
+                    frappe.log_error(
+                        f"Image not found: {image_path}",
+                        "PO Excel Image"
+                    )
+
 
             except Exception:
 
@@ -1846,7 +1893,6 @@ def generate_excel(po_no):
                     frappe.get_traceback(),
                     "PO Excel Image Error"
                 )
-
         # -----------------------------------------------------
         # VENDOR DESIGN NUMBER
         # -----------------------------------------------------
@@ -2390,6 +2436,21 @@ def generate_excel(po_no):
     # ---------------------------------------------------------
     # SAVE FILE IN FRAPPE
     # ---------------------------------------------------------
+
+    # Delete existing file with same name and attachment
+    """existing_file = frappe.db.exists("File", {
+        "file_name": file_name,
+        "attached_to_doctype": "Quotation PO",
+        "attached_to_name": po_no
+    })
+
+    if existing_file:
+        frappe.delete_doc(
+            "File",
+            existing_file,
+            ignore_permissions=True,
+            force=True
+        )"""
 
     file_doc = frappe.get_doc({
         "doctype": "File",
