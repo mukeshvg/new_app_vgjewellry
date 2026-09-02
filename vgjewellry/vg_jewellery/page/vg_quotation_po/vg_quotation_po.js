@@ -297,6 +297,16 @@ dialog.$wrapper.find(".btn-send-po-mail").on("click", function() {
                         });
 
                     }
+		   else{
+			frappe.msgprint({
+                            title: "Mail Not Sent",
+                            message:
+                                "Vendor Po email or / and vendor mobile no absent in Ornate Supplier Master", 
+                            indicator: "red"
+                        });
+
+
+		   }	
 
                 }
             });
