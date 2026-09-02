@@ -14,13 +14,13 @@ def get_po_list():
             "name",
             "vendor",
             "vendor_delivery_date",
-            "jewellery_type"
+            "jewellery_type","is_mail_send"
         ],
         order_by="creation desc"
     )
 
     for d in data:
-
+    
         d["total_items"] = frappe.db.count(
             "Quotation PO Item",
             {"po_no": d["name"]}

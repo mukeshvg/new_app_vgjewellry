@@ -57,6 +57,7 @@ class VGQuotationPO {
                     <th>Delivery Date</th>
                     <th>Jewellery</th>
                     <th>Total Items</th>
+                    <th>Mail Status</th>
                     <th>Action</th>
 
                 </tr>
@@ -67,7 +68,7 @@ class VGQuotationPO {
 
                 <tr>
 
-                    <td colspan="6" class="text-center">
+                    <td colspan="7" class="text-center">
 
                         Loading...
 
@@ -143,6 +144,7 @@ No Purchase Orders Found
 <td>${d.jewellery_type || ""}</td>
 
 <td class="text-center">${d.total_items}</td>
+<td class="text-center">${d.is_mail_send==1? "<span style='color:green'>Sent</span>":"<span style='color:red'>Not Sent</span>"}</td>
 
 <td>
 
