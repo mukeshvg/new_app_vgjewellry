@@ -679,7 +679,16 @@ LIMIT %(start)s, %(page_length)s
     diamond_map = {}
 
     for d in diamond_details:
-        d["diamond_size"]= round(float(d.get("diamond_size") or 0),3)
+        diamond_size = d.get("diamond_size")
+
+        if diamond_size in (None, ""):
+            d["diamond_size"] = diamond_size
+        else:
+            try:
+                d["diamond_size"] = round(float(diamond_size), 3)
+            except (ValueError, TypeError):
+                d["diamond_size"] = diamond_size
+        #d["diamond_size"]= round(float(d.get("diamond_size") or 0),3)
         d["diamond_rate"] = get_diamond_rate(d.get("diamond_shape"), d.get("diamond_wt"),d.get("diamond_pcs"), diamond_rates )
         d["diamond_amount"] = round(float(d.get("diamond_wt") or 0)* float(d["diamond_rate"] or 0))
 
