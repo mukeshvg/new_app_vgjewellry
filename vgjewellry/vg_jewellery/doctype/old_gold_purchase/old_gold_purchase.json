@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-09-09 19:26:55.897569",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sptranid",
+  "item_name",
+  "vouno",
+  "voudate",
+  "net_wt",
+  "metal_amt",
+  "sales_vou_no",
+  "rate_999",
+  "rate_916",
+  "purity",
+  "fine_wt",
+  "melting_weight",
+  "melting_purity",
+  "fine_wt_after_melting",
+  "difference__wt",
+  "difference_purity",
+  "difference_fine_wt",
+  "remark"
+ ],
+ "fields": [
+  {
+   "fieldname": "vouno",
+   "fieldtype": "Data",
+   "label": "VouNo"
+  },
+  {
+   "fieldname": "voudate",
+   "fieldtype": "Date",
+   "label": "VouDate"
+  },
+  {
+   "fieldname": "net_wt",
+   "fieldtype": "Float",
+   "label": "Net Wt"
+  },
+  {
+   "fieldname": "metal_amt",
+   "fieldtype": "Float",
+   "label": "Metal Amt"
+  },
+  {
+   "fieldname": "sales_vou_no",
+   "fieldtype": "Data",
+   "label": "Sales Vou No"
+  },
+  {
+   "fieldname": "rate_999",
+   "fieldtype": "Int",
+   "label": "Rate 999"
+  },
+  {
+   "fieldname": "rate_916",
+   "fieldtype": "Int",
+   "label": "Rate 916"
+  },
+  {
+   "fieldname": "purity",
+   "fieldtype": "Float",
+   "label": "Purity"
+  },
+  {
+   "fieldname": "fine_wt",
+   "fieldtype": "Float",
+   "label": "Fine Wt"
+  },
+  {
+   "fieldname": "melting_weight",
+   "fieldtype": "Float",
+   "label": "Melting Weight"
+  },
+  {
+   "fieldname": "melting_purity",
+   "fieldtype": "Float",
+   "label": "Melting Purity"
+  },
+  {
+   "fieldname": "fine_wt_after_melting",
+   "fieldtype": "Float",
+   "label": "Fine Wt After Melting"
+  },
+  {
+   "fieldname": "difference__wt",
+   "fieldtype": "Float",
+   "label": "Difference  Wt"
+  },
+  {
+   "fieldname": "difference_purity",
+   "fieldtype": "Float",
+   "label": "Difference Purity"
+  },
+  {
+   "fieldname": "difference_fine_wt",
+   "fieldtype": "Float",
+   "label": "Difference Fine Wt"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Select",
+   "label": "Remark",
+   "options": "\nMelting\nVikrant\nJatin\nAlpa\nJR"
+  },
+  {
+   "fieldname": "sptranid",
+   "fieldtype": "Int",
+   "label": "SpTranID"
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-10 09:37:13.012788",
+ "modified_by": "Administrator",
+ "module": "VG Jewellery",
+ "name": "Old Gold Purchase",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

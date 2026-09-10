@@ -1,0 +1,252 @@
+.old-gold-container {
+    padding: 20px;
+}
+
+.voucher-autocomplete {
+    position: relative;
+}
+
+.voucher-suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: #ffffff;
+    border: 1px solid #d1d8dd;
+    border-top: none;
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.voucher-suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.voucher-suggestion:hover {
+    background: #f5f5f5;
+}
+
+.voucher-suggestion:last-child {
+    border-bottom: none;
+}
+
+#voucher_details {
+    margin-top: 20px;
+}
+
+.old-gold-container {
+    padding: 8px;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.melting-container {
+    width: 100%;
+}
+
+
+/* =========================================
+   ITEM CARD
+========================================= */
+
+.melting-card {
+    border: 1px solid #d1d8dd;
+    border-radius: 5px;
+    margin-bottom: 7px;
+    background: #fff;
+}
+
+
+/* =========================================
+   ITEM HEADER
+========================================= */
+
+.melting-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 6px 10px;
+
+    background: #f5f7fa;
+
+    border-bottom: 1px solid #d1d8dd;
+}
+
+
+.melting-item-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+.melting-status {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================
+   GRID
+========================================= */
+
+.melting-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, 1fr);
+
+    gap: 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* =========================================
+   FIELD
+========================================= */
+
+.melting-field {
+    padding: 5px 8px;
+
+    min-width: 0;
+
+    border-right: 1px solid #e5e7eb;
+}
+
+
+.melting-field:last-child {
+    border-right: none;
+}
+
+
+.melting-field label {
+    display: block;
+
+    font-size: 14px;
+
+    color: #6b7280;
+
+    margin-bottom: 2px;
+}
+
+
+.melting-field span {
+    display: block;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   MELTING CALCULATION ROW
+========================================= */
+
+.melting-calculation {
+    background: #fafafa;
+}
+
+
+/* =========================================
+   MELTING WEIGHT INPUT
+========================================= */
+
+.melting-input-field {
+    background: #fff9e6;
+}
+
+
+.melting-weight {
+    width: 100%;
+
+    height: 27px;
+
+    padding: 3px 6px;
+
+    font-size: 14px;
+
+    text-align: right;
+
+    border: 1px solid #999;
+
+    border-radius: 3px;
+}
+
+
+.melting-weight:focus {
+    border-color: #2490ef;
+
+    outline: none;
+
+    box-shadow: 0 0 0 1px #2490ef;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.melting-footer {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    padding: 5px 8px;
+
+    background: #fafafa;
+}
+
+
+.melting-footer > div {
+    border-right: 1px solid #e5e7eb;
+
+    padding-right: 10px;
+    margin-right: 10px;
+}
+
+
+.melting-footer > div:last-child {
+    border-right: none;
+}
+
+
+.melting-footer label {
+    display: block;
+
+    font-size: 14px;
+
+    color: #6b7280;
+}
+
+
+.melting-footer strong {
+    font-size: 14px;
+}
+.melting-remark {
+    width: 100%;
+    height: 27px;
+    padding: 2px 6px;
+    font-size: 12px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.melting-remark:focus {
+    border-color: #2490ef;
+    outline: none;
+    box-shadow: 0 0 0 1px #2490ef;

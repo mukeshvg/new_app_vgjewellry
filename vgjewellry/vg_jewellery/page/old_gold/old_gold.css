@@ -1,0 +1,693 @@
+/* =========================================================
+   OLD GOLD GRID
+========================================================= */
+
+.old-gold-grid-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden !important;
+    margin-top: 10px;
+}
+
+.old-gold-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   COLUMN WIDTHS
+========================================================= */
+
+/* Vou Date */
+.old-gold-grid th:nth-child(1),
+.old-gold-grid td:nth-child(1) {
+    width: 8%;
+}
+
+/* Vou No */
+.old-gold-grid th:nth-child(2),
+.old-gold-grid td:nth-child(2) {
+    width: 9%;
+}
+
+/* Item Name */
+.old-gold-grid th:nth-child(3),
+.old-gold-grid td:nth-child(3) {
+    width: 19%;
+}
+
+/* Net Wt */
+.old-gold-grid th:nth-child(4),
+.old-gold-grid td:nth-child(4) {
+    width: 8%;
+}
+
+/* Purity */
+.old-gold-grid th:nth-child(5),
+.old-gold-grid td:nth-child(5) {
+    width: 8%;
+}
+
+/* Fine Wt */
+.old-gold-grid th:nth-child(6),
+.old-gold-grid td:nth-child(6) {
+    width: 8%;
+}
+
+/* Metal Amount */
+.old-gold-grid th:nth-child(7),
+.old-gold-grid td:nth-child(7) {
+    width: 11%;
+}
+
+/* 916 */
+.old-gold-grid th:nth-child(8),
+.old-gold-grid td:nth-child(8) {
+    width: 7%;
+}
+
+/* 999 */
+.old-gold-grid th:nth-child(9),
+.old-gold-grid td:nth-child(9) {
+    width: 7%;
+}
+
+/* Remark */
+.old-gold-grid th:nth-child(10),
+.old-gold-grid td:nth-child(10) {
+    width: 15%;
+}
+
+
+/* =========================================================
+   COMMON CELL
+========================================================= */
+
+.old-gold-grid th,
+.old-gold-grid td {
+    min-width: 0 !important;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.og-header th {
+    background: #e9eef2;
+    color: #26323d;
+
+    border: 1px solid #ccd4db;
+
+    padding: 7px 3px;
+
+    text-align: center;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    line-height: 14px;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+
+/* =========================================================
+   SEARCH ROW
+========================================================= */
+
+.og-search-row th {
+    padding: 4px 3px;
+    background: #f8fafb;
+    border: 1px solid #d9dfe4;
+}
+
+.og-search {
+    width: 100% !important;
+    height: 25px;
+
+    padding: 2px 3px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #ccd4db;
+    border-radius: 4px;
+
+    font-size: 12px;
+    text-align: center;
+}
+
+.og-search:focus {
+    outline: none;
+    border-color: #2490ef;
+}
+
+
+/* =========================================================
+   FIRST / MAIN ROW
+========================================================= */
+
+.og-main-row {
+    border-top: 3px solid #64748b;
+
+}
+
+.og-main-row td {
+    height: 58px;
+
+    padding: 7px 4px;
+
+    text-align: center;
+    vertical-align: middle;
+
+    border-left: 1px solid #e0e5e9;
+    border-right: 1px solid #e0e5e9;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   ITEM NAME
+========================================================= */
+
+.og-item {
+    text-align: left !important;
+
+    white-space: normal !important;
+
+    line-height: 17px;
+
+    max-height: 36px;
+
+    overflow: hidden;
+
+    overflow-wrap: break-word;
+
+    padding-left: 7px !important;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   NORMAL VALUES
+========================================================= */
+
+.og-value {
+    display: block;
+
+    line-height: 20px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   VOUCHER
+========================================================= */
+
+.og-voucher {
+    color: #1677c8;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   REMARK
+========================================================= */
+
+.og-main-row .og-select {
+    width: 94% !important;
+    height: 28px;
+
+    margin: auto;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   SECOND / CALCULATION ROW
+========================================================= */
+
+.og-calculation-row {
+    background: #fffdf3;
+
+    /* Space between calculation row and next item */
+    border-bottom: 14px solid #ffffff;
+
+    /* Strong bottom separator */
+    box-shadow:
+        0 3px 0 #94a3b8;
+}
+
+.og-calculation-row td {
+    height: 62px;
+
+    padding: 7px 4px;
+
+    vertical-align: middle;
+
+    background: #fffdf3;
+
+    border-top: 1px solid #e5dfc4;
+    border-bottom: 1px solid #ddd6b8;
+}
+
+
+/* =========================================================
+   STRONG SEPARATOR BETWEEN TWO ROWS
+========================================================= */
+
+.og-main-row td {
+    border-bottom: 3px solid #d1d5db;
+}
+
+.og-calculation-row td {
+    border-top: 3px solid #f0ead5;
+}
+
+
+/* =========================================================
+   SEPARATOR BEFORE EVERY NEW ITEM
+========================================================= */
+
+/*
+   Every main row after the first gets a strong top separator.
+*/
+
+.og-main-row + .og-main-row td {
+    border-top: 4px solid #64748b;
+}
+
+
+/*
+   If calculation row comes before next main row,
+   create stronger visual separation.
+*/
+
+.og-calculation-row + .og-main-row td {
+    border-top: 5px solid #64748b;
+}
+
+
+/* =========================================================
+   CALCULATION TITLE
+========================================================= */
+
+.og-calculation-title {
+    text-align: right !important;
+
+    color: #8a6d1d;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   MELTING CELL
+========================================================= */
+
+.og-melting-cell {
+    background: #fffbea !important;
+
+    text-align: center;
+
+    padding: 6px 4px !important;
+
+    border-left: 1px solid #eee6c8;
+    border-right: 1px solid #eee6c8;
+}
+
+
+/* =========================================================
+   LABEL ABOVE INPUT
+========================================================= */
+
+.og-input-label {
+    display: block;
+
+    color: #8a6d1d;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    line-height: 14px;
+
+    margin-bottom: 5px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.og-input {
+    display: block;
+
+    width: 92% !important;
+    max-width: 92% !important;
+
+    height: 29px;
+
+    margin: 0 auto;
+
+    padding: 3px 4px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #bfc9d1;
+    border-radius: 4px;
+
+    background: #ffffff;
+
+    text-align: center;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.og-input:focus {
+    outline: none;
+
+    border-color: #2490ef;
+
+    box-shadow:
+        0 0 0 2px rgba(36, 144, 239, .12);
+}
+
+
+/* =========================================================
+   FINE WT AFTER MELT
+========================================================= */
+
+.og-result {
+    display: block;
+
+    width: 92%;
+
+    height: 29px;
+
+    margin: 0 auto;
+
+    line-height: 29px;
+
+    box-sizing: border-box;
+
+    color: #16813d;
+
+    background: #eef9f1;
+
+    border: 1px solid #c7e4cf;
+
+    border-radius: 4px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   DIFFERENCE VALUES
+========================================================= */
+
+.diff-wt,
+.diff-purity,
+.diff-fine-wt {
+    display: block;
+
+    height: 29px;
+
+    line-height: 29px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    font-weight: 700;
+
+    border-radius: 4px;
+}
+
+.diff-wt {
+    color: #b45309;
+    background: #fff7ed;
+}
+
+.diff-purity {
+    color: #7c3aed;
+    background: #f5f3ff;
+}
+
+.diff-fine-wt {
+    color: #dc2626;
+    background: #fef2f2;
+}
+
+
+/* =========================================================
+   REMARK DROPDOWN
+========================================================= */
+
+.og-select {
+    display: block;
+
+    width: 94% !important;
+    max-width: 94% !important;
+
+    height: 29px;
+
+    margin: 0 auto;
+
+    padding: 2px 4px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #bfc9d1;
+
+    border-radius: 4px;
+
+    background: #ffffff;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.og-main-row:hover td {
+    background: #f7fbff;
+}
+
+.og-calculation-row:hover td {
+    background: #fff8d9;
+}
+
+
+/* =========================================================
+   SORT
+========================================================= */
+
+.og-sort {
+    cursor: pointer;
+    user-select: none;
+}
+
+.og-sort:hover {
+    background: #dce5eb !important;
+}
+
+.og-sort-icon {
+    color: #6c7781;
+
+    font-size: 9px;
+
+    margin-left: 2px;
+}
+
+
+/* =========================================================
+   NO HORIZONTAL SCROLL
+========================================================= */
+
+.old-gold-container {
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: hidden !important;
+}
+
+.old-gold-grid-wrapper {
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: hidden !important;
+}
+
+.layout-main-section {
+    overflow-x: hidden !important;
+}
+
+
+/* =========================================================
+   PREVENT CONTENT FROM FORCING TABLE WIDTH
+========================================================= */
+
+.old-gold-grid td,
+.old-gold-grid th {
+    overflow: hidden !important;
+    word-break: break-word;
+}
+
+.old-gold-grid input,
+.old-gold-grid select {
+    max-width: 100% !important;
+}
+
+
+/* =========================================================
+   1200px
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .old-gold-grid {
+        font-size: 10px;
+    }
+
+    .og-header th {
+        font-size: 9px;
+        padding: 6px 2px;
+    }
+
+    .og-main-row td {
+        font-size: 9px;
+        padding: 6px 2px;
+        height: 55px;
+    }
+
+    .og-calculation-row td {
+        height: 58px;
+        padding: 5px 2px;
+    }
+
+    .og-input-label {
+        font-size: 8px;
+    }
+
+    .og-input,
+    .og-result,
+    .og-select {
+        font-size: 9px;
+        height: 26px;
+    }
+
+    .og-result {
+        line-height: 26px;
+    }
+
+    .diff-wt,
+    .diff-purity,
+    .diff-fine-wt {
+        height: 26px;
+        line-height: 26px;
+    }
+}
+
+
+/* =========================================================
+   900px
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .old-gold-grid {
+        font-size: 8px;
+    }
+
+    .og-header th {
+        font-size: 7px;
+        line-height: 10px;
+        padding: 5px 1px;
+    }
+
+    .og-main-row td {
+        font-size: 7px;
+        padding: 5px 1px;
+        height: 50px;
+    }
+
+    .og-calculation-row td {
+        height: 54px;
+        padding: 4px 1px;
+    }
+
+    .og-item {
+        line-height: 13px;
+        max-height: 28px;
+        padding-left: 3px !important;
+    }
+
+    .og-input-label {
+        font-size: 6px;
+        line-height: 9px;
+        margin-bottom: 3px;
+    }
+
+    .og-input,
+    .og-result,
+    .og-select {
+        font-size: 7px;
+        height: 23px;
+    }
+
+    .og-result {
+        line-height: 23px;
+    }
+
+    .diff-wt,
+    .diff-purity,
+    .diff-fine-wt {
+        height: 23px;
+        line-height: 23px;
+    }
+}
+
+
+
