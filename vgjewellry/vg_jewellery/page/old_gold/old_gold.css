@@ -688,6 +688,13 @@
         line-height: 23px;
     }
 }
+.og-no-data-row td {
+    text-align: center;
+    padding: 20px !important;
+    color: #888;
+    font-size: 13px;
+    font-weight: 500;
+}
 
 
 

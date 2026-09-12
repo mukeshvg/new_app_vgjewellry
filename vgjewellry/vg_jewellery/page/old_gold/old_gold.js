@@ -19,6 +19,7 @@ class OldGold {
 
 		this.voucher_list = {};
 		this.voucher_items = [];
+		this.search_timer = null;
 
 		this.make_html();
 		this.load_branches();
@@ -498,861 +499,802 @@ class OldGold {
 		});
 
 	}
+	// =========================================================
+	// RENDER VOUCHER DETAILS
+	// =========================================================
+	render_voucher_details(data) {
 
-render_voucher_details(data, set_source = true) {
+		const me = this;
 
-    const me = this;
+		// ---------------------------------------------------------
+		// STORE ORIGINAL DATA
+		// ---------------------------------------------------------
 
+		this.voucher_items =
+			Array.isArray(data)
+			? data
+			: [];
 
-    // ---------------------------------------------------------
-    // KEEP ORIGINAL DATA
-    // ---------------------------------------------------------
 
-    if (set_source) {
+		const rows =
+			this.voucher_items;
 
-        this.voucher_items =
-            Array.isArray(data)
-                ? data
-                : [];
 
-    }
+		// ---------------------------------------------------------
+		// NO DATA
+		// ---------------------------------------------------------
+		if (!rows.length) {
 
+			// If table already exists, just clear rows
 
-    const rows =
-        Array.isArray(data)
-            ? data
-            : [];
+			this.voucher_details
+				.find(".old-gold-grid tbody")
+				.html(`
+	    <tr class="og-no-data-row">
+		<td colspan="10">
+		    No data found
+		</td>
+	    </tr>
+	`);
 
+			return;
 
-    // ---------------------------------------------------------
-    // NO DATA
-    // ---------------------------------------------------------
+		}
 
-    if (!rows.length) {
+		if (false && !rows.length) {
 
-        this.voucher_details.html(`
-            <div class="alert alert-warning">
-                No voucher details found.
-            </div>
-        `);
+			this.voucher_details.html(`
+	    <div class="alert alert-warning">
+		No voucher details found.
+	    </div>
+	`);
+
+			return;
+		}
 
-        return;
-    }
-
-
-    // ---------------------------------------------------------
-    // CREATE TABLE
-    // ---------------------------------------------------------
-
-    let html = `
-
-        <div class="old-gold-grid-wrapper">
-
-            <table class="old-gold-grid">
-
-                <thead>
-
-                    <!-- =========================================
-                         HEADER
-                    ========================================== -->
-
-                    <tr class="og-header">
-
-                        <th
-                            data-column="VouDate"
-                            class="og-sort"
-                        >
-                            Vou Date
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="VouNo"
-                            class="og-sort"
-                        >
-                            Vou No
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="item_name"
-                            class="og-sort"
-                        >
-                            Item Name
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="net_wt"
-                            class="og-sort"
-                        >
-                            Net Wt
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="purity"
-                            class="og-sort"
-                        >
-                            Purity
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="fine_wt"
-                            class="og-sort"
-                        >
-                            Fine Wt
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="metal_amt"
-                            class="og-sort"
-                        >
-                            Metal Amt
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="rate_916"
-                            class="og-sort"
-                        >
-                            916
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th
-                            data-column="rate_999"
-                            class="og-sort"
-                        >
-                            999
-                            <span class="og-sort-icon">↕</span>
-                        </th>
-
-
-                        <th>
-                            Remark
-                        </th>
-
-                    </tr>
-
-
-                    <!-- =========================================
-                         SEARCH ROW
-                    ========================================== -->
-
-                    <tr class="og-search-row">
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="VouDate"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="VouNo"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="item_name"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="net_wt"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="purity"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="fine_wt"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="metal_amt"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="rate_916"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th>
-                            <input
-                                type="text"
-                                class="og-search"
-                                data-column="rate_999"
-                                placeholder="Search"
-                            >
-                        </th>
-
-
-                        <th></th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-    `;
-
-
-    // ---------------------------------------------------------
-    // DATA ROWS
-    // ---------------------------------------------------------
-
-    rows.forEach(function (row) {
-
-
-        // IMPORTANT:
-        // Find the index in the ORIGINAL array.
-        // This keeps melting/save working after filtering.
-
-        const original_index =
-            me.voucher_items.indexOf(row);
-
-
-        const melting_weight =
-            row.melting_weight !== undefined &&
-            row.melting_weight !== null
-                ? row.melting_weight
-                : "";
-
-
-        const melting_purity =
-            row.melting_purity !== undefined &&
-            row.melting_purity !== null
-                ? row.melting_purity
-                : "";
-
-
-        const remark =
-            row.remark || "";
-
-
-        // =====================================================
-        // MAIN ROW
-        // =====================================================
-
-        html += `
-
-            <tr
-                class="og-main-row"
-                data-index="${original_index}"
-            >
-
-                <!-- VOUCHER DATE -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${frappe.utils.escape_html(
-                            row.VouDate || ""
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- VOUCHER NO -->
-
-                <td>
-
-                    <span class="og-voucher">
-                        ${frappe.utils.escape_html(
-                            row.VouNo || ""
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- ITEM NAME -->
-
-                <td class="og-item">
-
-                    ${frappe.utils.escape_html(
-                        row.item_name || ""
-                    )}
-
-                </td>
-
-
-                <!-- NET WT -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.net_wt
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- PURITY -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.purity
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- FINE WT -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.fine_wt
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- METAL AMOUNT -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.metal_amt
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- 916 -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.rate_916
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- 999 -->
-
-                <td>
-
-                    <span class="og-value">
-                        ${me.format_number(
-                            row.rate_999
-                        )}
-                    </span>
-
-                </td>
-
-
-                <!-- REMARK -->
-
-                <td>
-
-                    <select
-                        class="og-select melting-remark"
-                        data-index="${original_index}"
-                    >
-
-                        <option value="">
-                            Select
-                        </option>
-
-
-                        <option
-                            value="Melting"
-                            ${remark === "Melting"
-                                ? "selected"
-                                : ""}
-                        >
-                            Melting
-                        </option>
-
-
-                        <option
-                            value="Vikrant"
-                            ${remark === "Vikrant"
-                                ? "selected"
-                                : ""}
-                        >
-                            Vikrant
-                        </option>
-
-
-                        <option
-                            value="Jatin"
-                            ${remark === "Jatin"
-                                ? "selected"
-                                : ""}
-                        >
-                            Jatin
-                        </option>
-
-
-                        <option
-                            value="Alpa"
-                            ${remark === "Alpa"
-                                ? "selected"
-                                : ""}
-                        >
-                            Alpa
-                        </option>
-
-
-                        <option
-                            value="JR"
-                            ${remark === "JR"
-                                ? "selected"
-                                : ""}
-                        >
-                            JR
-                        </option>
-
-                    </select>
-
-                </td>
-
-            </tr>
-
-
-            <!-- =================================================
-                 MELTING / CALCULATION ROW
-            ================================================= -->
-
-            <tr
-                class="og-calculation-row"
-                data-index="${original_index}"
-            >
-
-                <td></td>
-
-                <td></td>
-
-
-                <td class="og-calculation-title">
-                    Melting Details
-                </td>
-
-
-                <!-- MELTING WEIGHT -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Melting Wt
-                    </label>
-
-                    <input
-                        type="number"
-                        class="og-input melting-weight"
-                        data-index="${original_index}"
-                        value="${melting_weight}"
-                        step="0.001"
-                        min="0"
-                    >
-
-                </td>
-
-
-                <!-- MELTING PURITY -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Melting Purity
-                    </label>
-
-                    <input
-                        type="number"
-                        class="og-input melting-purity"
-                        data-index="${original_index}"
-                        value="${melting_purity}"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                    >
-
-                </td>
-
-
-                <!-- FINE WT AFTER MELTING -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Fine Wt After Melt
-                    </label>
-
-                    <span class="og-result melting-fine-weight">
-
-                        ${me.format_number(
-                            row.after_fine_weight
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <!-- DIFFERENCE WT -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Diff Wt
-                    </label>
-
-                    <span class="diff-wt">
-
-                        ${me.format_number(
-                            row.difference_weight
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <!-- DIFFERENCE PURITY -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Diff %
-                    </label>
-
-                    <span class="diff-purity">
-
-                        ${me.format_number(
-                            row.differenct_in_purity
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <!-- DIFFERENCE FINE WT -->
-
-                <td class="og-melting-cell">
-
-                    <label class="og-input-label">
-                        Diff Fine Wt
-                    </label>
-
-                    <span class="diff-fine-wt">
-
-                        ${me.format_number(
-                            row.melting_fine_difference
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <td></td>
-
-            </tr>
-
-        `;
-
-    });
-
-
-    html += `
-
-                </tbody>
-
-            </table>
-
-        </div>
+
+		// ---------------------------------------------------------
+		// CREATE TABLE ONLY ONCE
+		// ---------------------------------------------------------
+
+		let html = `
+
+	<div class="old-gold-grid-wrapper">
+
+	    <table class="old-gold-grid">
+
+		<thead>
+
+		    <tr class="og-header">
+
+			<th data-column="VouDate" class="og-sort">
+			    Vou Date
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="VouNo" class="og-sort">
+			    Vou No
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="item_name" class="og-sort">
+			    Item Name
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="net_wt" class="og-sort">
+			    Net Wt
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="purity" class="og-sort">
+			    Purity
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="fine_wt" class="og-sort">
+			    Fine Wt
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="metal_amt" class="og-sort">
+			    Metal Amt
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="rate_916" class="og-sort">
+			    916
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th data-column="rate_999" class="og-sort">
+			    999
+			    <span class="og-sort-icon">↕</span>
+			</th>
+
+			<th>
+			    Remark
+			</th>
+
+		    </tr>
+
+
+		    <!-- SEARCH -->
+		    <tr class="og-search-row">
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="VouDate"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="VouNo"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="item_name"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="net_wt"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="purity"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="fine_wt"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="metal_amt"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="rate_916"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th>
+			    <input
+				type="text"
+				class="og-search"
+				data-column="rate_999"
+				placeholder="Search"
+			    >
+			</th>
+
+			<th></th>
+
+		    </tr>
+
+		</thead>
+
+
+		<tbody></tbody>
+
+	    </table>
+
+	</div>
 
     `;
 
 
-    // ---------------------------------------------------------
-    // DISPLAY TABLE
-    // ---------------------------------------------------------
+		// ---------------------------------------------------------
+		// CREATE TABLE
+		// ---------------------------------------------------------
 
-    this.voucher_details.html(html);
-
-
-    // =========================================================
-    // MELTING WEIGHT / PURITY
-    // =========================================================
-
-    this.voucher_details
-        .off(
-            "input.old_gold change.old_gold",
-            ".melting-weight, .melting-purity"
-        )
-        .on(
-            "input.old_gold change.old_gold",
-            ".melting-weight, .melting-purity",
-            function () {
-
-                const index =
-                    parseInt(
-                        $(this).attr("data-index"),
-                        10
-                    );
+		this.voucher_details.html(html);
 
 
-                const row =
-                    me.voucher_items[index];
+		// ---------------------------------------------------------
+		// FIRST RENDER OF ROWS
+		// ---------------------------------------------------------
+
+		this.render_table_rows(
+			this.voucher_items
+		);
 
 
-                if (!row) {
-                    return;
-                }
+		// ---------------------------------------------------------
+		// MELTING INPUT
+		// ---------------------------------------------------------
+
+		this.voucher_details
+			.off(
+				"input.old_gold change.old_gold",
+				".melting-weight, .melting-purity"
+			)
+			.on(
+				"input.old_gold change.old_gold",
+				".melting-weight, .melting-purity",
+				function () {
+
+					const index =
+						parseInt(
+							$(this).attr("data-index"),
+							10
+						);
+
+					const calculation_row =
+						$(this).closest(
+							".og-calculation-row"
+						);
 
 
-                const calculation_row =
-                    $(this).closest(
-                        ".og-calculation-row"
-                    );
+					const melting_weight =
+						parseFloat(
+							calculation_row
+							.find(".melting-weight")
+							.val()
+						) || 0;
 
 
-                const melting_weight =
-                    parseFloat(
-                        calculation_row
-                            .find(".melting-weight")
-                            .val()
-                    ) || 0;
+					const melting_purity =
+						parseFloat(
+							calculation_row
+							.find(".melting-purity")
+							.val()
+						) || 0;
 
 
-                const melting_purity =
-                    parseFloat(
-                        calculation_row
-                            .find(".melting-purity")
-                            .val()
-                    ) || 0;
+					me.calculate_melting(
+						index,
+						melting_weight,
+						melting_purity
+					);
+
+				}
+			);
 
 
-                me.calculate_melting(
-                    index,
-                    melting_weight,
-                    melting_purity
-                );
+		// ---------------------------------------------------------
+		// REMARK
+		// ---------------------------------------------------------
 
-            }
-        );
+		this.voucher_details
+			.off(
+				"change.old_gold",
+				".melting-remark"
+			)
+			.on(
+				"change.old_gold",
+				".melting-remark",
+				function () {
 
+					const index =
+						parseInt(
+							$(this).attr("data-index"),
+							10
+						);
 
-    // =========================================================
-    // REMARK CHANGE
-    // =========================================================
-
-    this.voucher_details
-        .off(
-            "change.old_gold",
-            ".melting-remark"
-        )
-        .on(
-            "change.old_gold",
-            ".melting-remark",
-            function () {
-
-                const index =
-                    parseInt(
-                        $(this).attr("data-index"),
-                        10
-                    );
+					const remark =
+						$(this).val();
 
 
-                const remark =
-                    $(this).val();
+					if (me.voucher_items[index]) {
+
+						me.voucher_items[index].remark =
+							remark;
+
+					}
 
 
-                if (me.voucher_items[index]) {
+					me.save_melting_row(index);
 
-                    me.voucher_items[index].remark =
-                        remark;
-
-                }
+				}
+			);
 
 
-                me.save_melting_row(index);
+		// ---------------------------------------------------------
+		// MELTING WEIGHT BLUR
+		// ---------------------------------------------------------
 
-            }
-        );
+		this.voucher_details
+			.off(
+				"blur.old_gold",
+				".melting-weight"
+			)
+			.on(
+				"blur.old_gold",
+				".melting-weight",
+				function () {
 
+					const index =
+						parseInt(
+							$(this).attr("data-index"),
+							10
+						);
 
-    // =========================================================
-    // MELTING WEIGHT BLUR
-    // =========================================================
+					me.save_melting_row(index);
 
-    this.voucher_details
-        .off(
-            "blur.old_gold",
-            ".melting-weight"
-        )
-        .on(
-            "blur.old_gold",
-            ".melting-weight",
-            function () {
-
-                const index =
-                    parseInt(
-                        $(this).attr("data-index"),
-                        10
-                    );
-
-
-                me.save_melting_row(index);
-
-            }
-        );
+				}
+			);
 
 
-    // =========================================================
-    // MELTING PURITY BLUR
-    // =========================================================
+		// ---------------------------------------------------------
+		// MELTING PURITY BLUR
+		// ---------------------------------------------------------
 
-    this.voucher_details
-        .off(
-            "blur.old_gold",
-            ".melting-purity"
-        )
-        .on(
-            "blur.old_gold",
-            ".melting-purity",
-            function () {
+		this.voucher_details
+			.off(
+				"blur.old_gold",
+				".melting-purity"
+			)
+			.on(
+				"blur.old_gold",
+				".melting-purity",
+				function () {
 
-                const index =
-                    parseInt(
-                        $(this).attr("data-index"),
-                        10
-                    );
+					const index =
+						parseInt(
+							$(this).attr("data-index"),
+							10
+						);
 
+					me.save_melting_row(index);
 
-                me.save_melting_row(index);
-
-            }
-        );
-
-
-    // =========================================================
-    // SORT
-    // =========================================================
-
-    this.voucher_details
-        .off(
-            "click.old_gold",
-            ".og-sort"
-        )
-        .on(
-            "click.old_gold",
-            ".og-sort",
-            function () {
-
-                const column =
-                    $(this).attr("data-column");
+				}
+			);
 
 
-                me.sort_voucher_items(
-                    column
-                );
+		// ---------------------------------------------------------
+		// SORT
+		// ---------------------------------------------------------
 
-            }
-        );
+		this.voucher_details
+			.off(
+				"click.old_gold",
+				".og-sort"
+			)
+			.on(
+				"click.old_gold",
+				".og-sort",
+				function () {
 
-
-    // =========================================================
-    // SEARCH
-    // =========================================================
-
-    this.voucher_details
-        .off(
-            "input.old_gold",
-            ".og-search"
-        )
-        .on(
-            "input.old_gold",
-            ".og-search",
-            function () {
-
-                me.filter_voucher_items();
-
-            }
-        );
-
-}
+					const column =
+						$(this).attr("data-column");
 
 
+					me.sort_voucher_items(
+						column
+					);
+
+				}
+			);
 
 
-// =========================================================
-// SORT HEADER
-// =========================================================
+		// ---------------------------------------------------------
+		// SEARCH WITH DEBOUNCE
+		// ---------------------------------------------------------
+
+		this.voucher_details
+			.off(
+				"input.old_gold",
+				".og-search"
+			)
+			.on(
+				"input.old_gold",
+				".og-search",
+				function () {
+
+					clearTimeout(
+						me.search_timer
+					);
+
+
+					me.search_timer =
+						setTimeout(function () {
+
+							me.filter_voucher_items();
+
+						}, 500);
+
+				}
+			);
+
+	}
+	render_table_rows(rows) {
+		const me = this;
+
+		const tbody =
+			this.voucher_details
+			.find(".old-gold-grid tbody");
+
+
+		// ---------------------------------------------------------
+		// NO RECORDS
+		//
+		// DO NOT REMOVE TABLE.
+		// DO NOT SHOW ALERT.
+		// JUST CLEAR DATA ROWS.
+		// ---------------------------------------------------------
+
+		if (!rows || !rows.length) {
+
+			tbody.empty();
+			tbody.html(`
+	    <tr class="og-no-data-row">
+		<td colspan="10">
+		    No data found
+		</td>
+	    </tr>
+	`);    
+
+			return;
+		}
+
+
+		let html = "";
+
+
+		// ---------------------------------------------------------
+		// CREATE ROWS
+		// ---------------------------------------------------------
+
+		rows.forEach(function (row) {
+
+			const original_index =
+				me.voucher_items.indexOf(row);
+
+
+			const melting_weight =
+				row.melting_weight !== undefined &&
+				row.melting_weight !== null
+				? row.melting_weight
+				: "";
+
+
+			const melting_purity =
+				row.melting_purity !== undefined &&
+				row.melting_purity !== null
+				? row.melting_purity
+				: "";
+
+
+			const remark =
+				row.remark || "";
+
+
+			// =====================================================
+			// MAIN ROW
+			// =====================================================
+
+			html += `
+
+	    <tr
+		class="og-main-row"
+		data-index="${original_index}"
+	    >
+
+		<td>
+		    <span class="og-value">
+			${frappe.utils.escape_html(
+				row.VouDate || ""
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-voucher">
+			${frappe.utils.escape_html(
+				row.VouNo || ""
+			)}
+		    </span>
+		</td>
+
+
+		<td class="og-item">
+		    ${frappe.utils.escape_html(
+			    row.item_name || ""
+		    )}
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.net_wt
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.purity
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.fine_wt
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.metal_amt
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.rate_916
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+		    <span class="og-value">
+			${me.format_number(
+				row.rate_999
+			)}
+		    </span>
+		</td>
+
+
+		<td>
+
+		    <select
+			class="og-select melting-remark"
+			data-index="${original_index}"
+		    >
+
+			<option value="">
+			    Select
+			</option>
+
+			<option
+			    value="Melting"
+			    ${remark === "Melting"
+					    ? "selected"
+					    : ""}
+			>
+			    Melting
+			</option>
+
+			<option
+			    value="Vikrant"
+			    ${remark === "Vikrant"
+					    ? "selected"
+					    : ""}
+			>
+			    Vikrant
+			</option>
+
+			<option
+			    value="Jatin"
+			    ${remark === "Jatin"
+					    ? "selected"
+					    : ""}
+			>
+			    Jatin
+			</option>
+
+			<option
+			    value="Alpa"
+			    ${remark === "Alpa"
+					    ? "selected"
+					    : ""}
+			>
+			    Alpa
+			</option>
+
+			<option
+			    value="JR"
+			    ${remark === "JR"
+					    ? "selected"
+					    : ""}
+			>
+			    JR
+			</option>
+
+		    </select>
+
+		</td>
+
+	    </tr>
+
+
+	    <!-- =================================================
+		 MELTING ROW
+	    ================================================= -->
+
+	    <tr
+		class="og-calculation-row"
+		data-index="${original_index}"
+	    >
+
+		<td></td>
+
+		<td></td>
+
+		<td class="og-calculation-title">
+		    Melting Details
+		</td>
+
+
+		<!-- MELTING WEIGHT -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Melting Wt
+		    </label>
+
+		    <input
+			type="number"
+			class="og-input melting-weight"
+			data-index="${original_index}"
+			value="${melting_weight}"
+			step="0.001"
+			min="0"
+		    >
+
+		</td>
+
+
+		<!-- MELTING PURITY -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Melting Purity
+		    </label>
+
+		    <input
+			type="number"
+			class="og-input melting-purity"
+			data-index="${original_index}"
+			value="${melting_purity}"
+			step="0.01"
+			min="0"
+			max="100"
+		    >
+
+		</td>
+
+
+		<!-- FINE WT -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Fine Wt After Melt
+		    </label>
+
+		    <span class="og-result melting-fine-weight">
+			${me.format_number(
+				row.after_fine_weight
+			)}
+		    </span>
+
+		</td>
+
+
+		<!-- DIFFERENCE WT -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Diff Wt
+		    </label>
+
+		    <span class="diff-wt">
+			${me.format_number(
+				row.difference_weight
+			)}
+		    </span>
+
+		</td>
+
+
+		<!-- DIFFERENCE PURITY -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Diff %
+		    </label>
+
+		    <span class="diff-purity">
+			${me.format_number(
+				row.differenct_in_purity
+			)}
+		    </span>
+
+		</td>
+
+
+		<!-- DIFFERENCE FINE WT -->
+
+		<td class="og-melting-cell">
+
+		    <label class="og-input-label">
+			Diff Fine Wt
+		    </label>
+
+		    <span class="diff-fine-wt">
+			${me.format_number(
+				row.melting_fine_difference
+			)}
+		    </span>
+
+		</td>
+
+
+		<td></td>
+
+	    </tr>
+
+	`;
+
+		});
+
+
+		// ---------------------------------------------------------
+		// ONLY UPDATE TBODY
+		// ---------------------------------------------------------
+
+		tbody.html(html);
+
+	}
+
+
+
+
 
 sort_header(label, field, column) {
 
@@ -1493,121 +1435,186 @@ sort_voucher_items(column) {
 }
 
 
+// =========================================================
+// FILTER VOUCHER ITEMS
+// =========================================================
 filter_voucher_items() {
 
-    const filters = {};
+	const filters = {};
+
+	// ---------------------------------------------------------
+	// READ SEARCH VALUES
+	// ---------------------------------------------------------
+
+	this.voucher_details
+		.find(".og-search")
+		.each(function () {
+
+			const column =
+				$(this).attr("data-column");
+
+			const value =
+				String($(this).val() || "")
+				.trim()
+				.toLowerCase();
+
+			if (value) {
+				filters[column] = value;
+			}
+
+		});
 
 
-    // ---------------------------------------------------------
-    // READ SEARCH BOXES
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// FILTER ORIGINAL DATA
+	// ---------------------------------------------------------
 
-    this.voucher_details
-        .find(".og-search")
-        .each(function () {
+	const filtered =
+		this.voucher_items.filter(function (row) {
 
-            const column =
-                $(this).attr("data-column");
+			return Object.entries(filters)
+				.every(function ([column, search]) {
 
+					const value =
+						String(
+							row[column] ?? ""
+						).toLowerCase();
 
-            const value =
-                String(
-                    $(this).val() || ""
-                )
-                .trim()
-                .toLowerCase();
+					return value.includes(search);
 
+				});
 
-            if (value) {
-
-                filters[column] =
-                    value;
-
-            }
-
-        });
+		});
 
 
-    // ---------------------------------------------------------
-    // FILTER ORIGINAL DATA
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// IMPORTANT:
+	// DO NOT CALL render_voucher_details()
+	// ---------------------------------------------------------
+	//
+	// Only replace tbody.
+	// Header + search remain untouched.
+	// ---------------------------------------------------------
 
-    const filtered =
-        this.voucher_items.filter(
-            function (row) {
+	this.render_table_rows(filtered);
 
-                return Object.entries(filters)
-                    .every(
-                        function ([column, search]) {
+}
 
-                            const value =
-                                String(
-                                    row[column] ?? ""
-                                )
-                                .toLowerCase();
+filter_voucher_items_v1() {
 
-
-                            return value.includes(
-                                search
-                            );
-
-                        }
-                    );
-
-            }
-        );
+	const filters = {};
 
 
-    // ---------------------------------------------------------
-    // REMEMBER SEARCH VALUES
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// READ SEARCH BOXES
+	// ---------------------------------------------------------
 
-    const search_values = {};
+	this.voucher_details
+		.find(".og-search")
+		.each(function () {
 
-
-    this.voucher_details
-        .find(".og-search")
-        .each(function () {
-
-            const column =
-                $(this).attr("data-column");
+			const column =
+				$(this).attr("data-column");
 
 
-            search_values[column] =
-                $(this).val();
-
-        });
-
-
-    // ---------------------------------------------------------
-    // RENDER FILTERED DATA
-    //
-    // false = DON'T replace voucher_items
-    // ---------------------------------------------------------
-
-    this.render_voucher_details(
-        filtered,
-        false
-    );
+			const value =
+				String(
+					$(this).val() || ""
+				)
+				.trim()
+				.toLowerCase();
 
 
-    // ---------------------------------------------------------
-    // RESTORE SEARCH VALUES
-    // ---------------------------------------------------------
+			if (value) {
 
-    this.voucher_details
-        .find(".og-search")
-        .each(function () {
+				filters[column] =
+					value;
 
-            const column =
-                $(this).attr("data-column");
+			}
+
+		});
 
 
-            $(this).val(
-                search_values[column] || ""
-            );
+	// ---------------------------------------------------------
+	// FILTER ORIGINAL DATA
+	// ---------------------------------------------------------
 
-        });
+	const filtered =
+		this.voucher_items.filter(
+			function (row) {
+
+				return Object.entries(filters)
+					.every(
+						function ([column, search]) {
+
+							const value =
+								String(
+									row[column] ?? ""
+								)
+								.toLowerCase();
+
+
+							return value.includes(
+								search
+							);
+
+						}
+					);
+
+			}
+		);
+
+
+	// ---------------------------------------------------------
+	// REMEMBER SEARCH VALUES
+	// ---------------------------------------------------------
+
+	const search_values = {};
+
+
+	this.voucher_details
+		.find(".og-search")
+		.each(function () {
+
+			const column =
+				$(this).attr("data-column");
+
+
+			search_values[column] =
+				$(this).val();
+
+		});
+
+
+	// ---------------------------------------------------------
+	// RENDER FILTERED DATA
+	//
+	// false = DON'T replace voucher_items
+	// ---------------------------------------------------------
+
+	this.render_voucher_details(
+		filtered,
+		false
+	);
+
+
+	// ---------------------------------------------------------
+	// RESTORE SEARCH VALUES
+	// ---------------------------------------------------------
+
+	this.voucher_details
+		.find(".og-search")
+		.each(function () {
+
+			const column =
+				$(this).attr("data-column");
+
+
+			$(this).val(
+				search_values[column] || ""
+			);
+
+		});
 
 }
 
@@ -1618,85 +1625,85 @@ filter_voucher_items() {
 // ---------------------------------------------------------
 calculate_melting(index, melting_weight, melting_purity) {
 
-    const row = this.voucher_items[index];
+	const row = this.voucher_items[index];
 
-    if (!row) {
-        return;
-    }
+	if (!row) {
+		return;
+	}
 
-    const net_wt = parseFloat(row.net_wt) || 0;
-    const purity = parseFloat(row.purity) || 0;
-    const original_fine_wt = parseFloat(row.fine_wt) || 0;
+	const net_wt = parseFloat(row.net_wt) || 0;
+	const purity = parseFloat(row.purity) || 0;
+	const original_fine_wt = parseFloat(row.fine_wt) || 0;
 
-    // Fine weight after melting
-    const fine_weight =
-        melting_weight * melting_purity / 100;
+	// Fine weight after melting
+	const fine_weight =
+		melting_weight * melting_purity / 100;
 
-    // Difference in weight
-    const difference_weight =
-        melting_weight - net_wt;
+	// Difference in weight
+	const difference_weight =
+		melting_weight - net_wt;
 
-    // Difference in purity
-    const difference_purity =
-        melting_purity - Math.round(purity);
+	// Difference in purity
+	const difference_purity =
+		melting_purity - Math.round(purity);
 
-    // Difference in fine weight
-    const melting_fine_difference =
-        fine_weight - original_fine_wt;
-
-
-    // ---------------------------------------------------------
-    // UPDATE JS DATA
-    // ---------------------------------------------------------
-
-    row.melting_weight = melting_weight;
-    row.melting_purity = melting_purity;
-    row.after_fine_weight = fine_weight;
-    row.fine_wt_after_melting = fine_weight;
-
-    row.difference_weight = difference_weight;
-    row.difference__wt = difference_weight;
-
-    row.differenct_in_purity = difference_purity;
-    row.difference_purity = difference_purity;
-
-    row.melting_fine_difference = melting_fine_difference;
-    row.difference_fine_wt = melting_fine_difference;
+	// Difference in fine weight
+	const melting_fine_difference =
+		fine_weight - original_fine_wt;
 
 
-    // ---------------------------------------------------------
-    // FIND CURRENT CALCULATION ROW
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// UPDATE JS DATA
+	// ---------------------------------------------------------
 
-    const calculation_row =
-        this.voucher_details
-            .find(`.og-calculation-row[data-index="${index}"]`);
+	row.melting_weight = melting_weight;
+	row.melting_purity = melting_purity;
+	row.after_fine_weight = fine_weight;
+	row.fine_wt_after_melting = fine_weight;
+
+	row.difference_weight = difference_weight;
+	row.difference__wt = difference_weight;
+
+	row.differenct_in_purity = difference_purity;
+	row.difference_purity = difference_purity;
+
+	row.melting_fine_difference = melting_fine_difference;
+	row.difference_fine_wt = melting_fine_difference;
 
 
-    if (!calculation_row.length) {
-        return;
-    }
+	// ---------------------------------------------------------
+	// FIND CURRENT CALCULATION ROW
+	// ---------------------------------------------------------
+
+	const calculation_row =
+		this.voucher_details
+		.find(`.og-calculation-row[data-index="${index}"]`);
 
 
-    // ---------------------------------------------------------
-    // UPDATE DISPLAY
-    // ---------------------------------------------------------
+	if (!calculation_row.length) {
+		return;
+	}
 
-    calculation_row
-        .find(".melting-fine-weight")
-        .text(this.format_number(fine_weight));
 
-    calculation_row
-        .find(".diff-wt")
-        .text(this.format_number(difference_weight));
+	// ---------------------------------------------------------
+	// UPDATE DISPLAY
+	// ---------------------------------------------------------
 
-    calculation_row
-        .find(".diff-purity")
-        .text(this.format_number(difference_purity));
+	calculation_row
+		.find(".melting-fine-weight")
+		.text(this.format_number(fine_weight));
 
-    calculation_row
-        .find(".diff-fine-wt")
-        .text(this.format_number(melting_fine_difference));
+	calculation_row
+		.find(".diff-wt")
+		.text(this.format_number(difference_weight));
+
+	calculation_row
+		.find(".diff-purity")
+		.text(this.format_number(difference_purity));
+
+	calculation_row
+		.find(".diff-fine-wt")
+		.text(this.format_number(melting_fine_difference));
 }
 
 
@@ -1741,203 +1748,203 @@ format_number(value) {
 
 save_melting_row(index) {
 
-    const me = this;
+	const me = this;
 
-    const row = this.voucher_items[index];
+	const row = this.voucher_items[index];
 
-    if (!row) {
-        return;
-    }
+	if (!row) {
+		return;
+	}
 
-    const calculation_row =
-        this.voucher_details
-            .find(`.og-calculation-row[data-index="${index}"]`);
+	const calculation_row =
+		this.voucher_details
+		.find(`.og-calculation-row[data-index="${index}"]`);
 
-    if (!calculation_row.length) {
-        return;
-    }
+	if (!calculation_row.length) {
+		return;
+	}
 
 
-    // ---------------------------------------------------------
-    // GET CURRENT VALUES
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// GET CURRENT VALUES
+	// ---------------------------------------------------------
 
-    const melting_weight =
-        parseFloat(
-            calculation_row.find(".melting-weight").val()
-        ) || null;
+	const melting_weight =
+		parseFloat(
+			calculation_row.find(".melting-weight").val()
+		) || null;
 
-    const melting_purity =
-        parseFloat(
-            calculation_row.find(".melting-purity").val()
-        ) || null;
+	const melting_purity =
+		parseFloat(
+			calculation_row.find(".melting-purity").val()
+		) || null;
 
-    const remark =
-        this.voucher_details
-            .find(`.melting-remark[data-index="${index}"]`)
-            .val() || "";
+	const remark =
+		this.voucher_details
+		.find(`.melting-remark[data-index="${index}"]`)
+		.val() || "";
 
 
-    // ---------------------------------------------------------
-    // CALCULATE VALUES
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// CALCULATE VALUES
+	// ---------------------------------------------------------
 
-    const net_wt =
-        parseFloat(row.net_wt) || 0;
+	const net_wt =
+		parseFloat(row.net_wt) || 0;
 
-    const purity =
-        parseFloat(row.purity) || 0;
+	const purity =
+		parseFloat(row.purity) || 0;
 
-    const fine_wt =
-        parseFloat(row.fine_wt) || 0;
+	const fine_wt =
+		parseFloat(row.fine_wt) || 0;
 
 
-    let fine_wt_after_melting = null;
-    let difference_wt = null;
-    let difference_purity = null;
-    let difference_fine_wt = null;
+	let fine_wt_after_melting = null;
+	let difference_wt = null;
+	let difference_purity = null;
+	let difference_fine_wt = null;
 
 
-    if (
-        melting_weight !== null &&
-        melting_purity !== null
-    ) {
+	if (
+		melting_weight !== null &&
+		melting_purity !== null
+	) {
 
-        fine_wt_after_melting =
-            melting_weight * melting_purity / 100;
+		fine_wt_after_melting =
+			melting_weight * melting_purity / 100;
 
-        difference_wt =
-            melting_weight - net_wt;
+		difference_wt =
+			melting_weight - net_wt;
 
-        difference_purity =
-            melting_purity - Math.round(purity);
+		difference_purity =
+			melting_purity - Math.round(purity);
 
-        difference_fine_wt =
-            fine_wt_after_melting - fine_wt;
-    }
+		difference_fine_wt =
+			fine_wt_after_melting - fine_wt;
+	}
 
 
-    // ---------------------------------------------------------
-    // UPDATE JS DATA
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// UPDATE JS DATA
+	// ---------------------------------------------------------
 
-    row.melting_weight =
-        melting_weight;
+	row.melting_weight =
+		melting_weight;
 
-    row.melting_purity =
-        melting_purity;
+	row.melting_purity =
+		melting_purity;
 
-    row.after_fine_weight =
-        fine_wt_after_melting;
+	row.after_fine_weight =
+		fine_wt_after_melting;
 
-    row.fine_wt_after_melting =
-        fine_wt_after_melting;
+	row.fine_wt_after_melting =
+		fine_wt_after_melting;
 
-    row.difference_weight =
-        difference_wt;
+	row.difference_weight =
+		difference_wt;
 
-    row.difference__wt =
-        difference_wt;
+	row.difference__wt =
+		difference_wt;
 
-    row.differenct_in_purity =
-        difference_purity;
+	row.differenct_in_purity =
+		difference_purity;
 
-    row.difference_purity =
-        difference_purity;
+	row.difference_purity =
+		difference_purity;
 
-    row.melting_fine_difference =
-        difference_fine_wt;
+	row.melting_fine_difference =
+		difference_fine_wt;
 
-    row.difference_fine_wt =
-        difference_fine_wt;
+	row.difference_fine_wt =
+		difference_fine_wt;
 
-    row.remark =
-        remark;
+	row.remark =
+		remark;
 
 
-    // ---------------------------------------------------------
-    // SAVE TO DATABASE
-    // ---------------------------------------------------------
+	// ---------------------------------------------------------
+	// SAVE TO DATABASE
+	// ---------------------------------------------------------
 
-    frappe.call({
+	frappe.call({
 
-        method:
-            "vgjewellry.vg_jewellery.page.old_gold.old_gold.save_melting_data",
+		method:
+		"vgjewellry.vg_jewellery.page.old_gold.old_gold.save_melting_data",
 
-        args: {
+		args: {
 
-            sptranid:
-                row.sptranid,
+			sptranid:
+			row.sptranid,
 
-            vouno:
-                row.VouNo || "",
+			vouno:
+			row.VouNo || "",
 
-            voudate:
-                row.VouDate ||
-                row.voudate ||
-                null,
+			voudate:
+			row.VouDate ||
+			row.voudate ||
+			null,
 
-            net_wt:
-                row.net_wt || 0,
+			net_wt:
+			row.net_wt || 0,
 
-            metal_amt:
-                row.metal_amt || 0,
+			metal_amt:
+			row.metal_amt || 0,
 
-            sales_vou_no:
-                row.sales_vou_no || "",
+			sales_vou_no:
+			row.sales_vou_no || "",
 
-            rate_999:
-                row.rate_999 || 0,
+			rate_999:
+			row.rate_999 || 0,
 
-            rate_916:
-                row.rate_916 || 0,
+			rate_916:
+			row.rate_916 || 0,
 
-            purity:
-                row.purity || 0,
+			purity:
+			row.purity || 0,
 
-            fine_wt:
-                row.fine_wt || 0,
+			fine_wt:
+			row.fine_wt || 0,
 
-            melting_weight:
-                melting_weight,
+			melting_weight:
+			melting_weight,
 
-            melting_purity:
-                melting_purity,
+			melting_purity:
+			melting_purity,
 
-            fine_wt_after_melting:
-                fine_wt_after_melting,
+			fine_wt_after_melting:
+			fine_wt_after_melting,
 
-            difference__wt:
-                difference_wt,
+			difference__wt:
+			difference_wt,
 
-            difference_purity:
-                difference_purity,
+			difference_purity:
+			difference_purity,
 
-            difference_fine_wt:
-                difference_fine_wt,
+			difference_fine_wt:
+			difference_fine_wt,
 
-            remark:
-                remark
-        },
+			remark:
+			remark
+		},
 
-        freeze: true,
+		freeze: true,
 
-        freeze_message: "Saving melting data...",
+		freeze_message: "Saving melting data...",
 
-        callback: function (r) {
+		callback: function (r) {
 
-            if (!r.exc) {
+			if (!r.exc) {
 
-                frappe.show_alert({
-                    message: __("Melting data saved"),
-                    indicator: "green"
-                });
+				frappe.show_alert({
+					message: __("Melting data saved"),
+					indicator: "green"
+				});
 
-            }
+			}
 
-        }
+		}
 
-    });
+	});
 }
 
 
