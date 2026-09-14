@@ -13,6 +13,7 @@
   "receiver_branch",
   "parcel_recieve_mo_number",
   "parcel_receive_by_name",
+  "sender_supplier_new_name",
   "column_break_fzrl",
   "send_recive",
   "sourcemode",
@@ -20,6 +21,7 @@
   "receiver_supplier",
   "parcel_delivered_by_name",
   "parcel_delivered_mo_number",
+  "receiver_supplier_new_name",
   "section_break_pivt",
   "receiver_emp_name",
   "remarks",
@@ -228,12 +230,22 @@
    "fieldname": "app_gold",
    "fieldtype": "Check",
    "label": "Approve Gold"
+  },
+  {
+   "fieldname": "sender_supplier_new_name",
+   "fieldtype": "Data",
+   "label": "Sender Supplier (New)"
+  },
+  {
+   "fieldname": "receiver_supplier_new_name",
+   "fieldtype": "Data",
+   "label": "Receiver Supplier (New)"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-11 16:02:19.657921",
+ "modified": "2026-09-14 13:04:32.258548",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "VG_Parcel_Issue_Receipt",
