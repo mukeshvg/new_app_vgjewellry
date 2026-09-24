@@ -35,14 +35,17 @@
   "received_by",
   "vg_voucher_no",
   "app_diamond",
+  "diamond_signature",
   "column_break_oqth",
   "rec_gold",
   "vou_gold",
   "app_gold",
+  "gold_signature",
   "column_break_zwvd",
   "rec_silver",
   "vou_silver",
-  "app_silver"
+  "app_silver",
+  "silver_signature"
  ],
  "fields": [
   {
@@ -240,12 +243,27 @@
    "fieldname": "receiver_supplier_new_name",
    "fieldtype": "Data",
    "label": "Receiver Supplier (New)"
+  },
+  {
+   "fieldname": "diamond_signature",
+   "fieldtype": "Signature",
+   "label": "Diamond Receiver Signature"
+  },
+  {
+   "fieldname": "gold_signature",
+   "fieldtype": "Signature",
+   "label": "Gold Receiver Signature"
+  },
+  {
+   "fieldname": "silver_signature",
+   "fieldtype": "Signature",
+   "label": "Silver Receiver Signature"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-14 13:04:32.258548",
+ "modified": "2026-09-24 15:50:32.756886",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "VG_Parcel_Issue_Receipt",
