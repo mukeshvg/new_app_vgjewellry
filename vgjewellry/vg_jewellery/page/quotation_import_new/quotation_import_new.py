@@ -270,6 +270,9 @@ def upload_excel():
         excel_row = index + 2
 
         diamond_pcs = clean(row.get("Diamond Pcs"))
+        diamond_shape = clean(row.get("Diamond Shape"))
+        if(diamond_shape is None or str(diamond_shape).strip()==""):
+            continue;
 
         # Diamond Pcs is mandatory and must be 1 or greater
         if (
