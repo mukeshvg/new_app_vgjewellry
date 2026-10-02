@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"1trZd-rK4v\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Catalogue\",\"col\":3}},{\"id\":\"xVo-HYqvL7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Virchand Govanji Jewellers</span>\",\"col\":12}},{\"id\":\"BHLnapMxvU\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":3}},{\"id\":\"OtzCyoirSv\",\"type\":\"card\",\"data\":{\"card_name\":\"Management Report\",\"col\":3}},{\"id\":\"5R3pE5gzsG\",\"type\":\"card\",\"data\":{\"card_name\":\"Outstanding Report\",\"col\":3}},{\"id\":\"4IzmOob9fF\",\"type\":\"card\",\"data\":{\"card_name\":\"VG Exhibition\",\"col\":3}},{\"id\":\"XVff3-3VWu\",\"type\":\"card\",\"data\":{\"card_name\":\"Parcel_Issue_Receipt\",\"col\":3}},{\"id\":\"LFdazOsfDG\",\"type\":\"card\",\"data\":{\"card_name\":\"Marrage_Cus_Tracking\",\"col\":3}},{\"id\":\"EmcUGPcBKJ\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Order\",\"col\":3}},{\"id\":\"qko7S9DU5N\",\"type\":\"card\",\"data\":{\"card_name\":\"Non Jewellery Inventory\",\"col\":3}}]",
+ "content": "[{\"id\":\"1trZd-rK4v\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Catalogue\",\"col\":3}},{\"id\":\"Lf6BcaTBFi\",\"type\":\"card\",\"data\":{\"card_name\":\"Custom Report\",\"col\":4}},{\"id\":\"5HKYSMC2Ow\",\"type\":\"card\",\"data\":{\"card_name\":\"Quotation\",\"col\":4}},{\"id\":\"xVo-HYqvL7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Virchand Govanji Jewellers</span>\",\"col\":12}},{\"id\":\"BHLnapMxvU\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":3}},{\"id\":\"OtzCyoirSv\",\"type\":\"card\",\"data\":{\"card_name\":\"Management Report\",\"col\":3}},{\"id\":\"5R3pE5gzsG\",\"type\":\"card\",\"data\":{\"card_name\":\"Outstanding Report\",\"col\":3}},{\"id\":\"4IzmOob9fF\",\"type\":\"card\",\"data\":{\"card_name\":\"VG Exhibition\",\"col\":3}},{\"id\":\"XVff3-3VWu\",\"type\":\"card\",\"data\":{\"card_name\":\"Parcel_Issue_Receipt\",\"col\":3}},{\"id\":\"LFdazOsfDG\",\"type\":\"card\",\"data\":{\"card_name\":\"Marrage_Cus_Tracking\",\"col\":3}},{\"id\":\"EmcUGPcBKJ\",\"type\":\"card\",\"data\":{\"card_name\":\"VG_Order\",\"col\":3}},{\"id\":\"d8E_JAx4wV\",\"type\":\"card\",\"data\":{\"card_name\":\"Marketing\",\"col\":3}},{\"id\":\"qko7S9DU5N\",\"type\":\"card\",\"data\":{\"card_name\":\"Non Jewellery Inventory\",\"col\":3}},{\"id\":\"BWagLe1oKU\",\"type\":\"card\",\"data\":{\"card_name\":\"Labelling Report\",\"col\":3}},{\"id\":\"wYT1BZ_W1s\",\"type\":\"card\",\"data\":{\"card_name\":\"Housekeeping\",\"col\":3}},{\"id\":\"n-pd8aio-E\",\"type\":\"card\",\"data\":{\"card_name\":\"Purchase Department\",\"col\":3}},{\"id\":\"ZLr6HBXftN\",\"type\":\"card\",\"data\":{\"card_name\":\"Diamond Rate Master\",\"col\":4}},{\"id\":\"HttlVxmrNq\",\"type\":\"card\",\"data\":{\"card_name\":\"BANNER MANAGEMET\",\"col\":4}},{\"id\":\"gB2793StxT\",\"type\":\"card\",\"data\":{\"card_name\":\"Petty Cash\",\"col\":4}}]",
  "creation": "2025-04-29 16:56:48.302437",
  "custom_blocks": [],
  "docstatus": 0,
@@ -106,35 +106,6 @@
    "link_count": 0,
    "link_to": "VG Exhibition",
    "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Parcel_Issue_Receipt",
-   "link_count": 2,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Add Parcel_Issue_Receipt",
-   "link_count": 0,
-   "link_to": "VG_Parcel_Issue_Receipt",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Parcel Tracking Report",
-   "link_count": 0,
-   "link_to": "Parcel Issue Receipt Tracking Report",
-   "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
@@ -328,8 +299,587 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "VG_Catalogue",
+   "label": "Labelling Report",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Received From NCH And Inhouse",
+   "link_count": 0,
+   "link_to": "Received From NCH And Inhouse",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Labeling Count",
+   "link_count": 0,
+   "link_to": "Labeling Count",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "IssueReceipt",
+   "link_count": 0,
+   "link_to": "IssueReceipt",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Label Preparation Report",
+   "link_count": 0,
+   "link_to": "Label Preparation Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Custom Report",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Wastage Report",
+   "link_count": 0,
+   "link_to": "Wastage Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add New Wastage",
+   "link_count": 0,
+   "link_to": "Wastage_Purchase",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Silver Wastage Report",
+   "link_count": 0,
+   "link_to": "Silver Wastage Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Diamond Purchase Rate",
+   "link_count": 0,
+   "link_to": "Diamond_Purchase_Rate",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Housekeeping",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Housekeeping Checklist",
+   "link_count": 0,
+   "link_to": "Housekeeping Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Store Open Close Checklist",
+   "link_count": 0,
+   "link_to": "Store Open Close Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Store Operation Checklist",
+   "link_count": 0,
+   "link_to": "Store Operation Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Housekeeping Daily Summary",
+   "link_count": 0,
+   "link_to": "Housekeeping Daily Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Housekeeping Task Detail",
+   "link_count": 0,
+   "link_to": "Housekeeping Task Detail",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Consolidate Summary",
+   "link_count": 0,
+   "link_to": "Consolidate checklist",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Diamond Rate Master",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Diamond_Labour_Charge",
+   "link_count": 0,
+   "link_to": "Diamond_Labour_Charge",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Diamond_Purchase_Rate",
+   "link_count": 0,
+   "link_to": "Diamond_Purchase_Rate",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add New Gsize",
+   "link_count": 0,
+   "link_to": "Diamond_Gsize",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add New Shape",
+   "link_count": 0,
+   "link_to": "Diamond_Shape",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "BANNER MANAGEMET",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "BANNER DASHBOARD",
+   "link_count": 0,
+   "link_to": "banner-admin-dashboard",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "PUBLISHER RENT",
+   "link_count": 0,
+   "link_to": "publisher-rate-watcher",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "HEAT MAP",
+   "link_count": 0,
+   "link_to": "vg-jewels-heatmap",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Master",
+   "link_count": 13,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Add Customer",
+   "link_count": 0,
+   "link_to": "VG_Customer_Details",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Margin Report",
+   "link_count": 0,
+   "link_to": "Vg Margin Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Silver Instock Margin",
+   "link_count": 0,
+   "link_to": "Silver In Stock Margin Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Requisiton",
+   "link_count": 0,
+   "link_to": "product-requisition--1",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Ideal Stock",
+   "link_count": 0,
+   "link_to": "current_stock_page",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Ideal Stock (Diamond)",
+   "link_count": 0,
+   "link_to": "ideal-stock-for-diam",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Requistion (Manager)",
+   "link_count": 0,
+   "link_to": "product-requisition-",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Requistion (PD)",
+   "link_count": 0,
+   "link_to": "product-requisition-for-po",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Assignment",
+   "link_count": 0,
+   "link_to": "product-assignment--",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cart",
+   "link_count": 0,
+   "link_to": "vg-purchase-cart",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG PO",
+   "link_count": 0,
+   "link_to": "Vg Purchase Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Branch Transfer Issue",
+   "link_count": 0,
+   "link_to": "branch-transfer-requ",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Branch Transfer Received",
+   "link_count": 0,
+   "link_to": "branch-trans-receive",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quotation",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Upload Quotation",
+   "link_count": 0,
+   "link_to": "quotation-import-new",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quotation Bank",
+   "link_count": 0,
+   "link_to": "quotation-bank",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quotation Cart",
+   "link_count": 0,
+   "link_to": "vg-quotation-cart",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quotation PO",
+   "link_count": 0,
+   "link_to": "vg-quotation-po",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Visitor Vendor",
+   "link_count": 0,
+   "link_to": "Visitor Vendor",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Petty Cash",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Daily Petty Cash",
+   "link_count": 0,
+   "link_to": "Daily Petty Cash",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cash Request",
+   "link_count": 0,
+   "link_to": "Cash Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Petty Cash Expense Category Wise",
+   "link_count": 0,
+   "link_to": "Petty Cash Expense Category Wise",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Petty Cash View",
+   "link_count": 0,
+   "link_to": "petty-cash-view-mode",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Daily Petty Cash Register",
+   "link_count": 0,
+   "link_to": "Daily Petty Cash Register",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Marketing",
    "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Marketing",
+   "link_count": 0,
+   "link_to": "marketing-hub",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Parcel_Issue_Receipt",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Parcel_Issue_Receipt",
+   "link_count": 0,
+   "link_to": "parcel-issue-receipt",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Purchase Department",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "PO receive",
+   "link_count": 0,
+   "link_to": "po-received",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "PO follow-up",
+   "link_count": 0,
+   "link_to": "vendor-followup-log",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VG_Catalogue",
+   "link_count": 6,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -347,44 +897,55 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Master",
-   "link_count": 3,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Add Customer",
+   "label": "DD",
    "link_count": 0,
-   "link_to": "VG_Customer_Details",
-   "link_type": "DocType",
+   "link_to": "director-dashboard",
+   "link_type": "Page",
    "onboard": 0,
    "type": "Link"
   },
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Received From NCH And Inhouse",
+   "label": "CRM Report",
    "link_count": 0,
-   "link_to": "Received From NCH And Inhouse",
-   "link_type": "DocType",
+   "link_to": "crm-dashboard",
+   "link_type": "Page",
    "onboard": 0,
    "type": "Link"
   },
   {
    "hidden": 0,
-   "is_query_report": 1,
-   "label": "Margin Report",
+   "is_query_report": 0,
+   "label": "Rate Cut",
    "link_count": 0,
-   "link_to": "Margin Report",
-   "link_type": "Report",
+   "link_to": "rate-cut",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Vs Target",
+   "link_count": 0,
+   "link_to": "product-stock-galler",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Walk-in Report",
+   "link_count": 0,
+   "link_to": "walk-in-report",
+   "link_type": "Page",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2025-10-15 18:35:03.998648",
+ "modified": "2026-10-02 20:35:39.141948",
  "modified_by": "Administrator",
  "module": "VG Jewellery",
  "name": "Virchand Govanji Jewellers",
