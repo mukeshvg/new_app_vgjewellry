@@ -1057,7 +1057,14 @@ function show_counter_details(counter) {
             d.branch ||
             d.branch_name ||
             "-";
+	const branchMap = {
+        15: "Valsad",
+        16: "Vapi",
+        17: "Surat",
+        18: "CRM"
+    };
 
+	branch = branchMap[branch] || branch;
 
         let counter_name =
             d.counter ||
