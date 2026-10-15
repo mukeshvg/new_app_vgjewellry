@@ -1208,6 +1208,8 @@ def send_pending_po_emails(po_no = None):
             if not file_url:
                 continue
             base_url = frappe.utils.get_url()
+            if base_url.startswith("http://"):
+                base_url = base_url.replace("http://", "https://", 1)
             pdf_url = f"{base_url}{file_url}"
             link = " "
             body_param =[vendor_name,po.name,"8238095376",link ]
