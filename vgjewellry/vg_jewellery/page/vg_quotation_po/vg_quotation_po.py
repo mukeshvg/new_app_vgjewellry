@@ -1212,10 +1212,10 @@ def send_pending_po_emails(po_no = None):
             link = " "
             body_param =[vendor_name,po.name,"8238095376",link ]
             mobile = f"91{vendor_mobile}"
-            """send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
+            send_whatsapp(mobile,"purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("918238095376","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
             send_whatsapp("919273446652","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
-            send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)"""
+            send_whatsapp("919512152521","purchase_order_whatsapp_with_link_new",pdf_url,body_param)
 
 
             # -------------------------------------------------
