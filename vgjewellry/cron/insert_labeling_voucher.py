@@ -17,6 +17,7 @@ def connect_ho():
     conn = pyodbc.connect(value_ho,autocommit=True)
     conn.set_attr(pyodbc.SQL_ATTR_TXN_ISOLATION,pyodbc.SQL_TXN_READ_UNCOMMITTED)
     return conn
+@frappe.whitelist(allow_guest=True)
 def insert_voucher():
     today = date.today()
     two_days_ago = today - timedelta(days=5)
@@ -39,7 +40,6 @@ def insert_voucher():
     qry =f'''
     SELECT am.AccName as AccName, im.VouNo as issue_vou_no,im.UserID as systemUserName,im.RefNo as ref,vait.VouNo as rec_vou_no , vait.VouDate as rec_date   ,i.GrossWt  as GrossWt , i.NetWt  as NetWt,i.Purity as Purity,i.Pcs as Pcs,i.VouDate  as VouDate ,i.OPVouTranId  as OPVouTranId from IRTran AS i left join IRMst AS im on im.IRMstID =i.IRMstId left join VoucherActionItemTran AS vait on vait.VouTranId =i.OPVouTranId left join AccMaster am on am.AccMstID =im.AccMstId  WHERE {date_query}  and i.VchType in ('HMI','DHMI')  order by i.VouDate;
     '''
-    return f"{qry}"
     cursor.execute(qry)
     rows = cursor.fetchall()
     return_array ={}
@@ -62,5 +62,6 @@ def insert_voucher():
         else:
             doc = frappe.get_doc('Issued For NCH', existing_doc)
             doc.receive_voucher_no=rec_vou_no
+            doc.pcs=pcs
             doc.save(ignore_permissions=True)
 
