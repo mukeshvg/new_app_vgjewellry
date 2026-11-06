@@ -430,8 +430,12 @@ render_label_details(data) {
 
             .sc-total {
                 font-size: 14px !important;
-                font-weight: 600;
             }
+
+	    #sc-grand-total {
+		font-size: 14px !important;
+                font-weight: 600;
+	    }
 
         </style>
 
