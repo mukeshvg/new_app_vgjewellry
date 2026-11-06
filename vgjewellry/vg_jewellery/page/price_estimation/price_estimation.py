@@ -6,6 +6,9 @@ import time
 import pyodbc
 
 ITEM_QRY = "SET NOCOUNT ON; SELECT ItemMstID, ItemName FROM dbo.ItemMst WHERE ItemMstID > 0"
+
+DIAMONDSTYLE_QRY = "SET NOCOUNT ON; SELECT DiamondStyleMstID, StyleName, EffectToTradOtChrg FROM dbo.DiamondStyleMst WHERE DiamondStyleMstID > 0"
+
 METAL_RATE_QRY = """
 SET NOCOUNT ON;
 SELECT r.ItemTradMstID, r.PurRate, r.SalesRate
@@ -77,6 +80,10 @@ def get_label_details(label_no):
     
     items = fetch_map(cursor, ITEM_QRY)
 
+    cursor.execute(DIAMONDSTYLE_QRY)
+    diamond_style_rows = cursor.fetchall()
+    diamond_style = {r[0]: clean(r[1]) for r in diamond_style_rows}
+
     cursor.execute(METAL_RATE_QRY)
     metal_rate = {}
     silver_sale_rate = {}
@@ -112,10 +119,24 @@ def get_label_details(label_no):
         data["Gst"]= data["Igst"]+data["Cgst"]
         data["Total"]=data.get("NetAmt")+data.get("Gst")
 
+        qryl = """ select * from dbo.LabelTransactionStudded lts where lts.LabelTransID=?  and IsBase='N' """
+        cursor.execute(qryl, (data.get("LabelTransID"),))
+        columnsl = [column[0] for column in cursor.description]
+        rowsl = cursor.fetchall()
+        details=[]
+
+        for rowl in rowsl:
+            data_l = dict(zip(columnsl, rowl))
+            data_l["Style"] = diamond_style.get(data_l.get("StyleID"))
+            details.append(data_l)
+        data["details"]= details
 
 
         result.append(data)
-
+    
+    cursor.close()
+    con.close()
+    
     return result
 
 

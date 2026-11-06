@@ -1,10 +1,3 @@
-/*frappe.pages['price-estimation'].on_page_load = function(wrapper) {
-	var page = frappe.ui.make_app_page({
-		parent: wrapper,
-		title: 'Price Estimation',
-		single_column: true
-	});
-}*/
 frappe.pages['price-estimation'].on_page_load = function(wrapper) {
 	new PriceEstimation(wrapper);
 };
@@ -258,6 +251,10 @@ render_label_details(data) {
         data = data[0];
     }
 
+   let src = data.ImagePath1 || "/assets/frappe/images/ui-placeholder.svg";
+   let image_url = "/external-image/" +
+   src.split("/").map(encodeURIComponent).join("/");
+	
     const container = this.page.main.find("#label-details");
 
     if (!data) {
@@ -439,6 +436,9 @@ render_label_details(data) {
         </style>
 
         <div class="sc-form">
+	     <div class="row" style="display: flex; align-items: center; justify-content: center;">
+		 <img src="${image_url}" class="image-thumb" data-full="${image_url}">
+	     </div>
 
             <div class="row">
 
@@ -446,7 +446,7 @@ render_label_details(data) {
                 ${field("Label No", data.label_no || data.DLabelNo, "sc-label", {right:true})}
 
                 ${field("Gr Wt", num(data.GrossWt, 3), "sc-gr-wt", {button:true})}
-                ${field("Total", num(data.total), "sc-total-amount", {right:true})}
+                ${field("Total", num(data.Total,0), "sc-total-amount", {right:true})}
 
                 ${field("Net Wt.", num(data.NetWt, 3), "sc-net-wt")}
                 ${field("Pcs", data.Pcs || 1, "sc-pcs", {button:true, right:true})}
@@ -518,11 +518,19 @@ render_label_details(data) {
                 ${field("Total", num(data.Total,0), "sc-grand-total", {right:true})}
 
             </div>
-
+	<div class="text-center" style="margin:10px 0;">
+    <button type="button" class="btn btn-primary" id="print-label">
+        <i class="fa fa-print"></i> PRINT
+    </button>
+</div>
         </div>
     `;
 
     container.html(html);
+
+    container.find("#print-label").on("click", function () {
+    me.print_estimate(data);
+});			
 
     container.find("#sc-lab-on").val(data.lab_on || "Net Wt");
 
@@ -536,6 +544,249 @@ render_label_details(data) {
     });
 
 }
+
+
+print_estimate(data) {
+
+    const win = window.open("", "_blank", "width=400,height=700");
+
+    if (!win) {
+        frappe.msgprint("Please allow popups to print.");
+        return;
+    }
+
+    const v = (value) =>
+        frappe.utils.escape_html(String(value ?? ""));
+
+    const n = (value) =>
+        Number(value || 0).toFixed(2);
+
+    const weight = (value) =>
+        Number(value || 0).toFixed(3);
+
+    const today = frappe.datetime.now_date();
+    const formatted_date = frappe.datetime.str_to_user(today);	
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Estimate</title>
+
+    <style>
+
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 76mm;
+            margin: 0 auto;
+            padding: 5mm 2mm 3mm;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .heading {
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 14px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            min-height: 25px;
+            white-space: nowrap;
+        }
+
+        .challan {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .separator {
+            border-top: 2px solid #000;
+            margin: 5px 0;
+        }
+
+        .weight-row {
+            font-size: 14px;
+            min-height: 40px;
+        }
+
+        .weight-label {
+            width: 40%;
+        }
+
+        .weight-value {
+            width: 30%;
+            text-align: right;
+        }
+
+        .weight-amount {
+            width: 30%;
+            text-align: right;
+        }
+
+        .labour-row {
+            margin-top: 0;
+        }
+
+        .amount-section {
+            margin-top: 32px;
+            padding-left: 34%;
+        }
+
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 28px;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .amount-label {
+            font-weight: bold;
+        }
+
+        .amount-value {
+            text-align: right;
+            min-width: 100px;
+        }
+
+        .amount-line {
+            border-top: 2px solid #000;
+        }
+
+        .total-row {
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 37px;
+            font-size: 17px;
+            font-weight: bold;
+            padding: 0 2px;
+            margin-top: 5px;
+        }
+
+        .split-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 5px 5px;
+            border-bottom: 2px dotted #000;
+        }
+
+        @media print {
+            body {
+                width: 76mm;
+                margin: 0;
+            }
+        }
+
+    </style>
+    </head>
+
+    <body>
+
+        <div class="heading">Estimate</div>
+
+        <div class="row challan">
+            <span>CHALLAN NO. ${v(data.challan_no || "-")}</span>
+            <span>COPY1</span>
+        </div>
+
+        <div class="row">
+            <span>Name ${v(data.customer_name || "GENERAL CUSTOMER")}</span>
+            <span>Code&nbsp;&nbsp; ${v(data.code || "820")}</span>
+        </div>
+
+        <div class="row">
+            <span>Dt&nbsp;&nbsp;&nbsp; ${formatted_date}</span>
+            <span>Rate&nbsp;&nbsp;&nbsp; ${n(data.MetalRate)}</span>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="row weight-row">
+            <span>${v(data.DLabelNo || "-")}</span>
+            <span>G.Weight</span>
+            <span>${weight(data.GrossWt)}gms</span>
+        </div>
+
+        <div class="row weight-row">
+            <span>N.Weight</span>
+            <span>${weight(data.NetAmt)}gms</span>
+            <span>${v(data.Pcs)}</span>
+            <span>${n(data.MetalAmt)}</span>
+        </div>
+
+        <div class="row weight-row">
+            <span>L.C.</span>
+            <span>${v(data.LabourPer )} %</span>
+            <span>${n(data.LabourAmount)}</span>
+        </div>
+
+        <div class="amount-section">
+
+            <div class="amount-row">
+                <span class="amount-label">Discount</span>
+                <span class="amount-value">${n(data.discount)}</span>
+            </div>
+
+            <div class="amount-row amount-line">
+                <span class="amount-label">Amount</span>
+                <span class="amount-value">${n(data.NetAmt)}</span>
+            </div>
+
+            <div class="amount-row amount-line">
+                <span class="amount-label">Approx GST</span>
+                <span class="amount-value">${n(data.Gst)}</span>
+            </div>
+
+        </div>
+
+        <div class="total-row">
+            <span>TOTAL</span>
+            <span>${n(data.Total)}</span>
+        </div>
+
+        <div class="split-row">
+            <span>Split Wt.</span>
+            <span>Split Pcs.</span>
+        </div>
+
+    </body>
+    </html>
+    `;
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+
+    win.onload = function() {
+        win.focus();
+        win.print();
+        win.close();
+    };
+
+}
+
 
 show_details(data) {
 
@@ -725,7 +976,7 @@ show_details(data) {
                             <input
                                 class="detail-input"
                                 data-field="weight"
-                                value="${escape(d.weight ?? d.Weight ?? 0)}"
+                                value="${escape(d.NetWt ?? d.Weight ?? 0)}"
                             >
 
                             <button class="detail-check" type="button">
@@ -765,7 +1016,7 @@ show_details(data) {
                             <input
                                 class="detail-input"
                                 data-field="rate"
-                                value="${escape(d.rate ?? d.Rate ?? 0)}"
+                                value="${escape(d.SalesRate ?? 0)}"
                             >
 
                             <button class="detail-check" type="button">
@@ -781,7 +1032,7 @@ show_details(data) {
                         <input
                             class="detail-input"
                             data-field="amount"
-                            value="${escape(d.amount ?? d.Amount ?? 0)}"
+                            value="${escape( d.SalesAmount ?? 0)}"
                         >
 
                     </div>
