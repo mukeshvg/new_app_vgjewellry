@@ -436,12 +436,15 @@ render_label_details(data) {
 		font-size: 14px !important;
                 font-weight: 600;
 	    }
+	    .image-thumb{
+		max-height:400px;
+	    }
 
         </style>
 
         <div class="sc-form">
 	     <div class="row" style="display: flex; align-items: center; justify-content: center;">
-		 <img src="${image_url}" class="image-thumb" data-full="${image_url}">
+		 <img  src="${image_url}" class="image-thumb" data-full="${image_url}">
 	     </div>
 
             <div class="row">
