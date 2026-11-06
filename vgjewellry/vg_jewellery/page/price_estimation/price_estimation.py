@@ -113,11 +113,6 @@ def get_label_details(label_no):
             data["LabourRate"]= round(data.get("LabourPer") * data["MetalRate"] /100)
             data["LabourAmount"]=float(data["LabourRate"]) * float(data.get("NetWt"))
 
-        data["NetAmt"]=float(data["MetalAmt"])+float(data.get("DiamondAmt"))+float(data.get("StoneAmt"))+float(data.get("OtherCharge"))+float(data.get("LabourAmount"))
-        data["Igst"]=round(data.get("NetAmt")*0.015);
-        data["Cgst"]=round(data.get("NetAmt")*0.015);
-        data["Gst"]= data["Igst"]+data["Cgst"]
-        data["Total"]=data.get("NetAmt")+data.get("Gst")
 
         qryl = """ select * from dbo.LabelTransactionStudded lts where lts.LabelTransID=?  and IsBase='N' """
         cursor.execute(qryl, (data.get("LabelTransID"),))
@@ -125,12 +120,25 @@ def get_label_details(label_no):
         rowsl = cursor.fetchall()
         details=[]
 
+        other_detail = 0
         for rowl in rowsl:
             data_l = dict(zip(columnsl, rowl))
             data_l["Style"] = diamond_style.get(data_l.get("StyleID"))
             details.append(data_l)
+            if data_l.get("StyleID")== 20 or data_l.get("StyleID")== 29:
+                omr= metal_rate[data_l.get('TradID')]
+                oth= (float(omr) * float(data_l.get("NetWt")))
+                other_detail += oth
+                data_l["SalesRate"]=omr
+                data_l["SalesAmount"]= oth
+
         data["details"]= details
 
+        data["NetAmt"]=float(data["MetalAmt"])+float(data.get("DiamondAmt"))+float(data.get("StoneAmt"))+float(data.get("OtherCharge"))+float(data.get("LabourAmount"))+ float(other_detail)
+        data["Igst"]=round(data.get("NetAmt")*0.015);
+        data["Cgst"]=round(data.get("NetAmt")*0.015);
+        data["Gst"]= data["Igst"]+data["Cgst"]
+        data["Total"]=data.get("NetAmt")+data.get("Gst")
 
         result.append(data)
     

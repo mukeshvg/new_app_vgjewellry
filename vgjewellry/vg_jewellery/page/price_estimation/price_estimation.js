@@ -808,6 +808,9 @@ show_details(data) {
     const escape = (value) => frappe.utils.escape_html(
         String(value ?? "")
     );
+   const num = (value, decimals = 2) => {
+        return Number(value || 0).toFixed(decimals);
+    };
 
     let html = `
         <style>
@@ -1032,7 +1035,7 @@ show_details(data) {
                         <input
                             class="detail-input"
                             data-field="amount"
-                            value="${escape( d.SalesAmount ?? 0)}"
+                            value="${(num(d.SalesAmount,0) ?? 0)}"
                         >
 
                     </div>
